@@ -1,0 +1,22 @@
+[
+  {
+    "shop_id": "001",
+    "name": "Starbucks Broadway",
+    "menu": [
+      {
+        "item_id": "sbc-affogato-001",
+        "name": "Affogato",
+        "description": "Espresso poured over vanilla gelato.",
+        "image_url": "https://.../affogato.jpg",
+        "category": "espresso"
+      },
+      {
+        "item_id": "sbc-affogato-001",
+        "name": "Affogato",
+        "description": "Espresso poured over vanilla gelato.",
+        "image_url": "https://.../affogato.jpg",
+        "category": "espresso"
+      }
+    ]
+  }
+]

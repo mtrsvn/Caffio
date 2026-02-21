@@ -1,0 +1,147 @@
+[
+  {
+    "name": "Classic Connoisseur",
+    "description": "Prefers traditional coffee drinks and familiar flavors. Appreciates simplicity and consistency, often chooses brewed coffee, Americano, or classic lattes.",
+    "tags": [
+      "classic",
+      "traditional",
+      "simple",
+      "familiar",
+      "americano",
+      "latte",
+      "brewed"
+    ]
+  },
+  {
+    "name": "Sweet Tooth",
+    "description": "Loves sugar, syrups, and creamy add-ons. Regularly goes for frappes, flavored lattes, and dessert-inspired coffees—always up for a new sweet creation.",
+    "tags": [
+      "sweet",
+      "syrup",
+      "dessert",
+      "frappe",
+      "flavored",
+      "creamy",
+      "latte",
+      "caramel",
+      "mocha"
+    ]
+  },
+  {
+    "name": "Adventurous Explorer",
+    "description": "Seeks out unique blends, rare beans, and seasonal specials. Loves to try the latest drinks, experiment with origins, and savor limited-edition offerings.",
+    "tags": [
+      "adventurous",
+      "unique",
+      "rare",
+      "seasonal",
+      "special",
+      "explore",
+      "limited",
+      "new",
+      "experimental"
+    ]
+  },
+  {
+    "name": "Minimalist",
+    "description": "Enjoys pure, unadulterated caffeinated flavors. Usually orders black coffee, cold brew, or espresso—no milk, no sugar, just coffee.",
+    "tags": [
+      "minimalist",
+      "pure",
+      "black",
+      "cold brew",
+      "espresso",
+      "no sugar",
+      "no milk",
+      "strong"
+    ]
+  },
+  {
+    "name": "Caffeine Fiend",
+    "description": "Prioritizes strength and energy. Always asks for extra shots, double espresso, or strongest brews; coffee is fuel for motivation.",
+    "tags": [
+      "caffeine",
+      "strong",
+      "energy",
+      "extra shot",
+      "double espresso",
+      "motivation",
+      "bold",
+      "brewed"
+    ]
+  },
+  {
+    "name": "Iced Coffee Enthusiast",
+    "description": "Prefers chilled, refreshing drinks all year round—iced lattes, cold brews, and coffee-based refreshments, no matter the weather.",
+    "tags": [
+      "iced",
+      "cold",
+      "refreshing",
+      "latte",
+      "cold brew",
+      "year round",
+      "summer",
+      "chilled"
+    ]
+  },
+  {
+    "name": "Trendsetter",
+    "description": "Loves coffee with a twist—matcha lattes, oat milk, alternative plant-based blends, and the latest viral drinks. Follows coffee trends closely.",
+    "tags": [
+      "trend",
+      "twist",
+      "matcha",
+      "oat milk",
+      "plant-based",
+      "latest",
+      "viral",
+      "alternative",
+      "unique"
+    ]
+  },
+  {
+    "name": "Comfort Seeker",
+    "description": "Values cozy, calming drinks. Always orders warm, milky, and smooth blends; drinks coffee for relaxation—often goes for cappuccino, mocha, or milk tea coffee hybrids.",
+    "tags": [
+      "comfort",
+      "cozy",
+      "warm",
+      "milky",
+      "smooth",
+      "relaxation",
+      "cappuccino",
+      "mocha",
+      "milk tea"
+    ]
+  },
+  {
+    "name": "Social Sipper",
+    "description": "Enjoys coffee as a reason to gather and connect. Loves shareable drinks, group specials, and popular café beverages; coffee is part of their social ritual.",
+    "tags": [
+      "social",
+      "group",
+      "sharing",
+      "connect",
+      "popular",
+      "hangout",
+      "cafe",
+      "beverages",
+      "ritual"
+    ]
+  },
+  {
+    "name": "Customizer",
+    "description": "Always personalizes their order: extra syrup, soy milk, add whipped cream, remove ice, double shot—likes creating their perfect cup.",
+    "tags": [
+      "custom",
+      "personalized",
+      "extra",
+      "syrup",
+      "soy milk",
+      "whipped cream",
+      "remove ice",
+      "double shot",
+      "perfect"
+    ]
+  }
+]
