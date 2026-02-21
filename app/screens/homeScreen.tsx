@@ -1,8 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleSheet } from "react-native";
+import colors from "../components/colors";
 
-const PAGE_GRADIENT = ["#EFEBE9", "#F5F5F5", "#D7CCC8"] as readonly string[];
+const PAGE_GRADIENT = [
+  colors.pageGradientTopLeft,
+  colors.pageGradientMid,
+  colors.pageGradientBottomRight,
+] as readonly string[];
 
 const HomeScreen: React.FC = () => (
   <LinearGradient
@@ -14,9 +19,7 @@ const HomeScreen: React.FC = () => (
 );
 
 const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-  },
+  screenContainer: { flex: 1 },
 });
 
 export default HomeScreen;
