@@ -1,8 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { StyleSheet, Text } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform, StyleSheet, Text } from "react-native";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import FAB from "./components/fab";
 import Navigation from "./components/navigation";
 
 import {
@@ -38,6 +42,13 @@ export default function Layout() {
 
   const PAGE_GRADIENT = ["#EFEBE9", "#F5F5F5", "#D7CCC8"] as readonly string[];
 
+  const insets = useSafeAreaInsets();
+  const baseBarHeight = 66;
+  const tabBarHeight =
+    baseBarHeight +
+    (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
+  const fabBottom = tabBarHeight + 16;
+
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
@@ -48,6 +59,12 @@ export default function Layout() {
         style={styles.gradient}
       >
         <Navigation />
+        <FAB
+          onPress={() => {}}
+          style={{
+            bottom: fabBottom,
+          }}
+        />
       </LinearGradient>
     </SafeAreaProvider>
   );
