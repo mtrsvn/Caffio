@@ -16,7 +16,7 @@ import {
 
 import * as Google from "expo-auth-session/providers/google";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { addUserDoc, auth } from "../../firebaseconfig";
+import { addUserDoc, auth, loginWithEmail } from "../../firebaseconfig";
 import colors from "../components/colors";
 
 const LoginScreen = () => {
@@ -53,11 +53,11 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      // TODO: Add your actual Firebase sign-in logic here
-      // await signInWithEmailAndPassword(auth, email.trim(), password);
+      await loginWithEmail(email.trim(), password);
       navigation.navigate("Home");
     } catch (err: any) {
-      setError(err.message || "Login failed.");
+      const message = err?.message || "Login failed.";
+      setError(message);
     } finally {
       setLoading(false);
     }
