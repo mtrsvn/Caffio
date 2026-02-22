@@ -1,10 +1,12 @@
 import { BlurView } from "expo-blur";
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { Camera, Star, X } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     Animated,
     Easing,
+    Image,
     Keyboard,
     LayoutChangeEvent,
     Modal,
@@ -58,6 +60,26 @@ const TASTE_PROFILE = [
 
 export default function AddLogSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+
+  // photo state
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+
+  // Photo picker handler
+  const handlePickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission to access media library is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
 
   // selection state
   const [selectedCafe, setSelectedCafe] = useState<string | null>(null);
@@ -651,6 +673,49 @@ export default function AddLogSheet({ visible, onClose }: Props) {
               </View>
             )}
             {customTypeMode && renderCoffeeTypeCustomInput()}
+
+            {/* Photo */}
+            <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
+              Photo (optional)
+            </Text>
+            <TouchableOpacity
+              style={styles.photoBox}
+              activeOpacity={0.8}
+              onPress={handlePickPhoto}
+            >
+              <View style={styles.photoInner}>
+                {photoUri ? (
+                  <View style={{ position: "relative", width: 90, height: 90 }}>
+                    <Image
+                      source={{ uri: photoUri }}
+                      style={{ width: 90, height: 90, borderRadius: 8 }}
+                    />
+                    <TouchableOpacity
+                      style={{
+                        position: "absolute",
+                        top: 2,
+                        right: 2,
+                        zIndex: 2,
+                        backgroundColor: "#E53935",
+                        borderRadius: 12,
+                        padding: 2,
+                        borderWidth: 1,
+                        borderColor: "#fff",
+                      }}
+                      onPress={() => setPhotoUri(null)}
+                      activeOpacity={0.7}
+                    >
+                      <X size={18} color="#fff" strokeWidth={2.5} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Camera size={36} color={colors.gradientStart} />
+                )}
+                <Text style={styles.photoText}>
+                  {photoUri ? "Change Photo" : "Add Photo"}
+                </Text>
+              </View>
+            </TouchableOpacity>
 
             {/* Taste Profile (Optional) */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
