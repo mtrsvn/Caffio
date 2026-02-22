@@ -4,6 +4,7 @@ import { Coffee, Heart, MapPin, TrendingUp, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Platform,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -206,6 +207,13 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
 
 const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    // placeholder for refresh logic, e.g. re-fetch profile data
+    setTimeout(() => setRefreshing(false), 500);
+  }, []);
 
   return (
     <LinearGradient
@@ -221,6 +229,14 @@ const ProfileScreen: React.FC = () => {
             { paddingBottom: (insets.bottom ?? 12) + 24 },
           ]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#000"
+              colors={["#000"]}
+            />
+          }
         >
           <ProfileHeader />
 

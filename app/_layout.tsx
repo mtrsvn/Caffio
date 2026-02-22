@@ -1,18 +1,16 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { StyleSheet, Text } from "react-native";
-import {
-  SafeAreaProvider
-} from "react-native-safe-area-context";
+import { StyleSheet, Text, TextInput } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Navigation from "./components/navigation";
 
 import {
-  Montserrat_400Regular,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
+  FunnelSans_400Regular,
+  FunnelSans_600SemiBold,
+  FunnelSans_700Bold,
   useFonts,
-} from "@expo-google-fonts/montserrat";
+} from "@expo-google-fonts/funnel-sans";
 
 const BASE_TABBAR_HEIGHT = 66;
 const FAB_EXTRA_OFFSET = 16; // visual gap above tab bar; tweak as needed
@@ -35,9 +33,9 @@ function AppInner() {
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
-    Montserrat_400Regular,
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
+    FunnelSans_400Regular,
+    FunnelSans_600SemiBold,
+    FunnelSans_700Bold,
   });
 
   // set default Text font once fonts are loaded
@@ -45,9 +43,19 @@ export default function Layout() {
     if ((Text as any).defaultProps == null) {
       (Text as any).defaultProps = {};
     }
+    // set global default font for all Text components
     (Text as any).defaultProps.style = {
       ...(Text as any).defaultProps.style,
-      fontFamily: "Montserrat_400Regular",
+      fontFamily: "FunnelSans_400Regular",
+    };
+
+    // also apply default to text inputs so they match
+    if ((TextInput as any).defaultProps == null) {
+      (TextInput as any).defaultProps = {};
+    }
+    (TextInput as any).defaultProps.style = {
+      ...(TextInput as any).defaultProps.style,
+      fontFamily: "FunnelSans_400Regular",
     };
   }
 
