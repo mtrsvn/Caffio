@@ -46,6 +46,7 @@ const COFFEE_TYPES = [
   "Cold Brew",
 ];
 
+// Chocolatey next to Nutty
 const TASTE_PROFILE = [
   "Bold",
   "Smooth",
@@ -80,6 +81,48 @@ export default function AddLogSheet({ visible, onClose }: Props) {
   const backdropAnim = useRef(new Animated.Value(0)).current; // opacity for blur + tint
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mounted, setMounted] = useState(false);
+
+  // Per-item scale Animated.Values stored by key (category:name)
+  const scalesRef = useRef<Record<string, Animated.Value>>({});
+
+  // helpers to get/create scale Animated.Value for a pill/star
+  const getScale = (category: string, name: string) => {
+    const key = `${category}:${name}`;
+    if (!scalesRef.current[key]) {
+      scalesRef.current[key] = new Animated.Value(1);
+    }
+    return scalesRef.current[key];
+  };
+
+  // animate scale to a target (spring)
+  const animateTo = (animated: Animated.Value, toValue: number) => {
+    Animated.spring(animated, {
+      toValue,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 120,
+    }).start();
+  };
+
+  // press-in effect (quick shrink)
+  const pressIn = (animated: Animated.Value) => {
+    Animated.timing(animated, {
+      toValue: 0.94,
+      duration: 80,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // press-out effect: spring to target (selected => slightly larger, else normal)
+  const pressOutTo = (animated: Animated.Value, target = 1) => {
+    Animated.spring(animated, {
+      toValue: target,
+      useNativeDriver: true,
+      friction: 7,
+      tension: 160,
+    }).start();
+  };
 
   // mount + animate in/out
   useEffect(() => {
@@ -146,23 +189,75 @@ export default function AddLogSheet({ visible, onClose }: Props) {
     }
   }, [customTypeMode]);
 
+  // selection handlers with press-effect animations
+
   const toggleTaste = (t: string) => {
+    const isSelected = selectedTaste.includes(t);
+    const scale = getScale("taste", t);
+    // press-in + press-out to final target
+    pressIn(scale);
+    const nextSelected = !isSelected;
+    pressOutTo(scale, nextSelected ? 1.03 : 1);
     setSelectedTaste((prev) =>
-      prev.includes(t) ? prev.filter((p) => p !== t) : [...prev, t],
+      isSelected ? prev.filter((p) => p !== t) : [...prev, t],
     );
   };
 
   const selectType = (t: string) => {
-    // selecting a normal pill exits custom type mode
+    const prevSelected = selectedType;
+    const nextSelected = prevSelected === t ? null : t;
+
+    const tappedScale = getScale("type", t);
+    pressIn(tappedScale);
+    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
+
+    if (prevSelected && prevSelected !== t) {
+      const prevScale = getScale("type", prevSelected);
+      animateTo(prevScale, 1);
+    }
+
     setCustomTypeMode(false);
     setSelectedType((prev) => (prev === t ? null : t));
   };
 
   const selectCafe = (c: string) => {
-    // selecting a normal cafe pill exits custom cafe mode
+    const prevSelected = selectedCafe;
+    const nextSelected = prevSelected === c ? null : c;
+
+    const tappedScale = getScale("cafe", c);
+    pressIn(tappedScale);
+    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
+
+    if (prevSelected && prevSelected !== c) {
+      const prevScale = getScale("cafe", prevSelected);
+      animateTo(prevScale, 1);
+    }
+
     setCustomCafeMode(false);
     setSelectedCafe((prev) => (prev === c ? null : c));
   };
+
+  // ensure scales reflect selection state on changes
+  useEffect(() => {
+    CAFES.forEach((c) => {
+      const scale = getScale("cafe", c);
+      const isSelected = selectedCafe === c;
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+
+    COFFEE_TYPES.forEach((t) => {
+      const scale = getScale("type", t);
+      const isSelected = selectedType === t;
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+
+    TASTE_PROFILE.forEach((tp) => {
+      const scale = getScale("taste", tp);
+      const isSelected = selectedTaste.includes(tp);
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCafe, selectedType, selectedTaste]);
 
   // capture sheet height for animation
   const onSheetLayout = (e: LayoutChangeEvent) => {
@@ -170,17 +265,29 @@ export default function AddLogSheet({ visible, onClose }: Props) {
     if (h && h > 0 && h !== sheetHeight) setSheetHeight(h);
   };
 
-  // Helpers to render pills / custom inputs
+  // STAR animations: scale per star, press effect
+  useEffect(() => {
+    const stars = [1, 2, 3, 4, 5];
+    stars.forEach((s) => {
+      const scale = getScale("star", String(s));
+      const isActive = rating >= s;
+      // active stars slightly larger (keep consistent with pills) — star size also reduced below
+      animateTo(scale, isActive ? 1.12 : 1);
+    });
+  }, [rating]);
+
+  // Render helpers that use Animated.View for scale
+  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
   const renderCafePill = (c: string) => {
     const selected = selectedCafe === c;
     const isCustom = c === "Custom Cafe";
+    const scale = getScale("cafe", c);
 
     if (isCustom) {
-      // custom mode: show full-width input above coffee type (persistent)
       if (customCafeMode) {
         return (
-          <View key="custom-cafe-input" style={{ marginBottom: 8 }}>
+          <View key="custom-cafe-input" style={{ marginBottom: 7 }}>
             <Text style={styles.fieldLabel}>Cafe</Text>
             <TextInput
               ref={customCafeRef}
@@ -196,16 +303,14 @@ export default function AddLogSheet({ visible, onClose }: Props) {
                 setCustomCafeMode(false);
                 Keyboard.dismiss();
               }}
-              // NOTE: do NOT hide on blur — input stays persistent
             />
             <TouchableOpacity
               onPress={() => {
-                // switch back to list mode without submitting
                 setCustomCafeMode(false);
                 setCustomCafeText("");
               }}
               activeOpacity={0.8}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: 7 }}
             >
               <Text style={styles.chooseFromList}>
                 Choose from list instead
@@ -215,30 +320,35 @@ export default function AddLogSheet({ visible, onClose }: Props) {
         );
       }
 
-      // default dashed pill that opens custom input mode
       return (
-        <TouchableOpacity
+        <AnimatedTouchable
           key={c}
           onPress={() => {
             setCustomCafeText("");
             setCustomCafeMode(true);
             setSelectedCafe(null);
+            pressIn(scale);
+            pressOutTo(scale, 1);
           }}
+          onPressIn={() => pressIn(scale)}
+          onPressOut={() => pressOutTo(scale, 1)}
           activeOpacity={0.85}
-          style={[styles.pillAdd, { margin: 6 }]}
+          style={[styles.pillAdd, { margin: 5, transform: [{ scale }] } as any]}
         >
           <Text style={styles.pillAddText}>Custom Cafe</Text>
-        </TouchableOpacity>
+        </AnimatedTouchable>
       );
     }
 
     if (selected) {
       return (
-        <TouchableOpacity
+        <AnimatedTouchable
           key={c}
           onPress={() => selectCafe(c)}
+          onPressIn={() => pressIn(scale)}
+          onPressOut={() => pressOutTo(scale, 1.03)}
           activeOpacity={0.85}
-          style={{ margin: 6 }}
+          style={{ margin: 5, transform: [{ scale }] } as any}
         >
           <LinearGradient
             colors={[
@@ -251,31 +361,40 @@ export default function AddLogSheet({ visible, onClose }: Props) {
           >
             <Text style={styles.pillSelectedText}>{c}</Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </AnimatedTouchable>
       );
     }
 
     return (
-      <TouchableOpacity
+      <AnimatedTouchable
         key={c}
         onPress={() => selectCafe(c)}
+        onPressIn={() => pressIn(scale)}
+        onPressOut={() => pressOutTo(scale, 1)}
         activeOpacity={0.85}
-        style={[styles.pillUnselectedCoffee, { margin: 6 }]}
+        style={[
+          styles.pillUnselectedCoffee,
+          { margin: 5, transform: [{ scale }] } as any,
+        ]}
       >
         <Text style={styles.pillUnselectedCoffeeText}>{c}</Text>
-      </TouchableOpacity>
+      </AnimatedTouchable>
     );
   };
 
   const renderCoffeeTypePill = (t: string) => {
     const selected = selectedType === t;
+    const scale = getScale("type", t);
+
     if (selected) {
       return (
-        <TouchableOpacity
+        <AnimatedTouchable
           key={t}
           onPress={() => selectType(t)}
+          onPressIn={() => pressIn(scale)}
+          onPressOut={() => pressOutTo(scale, 1.03)}
           activeOpacity={0.85}
-          style={{ margin: 6 }}
+          style={{ margin: 5, transform: [{ scale }] } as any}
         >
           <LinearGradient
             colors={[
@@ -288,26 +407,32 @@ export default function AddLogSheet({ visible, onClose }: Props) {
           >
             <Text style={styles.pillSelectedText}>{t}</Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </AnimatedTouchable>
       );
     }
 
     return (
-      <TouchableOpacity
+      <AnimatedTouchable
         key={t}
         onPress={() => selectType(t)}
+        onPressIn={() => pressIn(scale)}
+        onPressOut={() => pressOutTo(scale, 1)}
         activeOpacity={0.85}
-        style={[styles.pillUnselectedCoffee, { margin: 6 }]}
+        style={[
+          styles.pillUnselectedCoffee,
+          { margin: 5, transform: [{ scale }] } as any,
+        ]}
       >
         <Text style={styles.pillUnselectedCoffeeText}>{t}</Text>
-      </TouchableOpacity>
+      </AnimatedTouchable>
     );
   };
 
   const renderCoffeeTypeCustomInput = () => {
+    const scale = getScale("type", "__custom");
     if (customTypeMode) {
       return (
-        <View key="__custom_type_input" style={{ marginBottom: 8 }}>
+        <View key="__custom_type_input" style={{ marginBottom: 7 }}>
           <Text style={styles.fieldLabel}>Coffee Type</Text>
           <TextInput
             ref={customTypeRef}
@@ -323,7 +448,6 @@ export default function AddLogSheet({ visible, onClose }: Props) {
               setCustomTypeMode(false);
               Keyboard.dismiss();
             }}
-            // NOTE: do NOT hide on blur — input stays persistent
           />
           <TouchableOpacity
             onPress={() => {
@@ -331,7 +455,7 @@ export default function AddLogSheet({ visible, onClose }: Props) {
               setCustomTypeText("");
             }}
             activeOpacity={0.8}
-            style={{ marginTop: 8 }}
+            style={{ marginTop: 7 }}
           >
             <Text style={styles.chooseFromList}>Choose from list instead</Text>
           </TouchableOpacity>
@@ -340,30 +464,38 @@ export default function AddLogSheet({ visible, onClose }: Props) {
     }
 
     return (
-      <TouchableOpacity
+      <AnimatedTouchable
         key="__custom_type_plus"
-        style={[styles.pillAdd, { margin: 6 }]}
+        style={[styles.pillAdd, { margin: 5, transform: [{ scale }] } as any]}
         onPress={() => {
           setCustomTypeText("");
           setCustomTypeMode(true);
           setSelectedType(null);
+          pressIn(scale);
+          pressOutTo(scale, 1);
         }}
+        onPressIn={() => pressIn(scale)}
+        onPressOut={() => pressOutTo(scale, 1)}
         activeOpacity={0.85}
       >
         <Text style={styles.pillAddText}>+</Text>
-      </TouchableOpacity>
+      </AnimatedTouchable>
     );
   };
 
   const renderTastePill = (t: string) => {
     const selected = selectedTaste.includes(t);
+    const scale = getScale("taste", t);
+
     if (selected) {
       return (
-        <TouchableOpacity
+        <AnimatedTouchable
           key={t}
           onPress={() => toggleTaste(t)}
+          onPressIn={() => pressIn(scale)}
+          onPressOut={() => pressOutTo(scale, 1.03)}
           activeOpacity={0.85}
-          style={{ margin: 6 }}
+          style={{ margin: 5, transform: [{ scale }] } as any}
         >
           <LinearGradient
             colors={[
@@ -376,27 +508,30 @@ export default function AddLogSheet({ visible, onClose }: Props) {
           >
             <Text style={styles.pillSelectedText}>{t}</Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </AnimatedTouchable>
       );
     }
 
-    // use coffee-type/cafe unselected style
     return (
-      <TouchableOpacity
+      <AnimatedTouchable
         key={t}
         onPress={() => toggleTaste(t)}
+        onPressIn={() => pressIn(scale)}
+        onPressOut={() => pressOutTo(scale, 1)}
         activeOpacity={0.85}
-        style={[styles.pillUnselectedCoffee, { margin: 6 }]}
+        style={[
+          styles.pillUnselectedCoffee,
+          { margin: 5, transform: [{ scale }] } as any,
+        ]}
       >
         <Text style={styles.pillUnselectedCoffeeText}>{t}</Text>
-      </TouchableOpacity>
+      </AnimatedTouchable>
     );
   };
 
   const stars = useMemo(() => [1, 2, 3, 4, 5], []);
 
   // Determine whether submit should be enabled.
-  // Consider custom input text as a valid value even before submit if user is typing.
   const finalCafeValue =
     selectedCafe ??
     (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
@@ -409,7 +544,6 @@ export default function AddLogSheet({ visible, onClose }: Props) {
   const handleSave = () => {
     if (!canSubmit) return;
 
-    // commit values into state (so they persist if parent reads state later)
     if (customCafeMode && customCafeText.trim()) {
       setSelectedCafe(customCafeText.trim());
     }
@@ -417,7 +551,6 @@ export default function AddLogSheet({ visible, onClose }: Props) {
       setSelectedType(customTypeText.trim());
     }
 
-    // close and reset modes
     onClose();
     setCustomCafeMode(false);
     setCustomTypeMode(false);
@@ -481,8 +614,8 @@ export default function AddLogSheet({ visible, onClose }: Props) {
               accessibilityRole="button"
               activeOpacity={0.85}
             >
-              {/* Changed: plain X icon with no background */}
-              <X size={18} color={colors.gradientStart} strokeWidth={3} />
+              {/* plain X icon no background (size reduced by 1) */}
+              <X size={17} color={colors.gradientStart} strokeWidth={3} />
             </TouchableOpacity>
           </View>
 
@@ -494,7 +627,6 @@ export default function AddLogSheet({ visible, onClose }: Props) {
           >
             {/* Cafes / Custom input */}
             <View style={{ marginBottom: customCafeMode ? 6 : 0 }}>
-              {/* Added extra top margin for Cafe label */}
               {!customCafeMode && (
                 <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
                   Cafe
@@ -522,9 +654,9 @@ export default function AddLogSheet({ visible, onClose }: Props) {
             )}
             {customTypeMode && renderCoffeeTypeCustomInput()}
 
-            {/* Taste Profile */}
+            {/* Taste Profile (Optional) */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
-              Taste Profile (optional lang)
+              Taste Profile (Optional)
             </Text>
             <View style={styles.pillRow}>
               {TASTE_PROFILE.map((t) => renderTastePill(t))}
@@ -533,25 +665,36 @@ export default function AddLogSheet({ visible, onClose }: Props) {
             {/* Rating */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Rating</Text>
             <View style={styles.starsRow}>
-              {stars.map((s) => (
-                <TouchableOpacity
-                  key={s}
-                  onPress={() => setRating((prev) => (prev === s ? 0 : s))}
-                  style={styles.starButton}
-                  activeOpacity={0.8}
-                >
-                  {rating >= s ? (
-                    <Star
-                      size={26}
-                      color={colors.gradientStart}
-                      fill={colors.gradientStart}
-                      strokeWidth={0}
-                    />
-                  ) : (
-                    <Star size={26} color={"#DDD"} strokeWidth={1.6} />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {stars.map((s) => {
+                const scale = getScale("star", String(s));
+                return (
+                  <AnimatedTouchable
+                    key={s}
+                    onPress={() => {
+                      const nextRating = rating === s ? 0 : s;
+                      setRating(nextRating);
+                    }}
+                    onPressIn={() => pressIn(scale)}
+                    onPressOut={() => pressOutTo(scale, rating >= s ? 1.12 : 1)}
+                    style={[
+                      styles.starButton,
+                      { transform: [{ scale }] } as any,
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    {rating >= s ? (
+                      <Star
+                        size={25}
+                        color={colors.gradientStart}
+                        fill={colors.gradientStart}
+                        strokeWidth={0}
+                      />
+                    ) : (
+                      <Star size={25} color={"#DDD"} strokeWidth={1.6} />
+                    )}
+                  </AnimatedTouchable>
+                );
+              })}
             </View>
 
             {/* Photo */}
@@ -648,9 +791,10 @@ const styles = StyleSheet.create({
 
   pillRow: { flexDirection: "row", flexWrap: "wrap" },
 
+  // Reduced paddingHorizontal by 1 and paddingVertical by 1 (was 14/8 -> now 13/7)
   pillSelected: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
@@ -658,24 +802,25 @@ const styles = StyleSheet.create({
   pillSelectedText: { color: "#fff", fontWeight: "600" },
 
   pillUnselected: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 999,
     backgroundColor: colors.pillUnselectedBg,
     alignItems: "center",
     justifyContent: "center",
-    margin: 6,
+    margin: 5,
   },
   pillUnselectedText: { color: "#4E342E", fontWeight: "600" },
 
+  // Coffee-type / cafe unselected pill also reduced
   pillUnselectedCoffee: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 999,
     backgroundColor: colors.coffeeTypeUnselectedBg,
     alignItems: "center",
     justifyContent: "center",
-    margin: 6,
+    margin: 5,
     borderWidth: 1,
     borderColor: colors.coffeeTypeUnselectedBorder,
   },
@@ -685,8 +830,8 @@ const styles = StyleSheet.create({
   },
 
   pillAdd: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 999,
     borderWidth: 1,
     borderStyle: "dashed",
@@ -697,7 +842,7 @@ const styles = StyleSheet.create({
   },
   pillAddText: {
     color: colors.coffeeTypeUnselectedText,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "400",
   },
 
@@ -705,8 +850,8 @@ const styles = StyleSheet.create({
   fieldLabel: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
   fullInput: {
     width: "100%",
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === "ios" ? 14 : 10,
+    paddingHorizontal: 13,
+    paddingVertical: Platform.OS === "ios" ? 13 : 9,
     borderRadius: 12,
     backgroundColor: colors.coffeeTypeUnselectedBg,
     borderWidth: 1,
