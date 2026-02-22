@@ -1,19 +1,86 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { Eye, EyeOff } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import * as Google from "expo-auth-session/providers/google";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { addUserDoc, auth } from "../../firebaseconfig";
 import colors from "../components/colors";
 
 const LoginScreen = () => {
   const navigation = useNavigation<any>();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId:
+      "137243555767-5estidl9gmum8l4h713scni5iub0l49l.apps.googleusercontent.com",
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      handleGoogleToken(id_token);
+    } else if (response?.type === "error") {
+      setError("Google sign-in cancelled or failed.");
+      setGoogleLoading(false);
+    }
+  }, [response]);
+
+  async function handleLogin() {
+    setError(null);
+    if (!email || !password) {
+      setError("Please fill out all fields.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // TODO: Add your actual Firebase sign-in logic here
+      // await signInWithEmailAndPassword(auth, email.trim(), password);
+      navigation.navigate("Home");
+    } catch (err: any) {
+      setError(err.message || "Login failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleToken(idToken: string) {
+    setError(null);
+    try {
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCred = await signInWithCredential(auth, credential);
+      const uid = userCred.user.uid;
+      await addUserDoc(uid, {
+        email: userCred.user.email || "",
+        username: userCred.user.displayName || "",
+      });
+      navigation.navigate("Home");
+    } catch (err: any) {
+      setError(err.message || "Google authentication failed.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
   return (
     <LinearGradient
       colors={[
@@ -44,17 +111,38 @@ const LoginScreen = () => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
 
             <View style={styles.field}>
               <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor="rgba(78,52,46,0.5)"
-                secureTextEntry
-              />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, styles.inputWithIcon]}
+                  placeholder="••••••••"
+                  placeholderTextColor="rgba(78,52,46,0.5)"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword((v) => !v)}
+                  style={styles.eyeButton}
+                >
+                  {showPassword ? (
+                    <Eye size={20} color={colors.gradientEnd} />
+                  ) : (
+                    <EyeOff size={20} color={colors.gradientEnd} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* ─── Exact same placement & style as Register ─── */}
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error || " "}</Text>
             </View>
 
             <LinearGradient
@@ -63,10 +151,45 @@ const LoginScreen = () => {
               end={{ x: 1, y: 1 }}
               style={styles.buttonGradient}
             >
-              <TouchableOpacity style={styles.buttonTouch} activeOpacity={0.8}>
-                <Text style={styles.buttonText}>Login</Text>
+              <TouchableOpacity
+                style={styles.buttonTouch}
+                activeOpacity={0.8}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={colors.navbarBg} />
+                ) : (
+                  <Text style={styles.buttonText}>Login</Text>
+                )}
               </TouchableOpacity>
             </LinearGradient>
+
+            <TouchableOpacity
+              style={[styles.buttonTouch, styles.googleButton]}
+              onPress={() => {
+                setGoogleLoading(true);
+                promptAsync();
+              }}
+              disabled={!request || googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#4285F4" />
+              ) : (
+                <View style={styles.googleContent}>
+                  <Image
+                    source={{
+                      uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/40px-Google_%22G%22_logo.svg.png?20230822192911",
+                    }}
+                    style={styles.googleIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.googleButtonText}>
+                    Log in with Google
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
             <View style={styles.footerRow}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -81,15 +204,8 @@ const LoginScreen = () => {
 
             <View style={styles.signupRow}>
               <Text style={styles.helperText}>Don't have an account?</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Register");
-                }}
-              >
-                <Text style={[styles.linkText, styles.underline]}>
-                  {" "}
-                  Sign up
-                </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                <Text style={[styles.linkText, styles.underline]}>Sign up</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -112,7 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
-    marginBottom: 44,
+    marginBottom: 36, // ← made same as Register (was 44)
   },
   title: {
     fontSize: 30,
@@ -127,7 +243,7 @@ const styles = StyleSheet.create({
   },
 
   form: {
-    gap: 24,
+    gap: 24, // ← same
   },
   field: {
     gap: 8,
@@ -160,10 +276,23 @@ const styles = StyleSheet.create({
     }),
   },
 
+  errorContainer: {
+    height: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 4, // ← exact same as Register
+  },
+  errorText: {
+    color: "#b00020",
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
   buttonGradient: {
     borderRadius: 16,
-    marginTop: 16,
     overflow: "hidden",
+    // Removed extra marginTop to match Register's natural flow
   },
   buttonTouch: {
     height: 54,
@@ -177,10 +306,48 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  googleButton: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#DADCE0",
+  },
+  googleContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+  },
+  googleButtonText: {
+    color: "#1F1F1F",
+    fontSize: 16,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+  },
+
+  inputRow: {
+    position: "relative",
+  },
+  inputWithIcon: {
+    paddingRight: 48,
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    top: 16,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
+    marginTop: 20, // ← adjusted closer to Register's feel
     paddingHorizontal: 4,
   },
   linkText: {
@@ -191,7 +358,7 @@ const styles = StyleSheet.create({
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 32,
+    marginTop: 28,
   },
   helperText: {
     fontSize: 15,

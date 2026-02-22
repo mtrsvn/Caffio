@@ -1,19 +1,101 @@
 import { useNavigation } from "@react-navigation/native";
+import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { Eye, EyeOff } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { addUserDoc, auth, registerWithEmail } from "../../firebaseconfig";
 import colors from "../components/colors";
 
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId:
+      "137243555767-5estidl9gmum8l4h713scni5iub0l49l.apps.googleusercontent.com",
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      handleGoogleToken(id_token);
+    } else if (response?.type === "error") {
+      setError("Google sign-in cancelled or failed.");
+      setGoogleLoading(false);
+    }
+  }, [response]);
+
+  async function handleRegister() {
+    setError(null);
+    if (!email || !username || !password || !confirmPassword) {
+      setError("Please fill out all fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCred = await registerWithEmail(email.trim(), password);
+      const uid = userCred.user.uid;
+      await addUserDoc(uid, { email: email.trim(), username: username.trim() });
+      setLoading(false);
+      try {
+        navigation.navigate("Home");
+      } catch (e) {
+        navigation.goBack();
+      }
+    } catch (err: any) {
+      setLoading(false);
+      const message = err?.message || "Registration failed.";
+      setError(message);
+    }
+  }
+
+  async function handleGoogleToken(idToken: string) {
+    setError(null);
+    try {
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCred = await signInWithCredential(auth, credential);
+      const uid = userCred.user.uid;
+      await addUserDoc(uid, {
+        email: userCred.user.email || "",
+        username: userCred.user.displayName || "",
+      });
+      navigation.navigate("Home");
+    } catch (err: any) {
+      setError(err.message || "Google authentication failed.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   return (
     <LinearGradient
@@ -40,32 +122,80 @@ const RegisterScreen: React.FC = () => {
               <Text style={styles.label}>Email</Text>
               <TextInput
                 style={styles.input}
-                placeholder="your@email.com"
+                placeholder="johndoe@email.com"
                 placeholderTextColor="rgba(78,52,46,0.5)"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="johndoe"
+                placeholderTextColor="rgba(78,52,46,0.5)"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={username}
+                onChangeText={setUsername}
               />
             </View>
 
             <View style={styles.field}>
               <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor="rgba(78,52,46,0.5)"
-                secureTextEntry
-              />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, styles.inputWithIcon]}
+                  placeholder="••••••••"
+                  placeholderTextColor="rgba(78,52,46,0.5)"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword((v) => !v)}
+                  style={styles.eyeButton}
+                >
+                  {showPassword ? (
+                    <Eye size={20} color={colors.gradientEnd} />
+                  ) : (
+                    <EyeOff size={20} color={colors.gradientEnd} />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.field}>
               <Text style={styles.label}>Confirm password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor="rgba(78,52,46,0.5)"
-                secureTextEntry
-              />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, styles.inputWithIcon]}
+                  placeholder="••••••••"
+                  placeholderTextColor="rgba(78,52,46,0.5)"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword((v) => !v)}
+                  style={styles.eyeButton}
+                >
+                  {showConfirmPassword ? (
+                    <Eye size={20} color={colors.gradientEnd} />
+                  ) : (
+                    <EyeOff size={20} color={colors.gradientEnd} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Very tight error container */}
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error || " "}</Text>
             </View>
 
             <LinearGradient
@@ -74,10 +204,45 @@ const RegisterScreen: React.FC = () => {
               end={{ x: 1, y: 1 }}
               style={styles.buttonGradient}
             >
-              <TouchableOpacity style={styles.buttonTouch} activeOpacity={0.8}>
-                <Text style={styles.buttonText}>Register</Text>
+              <TouchableOpacity
+                style={styles.buttonTouch}
+                activeOpacity={0.8}
+                onPress={handleRegister}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={colors.navbarBg} />
+                ) : (
+                  <Text style={styles.buttonText}>Register</Text>
+                )}
               </TouchableOpacity>
             </LinearGradient>
+
+            <TouchableOpacity
+              style={[styles.buttonTouch, styles.googleButton]}
+              onPress={() => {
+                setGoogleLoading(true);
+                promptAsync();
+              }}
+              disabled={!request || googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color="#4285F4" />
+              ) : (
+                <View style={styles.googleContent}>
+                  <Image
+                    source={{
+                      uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/40px-Google_%22G%22_logo.svg.png?20230822192911",
+                    }}
+                    style={styles.googleIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.googleButtonText}>
+                    Sign in with Google
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
             <View style={styles.footerRow}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -88,7 +253,7 @@ const RegisterScreen: React.FC = () => {
             <View style={styles.signupRow}>
               <Text style={styles.helperText}>Already have an account?</Text>
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text style={[styles.linkText, styles.underline]}> Login</Text>
+                <Text style={[styles.linkText, styles.underline]}>Login</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -111,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
-    marginBottom: 44,
+    marginBottom: 36,
   },
   title: {
     fontSize: 30,
@@ -159,9 +324,21 @@ const styles = StyleSheet.create({
     }),
   },
 
+  errorContainer: {
+    height: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  errorText: {
+    color: "#b00020",
+    fontSize: 15, // ← matched to "Already have an account?" text
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
   buttonGradient: {
     borderRadius: 16,
-    marginTop: 16,
     overflow: "hidden",
   },
   buttonTouch: {
@@ -176,10 +353,48 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  googleButton: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#DADCE0",
+  },
+  googleContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+  },
+  googleButtonText: {
+    color: "#1F1F1F",
+    fontSize: 16,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+  },
+
+  inputRow: {
+    position: "relative",
+  },
+  inputWithIcon: {
+    paddingRight: 48,
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    top: 16,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
+    marginTop: 20,
     paddingHorizontal: 4,
   },
   linkText: {
@@ -190,7 +405,7 @@ const styles = StyleSheet.create({
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 32,
+    marginTop: 28,
   },
   helperText: {
     fontSize: 15,
