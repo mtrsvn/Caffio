@@ -1,21 +1,1232 @@
 [
   {
     "shop_id": "001",
-    "name": "Starbucks Broadway",
+    "name": "Starbucks",
     "menu": [
       {
-        "item_id": "sbc-affogato-001",
-        "name": "Affogato",
-        "description": "Espresso poured over vanilla gelato.",
-        "image_url": "https://.../affogato.jpg",
-        "category": "espresso"
+        "item_id": "SB-01",
+        "name": "Iced Raspberry Chocolate Mousse Oatmilk Latte",
+        "description": "A chilled oatmilk latte layered with raspberry syrup and a velvety chocolate mousse finish for a bright-fruity and creamy chocolate balance.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/750/UVtk5HDKK6zfI80AUV6f1mZF5jCIIXkudZdZK3cR.jpeg",
+        "category": "Featured Drinks"
       },
       {
-        "item_id": "sbc-affogato-001",
-        "name": "Affogato",
-        "description": "Espresso poured over vanilla gelato.",
-        "image_url": "https://.../affogato.jpg",
-        "category": "espresso"
+        "item_id": "SB-02",
+        "name": "Raspberry Chocolate Mousse Oatmilk Latte",
+        "description": "Warm oatmilk latte blended with raspberry and topped with a silky chocolate mousse — a cozy, dessert-like espresso drink.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/752/hk3M9YUTtPULh56e0zARb6auhNNnmobFe6xbMI64.jpeg",
+        "category": "Featured Drinks"
+      },
+      {
+        "item_id": "SB-03",
+        "name": "Raspberry Chocolate Mousse Oatmilk Frappuccino®",
+        "description": "A blended, cream-forward frappuccino mixing raspberry sweetness with chocolate mousse and oatmilk for a smooth, icy treat.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/753/5dtzdIoZHPGcFsSE9KfOS3XF1ZSML47V1PVM23Yb.jpeg",
+        "category": "Featured Drinks"
+      },
+      {
+        "item_id": "SB-04",
+        "name": "Hot Brewed Coffee",
+        "description": "Classic freshly brewed hot coffee — a balanced, aromatic cup served hot. Options for roasts and customizations available.",
+        "image_url": "https://starbucks.ph/seed_data/HBRE_HotBrewedCoffee.jpg",
+        "category": "Brewed Coffee (Hot)"
+      },
+      {
+        "item_id": "SB-05",
+        "name": "Salted Caramel Cold Brew",
+        "description": "Slow-steeped cold brew infused with sweet salted caramel for a smooth, slightly sweet and salty iced coffee.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_SaltedCaramelColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-06",
+        "name": "Nitro Vanilla Sweet Cream Cold Brew",
+        "description": "Nitro-infused cold brew topped with a cloud of vanilla sweet cream — creamy, effervescent mouthfeel with sweet vanilla notes.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_NitroVanillaSweetCreamColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-07",
+        "name": "Nitro Cold Brew",
+        "description": "Cold brew charged with nitrogen for a cascading, stout-like texture and naturally sweet flavor without added dairy.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_NitroColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-08",
+        "name": "Cold Brew",
+        "description": "Slow-steeped coffee served cold for a smooth, low-acidity iced coffee with pronounced chocolate and roasted notes.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_ColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-09",
+        "name": "Vanilla Sweet Cream Cold Brew",
+        "description": "Cold brew layered with a splash of house vanilla sweet cream for a subtly sweet, creamy finish.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_VanillaSweetCreamColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-10",
+        "name": "Dark Caramel Nitro Cold Brew",
+        "description": "Nitro cold brew with dark caramel flavor for a deeper, richer caramel profile and a creamy nitrogen texture.",
+        "image_url": "https://starbucks.ph/seed_data/CBRE_DarkCaramelNitroColdBrew.jpg",
+        "category": "Brewed Coffee (Iced)"
+      },
+      {
+        "item_id": "SB-11",
+        "name": "Caffè Misto",
+        "description": "A one-to-one mix of brewed coffee and steamed milk — simple, balanced, and slightly sweeter than straight coffee.",
+        "image_url": "https://starbucks.ph/seed_data/HESP_CaffeMisto.jpg",
+        "category": "Espresso & Coffee (Hot)"
+      },
+      {
+        "item_id": "SB-12",
+        "name": "Flat White",
+        "description": "Ristretto shots with steamed whole milk, creating a velvety, espresso-forward drink with a thin layer of microfoam.",
+        "image_url": "https://starbucks.ph/seed_data/HESP_FlatWhite.jpg",
+        "category": "Espresso (Hot)"
+      },
+      {
+        "item_id": "SB-13",
+        "name": "Espresso",
+        "description": "Classic single or double shot of espresso — concentrated, bold, with rich crema and concentrated coffee flavor.",
+        "image_url": "https://starbucks.ph/seed_data/HESP_Espresso.jpg",
+        "category": "Espresso (Hot)"
+      },
+      {
+        "item_id": "SB-14",
+        "name": "Espresso Macchiato",
+        "description": "Espresso 'marked' with a dollop of steamed milk foam — bold espresso softened by a touch of milk.",
+        "image_url": "https://starbucks.ph/seed_data/HESP_EspressoMacchiato.jpg",
+        "category": "Espresso (Hot)"
+      },
+      {
+        "item_id": "SB-15",
+        "name": "Espresso Con Panna",
+        "description": "Espresso topped with a small amount of whipped cream for a creamy, slightly sweet finish to the shot.",
+        "image_url": "https://starbucks.ph/seed_data/HESP_EspressoConPanna.jpg",
+        "category": "Espresso (Hot)"
+      },
+      {
+        "item_id": "SB-16",
+        "name": "Iced Caramel Macchiato",
+        "description": "Vanilla-flavored milk over ice with espresso poured on top and a crosshatch of caramel drizzle.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedCaramelMacchiato.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-17",
+        "name": "Iced Cappuccino",
+        "description": "Chilled espresso combined with cold milk and topped with a light foam for a refreshing, airy iced cappuccino.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedCappuccino.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-18",
+        "name": "Iced Caffè Mocha",
+        "description": "Cold espresso blended with chocolate syrup and milk, topped with whipped cream for a chilled mocha treat.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedCaffeMocha.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-19",
+        "name": "Iced Americano",
+        "description": "Espresso shots poured over cold water and ice for a strong, clean iced coffee experience.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedAmericano.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-20",
+        "name": "Iced White Chocolate Mocha",
+        "description": "Iced milk and espresso blended with white chocolate sauce, finished with whipped cream for a sweet indulgence.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedWhiteChocolateMocha.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-21",
+        "name": "Iced Caffè Latte",
+        "description": "Cold milk poured over espresso and ice for a smooth, milk-forward iced espresso beverage.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_IcedCaffeLatte.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-22",
+        "name": "Cold Foam Iced Espresso",
+        "description": "Iced espresso topped with a light, velvety cold foam for added creaminess without hot milk.",
+        "image_url": "https://starbucks.ph/seed_data/IESP_ColdFoamIcedEspresso.jpg",
+        "category": "Espresso (Iced)"
+      },
+      {
+        "item_id": "SB-23",
+        "name": "Chai Tea Cream Frappuccino®",
+        "description": "Blended cream frappuccino with chai spices for a smooth, warmly spiced iced treat without coffee.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_ChaiTeaCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-24",
+        "name": "White Chocolate Cream Frappuccino®",
+        "description": "Cream-based frappuccino layered with white chocolate flavor for a rich, sweet blended drink.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_WhiteChocolateCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-25",
+        "name": "Caramel Cream Frappuccino®",
+        "description": "Creamy frappuccino with caramel syrup and whipped cream — a smooth, sweet caramel dessert drink.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_CaramelCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-26",
+        "name": "Strawberries & Cream Frappuccino®",
+        "description": "A bright, fruity cream frappuccino blending real strawberry puree with milk and ice.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_StrawberriesCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-27",
+        "name": "Pure Matcha Cream Frappuccino®",
+        "description": "Creamy frappuccino featuring ceremonial-grade matcha for a subtly grassy, sweet green-tea flavor.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_PureMatchaCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-28",
+        "name": "Vanilla Cream Frappuccino®",
+        "description": "Classic cream frappuccino flavored with vanilla — smooth, sweet, and simple.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_VanillaCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-29",
+        "name": "Chocolate Chip Cream Frappuccino®",
+        "description": "Cream-based frappuccino blended with chocolate chips for texture and rich chocolate flavor.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_ChocolateChipCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-30",
+        "name": "Chocolate Cream Frappuccino®",
+        "description": "A creamy chocolate frappuccino with smooth chocolate flavor for chocolate lovers seeking a non-coffee option.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_ChocolateCreamFrappuccino.jpg",
+        "category": "Frappuccino® (Cream-based)"
+      },
+      {
+        "item_id": "SB-31",
+        "name": "Espresso Frappuccino®",
+        "description": "Blended coffee frappuccino with espresso for a chilled, caffeinated pick-me-up with a smooth finish.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_EspressoFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-32",
+        "name": "White Mocha Frappuccino®",
+        "description": "Coffee-based frappuccino with white chocolate mocha flavor — sweet and creamy with espresso depth.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_WhiteMochaFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-33",
+        "name": "Dark Caramel Coffee Frappuccino®",
+        "description": "A coffee frappuccino featuring dark caramel for a slightly more robust caramel flavor balanced with espresso.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_DarkCaramelCoffeeFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-34",
+        "name": "Triple Mocha Frappuccino®",
+        "description": "Intensely chocolate-forward blended coffee drink with multiple layers of mocha for deep chocolate flavor.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_TripleMochaFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-35",
+        "name": "Coffee Jelly Frappuccino®",
+        "description": "Blended coffee frappuccino featuring coffee jelly pieces for a textured, playful coffee experience.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_CoffeeJellyFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-36",
+        "name": "Caramel Frappuccino®",
+        "description": "Coffee-based frappuccino with caramel syrup and whipped cream for a sweet, classic blended coffee drink.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_CaramelFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-37",
+        "name": "Coffee Frappuccino®",
+        "description": "Simple, classic coffee frappuccino — blended coffee, milk, and ice for a straightforward chilled coffee.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_CoffeeFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-38",
+        "name": "Mocha Frappuccino®",
+        "description": "Coffee-based frappuccino infused with mocha for a chilled coffee-and-chocolate combination.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_MochaFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-39",
+        "name": "Java Chip Frappuccino®",
+        "description": "Blended coffee frappuccino with chocolate chips and mocha chips for texture and rich chocolate taste.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_JavaChipFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-40",
+        "name": "Dark Mocha Frappuccino®",
+        "description": "A darker, richer mocha frappuccino for deeper chocolate notes combined with coffee.",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCOF_DarkMochaFrappuccino.jpg",
+        "category": "Frappuccino® (Coffee-based)"
+      },
+      {
+        "item_id": "SB-41",
+        "name": "Full Leaf Brewed Tea",
+        "description": "Single-origin or blended loose-leaf teas brewed to order for a pure, nuanced hot-tea experience.",
+        "image_url": "https://starbucks.ph/seed_data/HTEA_FullLeafBrewedTea.jpg",
+        "category": "Teavana Tea (Hot)"
+      },
+      {
+        "item_id": "SB-42",
+        "name": "Iced Black Tea Latte",
+        "description": "Bold black tea shaken with milk and ice for a creamy, tea-forward iced latte.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedBlackTeaLatte.jpg",
+        "category": "Teavana Tea (Iced)"
+      },
+      {
+        "item_id": "SB-43",
+        "name": "Iced Pure Matcha & Espresso Fusion",
+        "description": "A layered beverage combining matcha's vegetal sweetness with a shot of espresso for an energizing contrast.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedMatchaandEspressoFusion.jpg",
+        "category": "Teavana Tea (Iced)"
+      },
+      {
+        "item_id": "SB-44",
+        "name": "Iced Chai Tea Latte",
+        "description": "Spiced chai concentrate shaken with milk and ice — aromatic spices with a smooth, milky body.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedChaiTeaLatte.jpg",
+        "category": "Teavana Tea (Iced)"
+      },
+      {
+        "item_id": "SB-45",
+        "name": "Iced Pure Matcha Latte",
+        "description": "Ceremonial-grade matcha whisked with milk and poured over ice for a bright, slightly sweet green-tea latte.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedGreenTeaLatte.jpg",
+        "category": "Teavana Tea (Iced)"
+      },
+      {
+        "item_id": "SB-46",
+        "name": "Iced Shaken Hibiscus Tea with Pomegranate Pearls",
+        "description": "Vibrant hibiscus tea shaken with ice and topped with popping pomegranate pearls for a tangy-fruity texture.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedShakenHibiscusTeawithPomegranatePearls.jpg",
+        "category": "Teavana Tea (Iced Shaken Teas)"
+      },
+      {
+        "item_id": "SB-47",
+        "name": "Iced Ruby Grapefruit & Honey Black Tea",
+        "description": "Black tea brightened with ruby grapefruit and a touch of honey — citrusy, slightly sweet, and refreshing.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_IcedShakenBlackTeawithRubyGrapefruitandHoney.jpg",
+        "category": "Teavana Tea (Iced Shaken Teas)"
+      },
+      {
+        "item_id": "SB-48",
+        "name": "Iced Vanilla Cold Foam Coffee Jelly Black Tea",
+        "description": "Layered iced black tea with coffee jelly and a ribbon of vanilla cold foam for a creamy, multi-textured beverage.",
+        "image_url": "https://starbucks.ph/seed_data/ITEA_VanillaColdFoamIcedShakenBlackTeawithCoffeeJelly.jpg",
+        "category": "Teavana Tea (Iced Shaken Teas)"
+      },
+      {
+        "item_id": "SB-49",
+        "name": "Pink Drink with Strawberry Açaí",
+        "description": "A fan-favorite refresher: strawberry açaí and coconut milk with real strawberry pieces for a fruity, creamy refreshment.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/351/Y6NAnHFmewQN4MkXEuvWv6KZCZQMvYhspP4ybFYt.jpegg",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-50",
+        "name": "Strawberry Açaí with Lemonade",
+        "description": "Strawberry açaí refresher brightened with lemonade for a tart-sweet, invigorating iced drink.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/350/JcFQU4To3OtyYWJl6YulVXDPa5u2pc7CikwNVQuc.jpeg",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-51",
+        "name": "Mango Dragonfruit with Lemonade",
+        "description": "Tropical mango and dragonfruit flavors shaken with lemonade for a vibrant, fruity refresher.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/447/7bPOYfjrBAZ3PJFb6Pn0kOy1mVd1w3djqlD2YQ5P.jpeg",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-52",
+        "name": "Dragon Drink with Mango Dragonfruit",
+        "description": "Creamy refresher combining mango dragonfruit with coconut milk for a smooth, tropical beverage.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/448/7pS8eMdahrJYb6hp00Kv7XkEY7p7rxU7yJmnNfzJ.jpeg",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-53",
+        "name": "Frozen Strawberry Açaí Lemonade",
+        "description": "A frozen, slushy version of the strawberry açaí lemonade — icy, fruity, and thirst-quenching.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/673/Olgn6DazuU4ZgESLnsdULbI4Iw1No3o13VlNQNn2.jpeg",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-54",
+        "name": "Frozen Mango Dragonfruit Lemonade",
+        "description": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/675/pz83LTYfwFhSpX1nIcKPgKdreaOCEuJijl1Xiz1P.jpeg",
+        "image_url": "  ",
+        "category": "Starbucks Refreshers™"
+      },
+      {
+        "item_id": "SB-55",
+        "name": "Signature Hot Chocolate",
+        "description": "Rich, classic hot chocolate made with steamed milk and velvety chocolate — topped with whipped cream if desired.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/202204/mdQwfHAIPC1k7NgkZarBg0J9vseBfmbaUyrU1W0X.jpeg",
+        "category": "Chocolate & More (Hot)"
+      },
+      {
+        "item_id": "SB-56",
+        "name": "White Hot Chocolate",
+        "description": "Creamy steamed milk blended with sweet white chocolate sauce for a smooth, decadent hot beverage.",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/202204/OzeEF0qh9g33Detnawv1d8ooKt1Bte3xTp1OtwYU.jpeg",
+        "category": "Chocolate & More (Hot)"
+      },
+      {
+        "item_id": "SB-57",
+        "name": "Iced Chocolate Milk",
+        "description": "Cold milk mixed with chocolate syrup and ice — simple, refreshing, and chocolate-forward.",
+        "image_url": "https://starbucks.ph/seed_data/ICHO_IcedChocolateMilk.jpg",
+        "category": "Chocolate & More (Iced)"
+      },
+      {
+        "item_id": "SB-58",
+        "name": "Iced Signature Chocolate",
+        "description": "Chilled version of the signature hot chocolate: milk, chocolate, and ice for a cold chocolate treat.",
+        "image_url": "https://starbucks.ph/seed_data/ICHO_IcedSignatureChocolate.jpg",
+        "category": "Chocolate & More (Iced)"
+      },
+      {
+        "item_id": "SB-59",
+        "name": "Iced White Chocolate",
+        "description": "Iced white chocolate beverage made with milk and white chocolate syrup for a sweet, creamy chilled drink.",
+        "image_url": "https://starbucks.ph/seed_data/ICHO_IcedWhiteChocolate.jpg",
+        "category": "Chocolate & More (Iced)"
+      },
+      {
+        "item_id": "SB-60",
+        "name": "Iced Classic Chocolate",
+        "description": "A straightforward iced chocolate drink blending milk, classic chocolate syrup, and ice.",
+        "image_url": "https://starbucks.ph/seed_data/ICHO_IcedClassicChocolate.jpg",
+        "category": "Chocolate & More (Iced)"
+      },
+      {
+        "item_id": "SB-61",
+        "name": "Steamed Milk",
+        "description": "Simply steamed milk (available in various milk alternatives) — great on its own or as a mellow base for other drinks.",
+        "image_url": "https://starbucks.ph/seed_data/OTH_SteamedMilk.jpg",
+        "category": "Chocolate & More (Others)"
+      },
+      {
+        "item_id": "SB-63",
+        "name": "Starbucks Reserve Cold Brew",
+        "description": "A small-lot, specially roasted cold brew with nuanced flavors and an exceptionally smooth finish.",
+        "image_url": "",
+        "category": "Starbucks Reserve® (Brewed Coffee)"
+      }
+    ]
+  },
+  {
+    "shop_id": "002",
+    "name": "Krispy Kreme",
+    "menu": [
+      {
+        "item_id": "KK-01",
+        "name": "Signature Mocha",
+        "description": "A rich espresso-based mocha made with velvety chocolate and steamed milk, finished with a light cocoa dusting.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20Mocha.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-02",
+        "name": "White Mocha",
+        "description": "Smooth espresso blended with sweet white chocolate and steamed milk for a creamy, indulgent mocha variation.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20White%20Mocha%20(1).jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-03",
+        "name": "Signature Caramel",
+        "description": "Espresso and steamed milk sweetened with buttery caramel sauce and topped with a caramel drizzle.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20Caramel.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-04",
+        "name": "Signature Kaffe Kreme",
+        "description": "A house specialty: bold espresso gently balanced with steamed milk and a signature sweet finish unique to Krispy Kreme.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20Kaffe%20Kreme%20(1).jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-05",
+        "name": "Signature Classic",
+        "description": "The classic espresso-and-milk beverage: simple, balanced, and perfect for everyday enjoyment.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20Signature%20Classic.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-06",
+        "name": "Signature Latte",
+        "description": "Smooth espresso combined with steamed milk and topped with a thin layer of microfoam for a creamy latte experience.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced%20Latte.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-07",
+        "name": "Signature Americano",
+        "description": "Freshly pulled espresso diluted with hot water for a bold, clean cup with espresso character and a smooth finish.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Americano.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-08",
+        "name": "Signature Cappuccino",
+        "description": "Equal parts espresso, steamed milk, and foam create a balanced cappuccino with a rich espresso presence.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cappucino.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-09",
+        "name": "Signature Brewed Coffee",
+        "description": "Freshly brewed drip coffee — aromatic and well-balanced, served hot. Choose your preferred roast if available.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Signature%20Brewed.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-10",
+        "name": "Hazelnut Almond Milk Cold Brew",
+        "description": "Smooth cold brew sweetened with hazelnut and topped with creamy almond milk for a nutty, dairy-free twist.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Hazelnut.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-11",
+        "name": "Mocha Almond Milk Cold Brew",
+        "description": "Cold brew blended with mocha flavor and almond milk, offering chocolate notes with a light nutty finish.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Mocha.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-12",
+        "name": "Original Glazed Almond Milk Cold Brew",
+        "description": "A playful cold brew inspired by Krispy Kreme's Original Glazed: subtly sweet with almond milk for smoothness.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Classic.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-13",
+        "name": "Caramel Almond Milk Cold Brew",
+        "description": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Caramel.jpg",
+        "image_url": "",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-14",
+        "name": "Iced Sea Salt Kreme Latte",
+        "description": "Iced latte balanced with a touch of sea salt and a sweet Kreme-inspired syrup — creamy, slightly salty, and refreshing.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced-Sea%20Salt%20Kreme.jpg",
+        "category": "Coffee"
+      },
+      {
+        "item_id": "KK-23",
+        "name": "Mocha Chiller",
+        "description": "A blended, icy coffee-chocolate drink made with espresso, chocolate, milk, and ice for a frosty mocha hit.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Mocha.jpg",
+        "category": "Chillers"
+      },
+      {
+        "item_id": "KK-24",
+        "name": "White Mocha Chiller",
+        "description": "Creamy blended chiller featuring white chocolate, espresso, and ice for a sweet, refreshing treat.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/White%20Mocha.jpg",
+        "category": "Chillers"
+      },
+      {
+        "item_id": "KK-25",
+        "name": "Cookies & Kreme Chiller (without Espresso)",
+        "description": "A cream-based chiller blended with cookie pieces and Kreme flavoring — a smooth dessert-style drink without caffeine.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cookies%20&%20Kreme.jpg",
+        "category": "Chillers"
+      },
+      {
+        "item_id": "KK-26",
+        "name": "Cookies & Kreme Chiller (with Espresso)",
+        "description": "The Cookies & Kreme chiller with an added shot of espresso for a caffeinated, indulgent blend with cookie texture.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cookies%20&%20Kreme%20with%20Coffee.jpg",
+        "category": "Chillers"
+      },
+
+      {
+        "item_id": "KK-29",
+        "name": "Ghirardelli Chocolate",
+        "description": "A decadent chocolate beverage crafted with premium Ghirardelli chocolate for an intense, velvety drinking chocolate.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Ghirardelli-Hot.jpg",
+        "category": "New Original Creations"
+      },
+      {
+        "item_id": "KK-30",
+        "name": "Iced Chocolate Sea Salt Kreme (made with Ghirardelli)",
+        "description": "Iced chocolate made with Ghirardelli, balanced by sea salt and Kreme syrup for a rich-salty, refreshing flavor.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Iced-Chocolate%20Sea%20Salt%20Kreme.jpg",
+        "category": "New Original Creations"
+      },
+      {
+        "item_id": "KK-31",
+        "name": "Sea Salt Kreme Matcha Latte",
+        "description": "Matcha latte brightened with a touch of sea salt and Kreme syrup for a creamy, slightly savory-sweet green tea drink.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Sea%20Salt%20Kreme%20Latte-Iced.jpg",
+        "category": "New Original Creations"
+      },
+      {
+        "item_id": "KK-32",
+        "name": "Choco Hazelnut Chiller",
+        "description": "A blended chiller combining chocolate and hazelnut flavors with ice for a nutty, dessert-like frozen beverage.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Choco%20Hazelnut%20Chiller.jpg",
+        "category": "New Original Creations"
+      },
+      {
+        "item_id": "KK-33",
+        "name": "Matcha Strawberry Latte",
+        "description": "A layered latte marrying ceremonial matcha with sweet strawberry notes and steamed milk for a balanced, vibrant drink.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/1418x1063%20MGCC%20KK%20Matcha%20Collection-matcha%20strawebrry.jpg",
+        "category": "New Original Creations"
+      },
+      {
+        "item_id": "KK-34",
+        "name": "Lotus Biscoff Chiller",
+        "description": "A creamy frozen chiller inspired by Lotus Biscoff — spiced caramel cookie flavor blended with ice and milk.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Lotus%20Biscoff.jpg",
+        "category": "New Original Creations"
+      }
+    ]
+  },
+  {
+    "shop_id": "003",
+    "name": "Dunkin",
+    "menu": [
+      [
+        {
+          "item_id": "DK-01",
+          "name": "Hot Latte",
+          "description": "Smooth espresso blended with steamed milk and topped with a light layer of foam for a creamy, balanced hot coffee.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/latte_10-38-33-676899.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-02",
+          "name": "Cappuccino",
+          "description": "A classic combination of espresso, steamed milk, and airy foam for a rich and velvety hot drink.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/cappuccino_10-27-38-324874.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-03",
+          "name": "Café Americano",
+          "description": "Espresso diluted with hot water, delivering a bold and smooth coffee flavor with a clean finish.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/americano_10-24-37-811653.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-04",
+          "name": "Brewed Coffee",
+          "description": "Freshly brewed drip coffee served hot, offering a smooth and comforting everyday coffee experience.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/brewed-coffee_10-22-11-720209.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-05",
+          "name": "Hot Choco",
+          "description": "Steamed milk blended with rich chocolate for a warm, creamy, and comforting hot chocolate drink.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/hot-choco_10-37-04-945919.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-06",
+          "name": "Spanish Latte",
+          "description": "Espresso combined with sweetened milk and served hot for a smooth, creamy, and slightly sweet coffee indulgence.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/spanish-latte_10-45-47-585329.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-07",
+          "name": "Hot Vietnamese Coffee",
+          "description": "Strong brewed coffee mixed with sweet condensed milk, served hot for a bold and creamy flavor profile.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/vietnamese-coffee_10-49-02-946527.png",
+          "category": "Hot Beverages"
+        },
+        {
+          "item_id": "DK-08",
+          "name": "Caramel Macchiato",
+          "description": "Layered espresso and steamed milk finished with caramel drizzle for a sweet and smooth hot coffee treat.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/caramel-macchiato-hot_10-53-32-599495.png",
+          "category": "Hot Beverages"
+        },
+
+        {
+          "item_id": "DK-09",
+          "name": "Iced Choco Java",
+          "description": "A rich blend of chocolate and coffee poured over ice for a bold, sweet, and refreshing chilled beverage.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2024-08-09/iced-choco-java_10-17-34-905589.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-10",
+          "name": "Iced Spanish Latte",
+          "description": "Smooth espresso mixed with sweetened milk and served over ice for a creamy, indulgent coffee experience.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-spanish-latte_13-59-22-828697.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-11",
+          "name": "Iced Latte",
+          "description": "Freshly brewed espresso combined with chilled milk and ice, delivering a smooth and balanced cold coffee.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-latte_13-54-23-866480.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-12",
+          "name": "Iced Americano",
+          "description": "Espresso shots poured over cold water and ice for a bold, crisp, and refreshing coffee flavor.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-americano_11-55-46-049755.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-13",
+          "name": "Iced Vietnamese Coffee",
+          "description": "Strong brewed coffee blended with sweet condensed milk and served over ice for a rich and creamy kick.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-vietnamese-coffee_14-11-07-177192.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-14",
+          "name": "Iced Mocha Latte",
+          "description": "Espresso mixed with chocolate and milk, poured over ice for a smooth and chocolatey cold drink.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-mocha-latte_13-56-43-520328.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-15",
+          "name": "Iced Coffee",
+          "description": "Classic chilled brewed coffee served over ice, delivering a simple and refreshing cold caffeine boost.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/iced-coffee_13-08-59-441423.png",
+          "category": "Cold Beverages"
+        },
+        {
+          "item_id": "DK-16",
+          "name": "Iced Caramel Macchiato",
+          "description": "Layered espresso with milk, caramel drizzle, and ice for a sweet, smooth, and refreshing coffee treat.",
+          "image_url": "https://api.dunkin.com.ph/storage/uploads/menu/2025-09-19/caramel-macchiato_14-25-38-198102.png",
+          "category": "Cold Beverages"
+        }
+      ]
+    ]
+  },
+  {
+    "shop_id": "004",
+    "name": "J.CO Donuts & Coffee",
+    "menu": [
+      {
+        "item_id": "JC-01",
+        "name": "Hot Americano",
+        "description": "Hot black coffee.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/americano.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-02",
+        "name": "Hot Caramel Jcoccino",
+        "description": "Espresso shot with steamed fresh milk, caramel syrup, and garnished with caramel sauce.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/caramel-jcoccino.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-03",
+        "name": "Hot Hazelnut Latte",
+        "description": "Espresso shot with steamed fresh milk, hazelnut syrup, and garnished with caramel sauce.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/hazelnut-latte.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-04",
+        "name": "Hot Jcoccino",
+        "description": "Espresso shot with steamed fresh milk & milk foam.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/jcoccino.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-05",
+        "name": "Hot Latte",
+        "description": "Espresso shot mixed with steamed fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/cafe-latte.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-06",
+        "name": "Hot Mocha Espresso",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, chocolate, topped with mocha cream, and garnished with chocolate powder.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/mocha-espresso-frappe.webp",
+        "category": "Hot - Coffee Based"
+      },
+      {
+        "item_id": "JC-07",
+        "name": "Iced Americano",
+        "description": "Iced black coffee.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/americano.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-08",
+        "name": "Iced Caramel Jcoccino",
+        "description": "Espresso shot with steamed fresh milk, caramel syrup, and garnished with caramel sauce.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/caramel-jcoccino.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-09",
+        "name": "Iced Hazelnut Latte",
+        "description": "Espresso shot with steamed fresh milk, hazelnut syrup, and garnished with caramel sauce.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/hazelnut-latte.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-10",
+        "name": "Iced Jcoccino",
+        "description": "Espresso shot with steamed fresh milk & milk foam.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/jcoccino.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-11",
+        "name": "Iced Latte",
+        "description": "Espresso shot mixed with steamed fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/cafe-latte.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-12",
+        "name": "Iced Mocha Espresso",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, chocolate, topped with mocha cream, and garnished with chocolate powder.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/mocha-espresso-frappe.webp",
+        "category": "Iced - Coffee Based"
+      },
+      {
+        "item_id": "JC-13",
+        "name": "Hot Chocolate",
+        "description": "Chocolate mixed with fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/hot-iced-chocolate.webp",
+        "category": "Hot - Chocolate Based"
+      },
+      {
+        "item_id": "JC-14",
+        "name": "Iced Chocolate",
+        "description": "Chocolate mixed with fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/hot-iced-chocolate.webp",
+        "category": "Iced - Chocolate Based"
+      },
+      {
+        "item_id": "JC-15",
+        "name": "Hot Green Tea Latte",
+        "description": "Hot/Iced matcha and vanilla mixed with fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/green-tea-latte.webp",
+        "category": "Hot - Tea Based"
+      },
+      {
+        "item_id": "JC-16",
+        "name": "Hot Tea",
+        "description": "Earl Grey, English Breakfast, Chamomile, Green Tea",
+        "image_url": "https://jcodonuts.com/assets/img/menu/hot-tea-selections.webp",
+        "category": "Hot - Tea Based"
+      },
+      {
+        "item_id": "JC-17",
+        "name": "Iced Green Tea Latte",
+        "description": "Hot/Iced matcha and vanilla mixed with fresh milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/green-tea-latte.webp",
+        "category": "Iced - Tea Based"
+      },
+      {
+        "item_id": "JC-18",
+        "name": "Iced Lemon Tea",
+        "description": "Refreshing iced lemon tea.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/iced-lemon-tea.webp",
+        "category": "Iced - Tea Based"
+      },
+      {
+        "item_id": "JC-19",
+        "name": "Iced Thai Tea",
+        "description": "Iced Thai tea with milk.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/iced-thai-tea.webp",
+        "category": "Iced - Tea Based"
+      },
+      {
+        "item_id": "JC-20",
+        "name": "Avocado Frappe",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, avocado powder, topped with mocha cream, and garnished with chocolate flakes.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/avocado-frappe.webp",
+        "category": "Coffee Based"
+      },
+      {
+        "item_id": "JC-21",
+        "name": "Caramel Frappe",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, caramel syrup, topped with mocha cream, and garnished with caramel sauce.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/caramel-frappe.webp",
+        "category": "Coffee Based"
+      },
+      {
+        "item_id": "JC-22",
+        "name": "Jcoccino Frappe",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, vanilla powder, topped with mocha cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/jcoccino-frappe.webp",
+        "category": "Coffee Based"
+      },
+      {
+        "item_id": "JC-23",
+        "name": "Mocha Espresso Frappe",
+        "description": "Espresso shot blended with ice nuggets, fresh milk, chocolate, topped with mocha cream, and garnished with chocolate powder.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/mocha-espresso-frappe.webp",
+        "category": "Coffee Based"
+      },
+      {
+        "item_id": "JC-24",
+        "name": "Choco Forest Frappe",
+        "description": "Chocolate mixed with blended ice nuggets, fresh milk, dark chocolate cherry powder, topped with whipped cream, and garnished with chocolate flakes.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/choco-forest-frappe.webp",
+        "category": "Chocolate Based"
+      },
+      {
+        "item_id": "JC-25",
+        "name": "Chocolate Frappe",
+        "description": "Chocolate mixed with blended ice nuggets, fresh milk, topped with whipped cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/chocolate-frappe.webp",
+        "category": "Chocolate Based"
+      },
+      {
+        "item_id": "JC-26",
+        "name": "Oreo (Cookies 'n Cream) Frappe",
+        "description": "Oreo and vanilla powder mixed with blended ice nuggets, fresh milk, topped with whipped cream, and garnished with oreo powder.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/oreo-frappe.webp",
+        "category": "Chocolate Based"
+      },
+      {
+        "item_id": "JC-27",
+        "name": "Oreo Cheesecake Frappe",
+        "description": "Cream cheese, oreo powder and vanilla powder mixed with blended ice nuggets, and topped with whipped cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/oreo-cheesecake-frappe.webp",
+        "category": "Chocolate Based"
+      },
+      {
+        "item_id": "JC-28",
+        "name": "Green Tea Frappe",
+        "description": "Matcha and vanilla powder mixed with blended with ice nuggets, fresh milk, topped with whipped cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/green-tea-frappe.webp",
+        "category": "Tea Based"
+      },
+      {
+        "item_id": "JC-29",
+        "name": "Blueberry Frappe",
+        "description": "Mix berry juice mixed with blended ice nuggets, fresh yogurt, blueberry jam, topped with whipped cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/blueberry-yogurt-frappe.webp",
+        "category": "Fruit Based"
+      },
+      {
+        "item_id": "JC-30",
+        "name": "Strawberry Frappe",
+        "description": "Strawberry juice mixed with blended ice nuggets, fresh yogurt, fresh strawberries, topped with whipped cream.",
+        "image_url": "https://jcodonuts.com/assets/img/menu/strawberry-yogurt-frappe.webp",
+        "category": "Fruit Based"
+      }
+    ]
+  },
+  {
+    "shop_id": "005",
+    "name": "The Coffee Bean & Tea Leaf",
+    "menu": [
+      {
+        "item_id": "CB-01",
+        "name": "Espresso",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/espresso-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-02",
+        "name": "Cappuccino",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/capuccino-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-03",
+        "name": "Americano",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/americano-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-04",
+        "name": "Iced Americano",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-Americano-CBTL.webp",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-05",
+        "name": "Caramel Macchiato",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Caramel-Macchiato-CBTL.webp",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-06",
+        "name": "Iced Caramel Macchiato",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-Caramel-Macchiato-CBTL.webp",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-07",
+        "name": "Hot Café Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/cafe-latte-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-08",
+        "name": "Hot Mocha Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/mocha-latte-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-09",
+        "name": "Hot Vanilla Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/vanilla-latte-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-10",
+        "name": "Hot Double Chocolate Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/double-chcolate-latte-min.png",
+        "category": "Espresso"
+      },
+      {
+        "item_id": "CB-11",
+        "name": "Cold Brew",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/cold-brew-min.png",
+        "category": "Cold Brew"
+      },
+      {
+        "item_id": "CB-12",
+        "name": "Cold Brew Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/cold-brew-latte-min.png",
+        "category": "Cold Brew"
+      },
+      {
+        "item_id": "CB-13",
+        "name": "Caramel Cold Brew",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/07/caramel-cold-brew-min.png",
+        "category": "Cold Brew"
+      },
+      {
+        "item_id": "CB-14",
+        "name": "Hot Vanilla",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Hot-Vanilla-CBTL.webp",
+        "category": "Non-Coffee"
+      },
+      {
+        "item_id": "CB-15",
+        "name": "Hot Double Chocolate",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Hot-Double-Chocolate-CBTL.webp",
+        "category": "Non-Coffee"
+      },
+      {
+        "item_id": "CB-16",
+        "name": "Lemon Chamomile",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Lemon-Chamomile-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-17",
+        "name": "Moroccan Mint",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Morrocan-Mint-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-18",
+        "name": "Apricot Ceylon",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Apricot-Ceylon-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-19",
+        "name": "English Breakfast",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/English-Breakfast-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-20",
+        "name": "Genmaicha Green",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Genmaicha-Green-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-21",
+        "name": "Ginseng Peppermint",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Ginseng-Peppermint-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-22",
+        "name": "Jasmine Dragon Phoenix Pearl",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Jasmine-Dragon-Phoenix-Pearl-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-23",
+        "name": "Today’s Iced Tea",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Todays-Iced-Tea-CBTL.webp",
+        "category": "Tea"
+      },
+      {
+        "item_id": "CB-24",
+        "name": "English Breakfast Tea Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-English-Breakfast-Tea-Latte-CBTL.webp",
+        "category": "Tea Latte"
+      },
+      {
+        "item_id": "CB-25",
+        "name": "African Sunrise Tea Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-African-Sunrise-Tea-Latte-CBTL.webp",
+        "category": "Tea Latte"
+      },
+      {
+        "item_id": "CB-26",
+        "name": "Chai Tea Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-Chai-Tea-Latte-CBTL.webp",
+        "category": "Tea Latte"
+      },
+      {
+        "item_id": "CB-27",
+        "name": "Moroccan Mint Tea Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-Moroccan-Mint-Tea-Latte.webp",
+        "category": "Tea Latte"
+      },
+      {
+        "item_id": "CB-28",
+        "name": "Matcha Tea Latte",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Iced-Matcha-Tea-Latte-CBTL.webp",
+        "category": "Tea Latte"
+      },
+      {
+        "item_id": "CB-29",
+        "name": "Mocha",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/The-Original-Mocha-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-30",
+        "name": "Vanilla",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/The-Original-Vanilla-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-31",
+        "name": "Double Chocolate",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Double-Chocolate-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-32",
+        "name": "Caramel",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Caramel-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-33",
+        "name": "Mocha Chip",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Mocha-Chip-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-34",
+        "name": "Vanilla Chip",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Vanilla-Chip-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-35",
+        "name": "Pure Vanilla",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Pure-Vanilla-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-36",
+        "name": "Pure Double Chocolate",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Pure-Double-Chocolate-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-37",
+        "name": "Matcha",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Matcha-Green-Tea-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-38",
+        "name": "Sunrise",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Sunrise-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
+      },
+      {
+        "item_id": "CB-39",
+        "name": "Mango",
+        "description": "",
+        "image_url": "https://www.coffeebean.com.ph/wp-content/uploads/2025/10/Mango-Ice-Blended-CBTL.webp",
+        "category": "Ice Blended"
       }
     ]
   }
