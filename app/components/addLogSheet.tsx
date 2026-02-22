@@ -26,12 +26,10 @@ type Props = {
 
 const CAFES = [
   "Starbucks",
-  "Dunkin'",
   "Krispy Kreme",
-  "Blue Bottle",
-  "Peet's Coffee",
+  "Dunkin'",
   "Tim Hortons",
-  "Costa Coffee",
+  "The Coffee Bean & Tea Leaf",
   "Custom Cafe",
 ];
 
@@ -577,7 +575,7 @@ export default function AddLogSheet({ visible, onClose }: Props) {
         {/* Animated blur backdrop */}
         <Animated.View style={[styles.backdrop, backdropStyle]}>
           <BlurView
-            intensity={100}
+            intensity={30}
             tint="dark"
             style={StyleSheet.absoluteFill}
           />
