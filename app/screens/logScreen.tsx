@@ -22,6 +22,9 @@ const LogScreen: React.FC = () => {
     >
       <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 18 }]}>
         <Text style={styles.title}>Your Coffee Logs</Text>
+        <Text style={styles.subtitle}>
+          Track and review your coffee experiences
+        </Text>
       </View>
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>

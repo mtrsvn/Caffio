@@ -2,11 +2,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Plus } from "lucide-react-native";
 import React from "react";
 import {
-    GestureResponderEvent,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  GestureResponderEvent,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "./colors";
@@ -18,10 +18,6 @@ type Props = {
   icon?: React.ReactNode;
   accessibilityLabel?: string;
   testID?: string;
-  /**
-   * If true and you have react-native-svg available, you can render a gradient SVG plus.
-   * This component does not import react-native-svg to avoid extra dependency by default.
-   */
 };
 
 export default function FAB({
@@ -33,6 +29,9 @@ export default function FAB({
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
+
+  // default bottom (will be overridden by passed style in Layout)
+  const defaultBottom = (insets.bottom ?? 12) + 16;
 
   return (
     <TouchableOpacity
@@ -48,7 +47,7 @@ export default function FAB({
           height: size,
           borderRadius: size / 2,
           right: 16,
-          bottom: (insets.bottom ?? 12) + 16,
+          bottom: defaultBottom,
         },
         style,
       ]}
@@ -69,7 +68,8 @@ export default function FAB({
         {icon ? (
           <View>{icon}</View>
         ) : (
-          <Plus size={28} color={colors.navbarBg} strokeWidth={3} />
+          // plus color uses iconActive (white) for good contrast on the brown gradient
+          <Plus size={28} color={colors.iconActive} strokeWidth={3} />
         )}
       </LinearGradient>
     </TouchableOpacity>
@@ -81,19 +81,19 @@ const styles = StyleSheet.create({
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    aspectRatio: 1,
     overflow: "hidden",
 
     // shadow (iOS)
     shadowColor: "#000",
-    shadowOpacity: 0.14,
+    shadowOpacity: 0.16,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
 
     // elevation (Android)
-    elevation: 8,
+    elevation: 14,
 
-    zIndex: 1000,
+    // ensure it's above other UI
+    zIndex: 2000,
   },
   gradient: {
     alignItems: "center",
