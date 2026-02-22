@@ -1,7 +1,14 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Coffee, Heart, MapPin, TrendingUp, User } from "lucide-react-native";
-import React, { useState } from "react";
+import {
+  Coffee,
+  Heart,
+  LogOut,
+  MapPin,
+  TrendingUp,
+  User,
+} from "lucide-react-native";
+import React, { useContext, useRef, useState } from "react";
 import {
   Platform,
   RefreshControl,
@@ -13,6 +20,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { logout } from "../../firebaseconfig";
+import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 
 const PAGE_GRADIENT = [
@@ -38,8 +47,20 @@ const PAGE_GRADIENT = [
 
 const ProfileHeader: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { user } = useContext(AuthContext);
   const [createPressed, setCreatePressed] = useState(false);
   const [loginPressed, setLoginPressed] = useState(false);
+
+  const displayName =
+    user?.username || (user?.email ? user.email.split("@")[0] : "Guest");
+  const subtitle = user
+    ? user.createdAt
+      ? `Member since ${user.createdAt.toLocaleDateString(undefined, {
+          month: "long",
+          year: "numeric",
+        })}`
+      : "Member"
+    : "Not logged in";
 
   return (
     <LinearGradient
@@ -55,60 +76,66 @@ const ProfileHeader: React.FC = () => {
 
         <View style={styles.headerText}>
           <Text style={[styles.headerName, { color: colors.pillUnselectedBg }]}>
-            Guest
+            {displayName}
           </Text>
           <Text
             style={[styles.headerSubtitle, { color: colors.pillUnselectedBg }]}
           >
-            Not logged in
+            {subtitle}
           </Text>
         </View>
       </View>
 
-      <View style={styles.headerDivider} />
+      {!user ? (
+        <>
+          <View style={styles.headerDivider} />
 
-      <View style={styles.headerCenter}>
-        <Text style={[styles.headerBody, { color: colors.pillUnselectedBg }]}>
-          Track your coffee journey and unlock achievements
-        </Text>
+          <View style={styles.headerCenter}>
+            <Text
+              style={[styles.headerBody, { color: colors.pillUnselectedBg }]}
+            >
+              Track your coffee journey and unlock achievements
+            </Text>
 
-        <Text
-          style={[
-            styles.headerActionText,
-            { color: colors.pillUnselectedBg, textAlign: "center" },
-          ]}
-        >
-          <Text
-            onPress={() => navigation.navigate("Register")}
-            onPressIn={() => setCreatePressed(true)}
-            onPressOut={() => setCreatePressed(false)}
-            suppressHighlighting={true}
-            style={{
-              fontWeight: "700",
-              color: createPressed
-                ? colors.gradientEnd
-                : colors.pillUnselectedBg,
-            }}
-          >
-            Create an Account
-          </Text>
-          <Text style={{ fontWeight: "400" }}> or </Text>
-          <Text
-            onPress={() => navigation.navigate("Login")}
-            onPressIn={() => setLoginPressed(true)}
-            onPressOut={() => setLoginPressed(false)}
-            suppressHighlighting={true}
-            style={{
-              fontWeight: "700",
-              color: loginPressed
-                ? colors.gradientEnd
-                : colors.pillUnselectedBg,
-            }}
-          >
-            Login
-          </Text>
-        </Text>
-      </View>
+            <Text
+              style={[
+                styles.headerActionText,
+                { color: colors.pillUnselectedBg, textAlign: "center" },
+              ]}
+            >
+              <Text
+                onPress={() => navigation.navigate("Register")}
+                onPressIn={() => setCreatePressed(true)}
+                onPressOut={() => setCreatePressed(false)}
+                suppressHighlighting={true}
+                style={{
+                  fontWeight: "700",
+                  color: createPressed
+                    ? colors.gradientEnd
+                    : colors.pillUnselectedBg,
+                }}
+              >
+                Create an Account
+              </Text>
+              <Text style={{ fontWeight: "400" }}> or </Text>
+              <Text
+                onPress={() => navigation.navigate("Login")}
+                onPressIn={() => setLoginPressed(true)}
+                onPressOut={() => setLoginPressed(false)}
+                suppressHighlighting={true}
+                style={{
+                  fontWeight: "700",
+                  color: loginPressed
+                    ? colors.gradientEnd
+                    : colors.pillUnselectedBg,
+                }}
+              >
+                Login
+              </Text>
+            </Text>
+          </View>
+        </>
+      ) : null}
     </LinearGradient>
   );
 };
@@ -208,6 +235,9 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
 const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const scrollRef = useRef<any>(null);
+  const offsetRef = useRef<number>(0);
+  const { user } = useContext(AuthContext);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -224,6 +254,11 @@ const ProfileScreen: React.FC = () => {
     >
       <SafeAreaView style={styles.safe}>
         <ScrollView
+          ref={scrollRef}
+          onScroll={({ nativeEvent }) => {
+            offsetRef.current = nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
           contentContainerStyle={[
             styles.container,
             { paddingBottom: (insets.bottom ?? 12) + 24 },
@@ -259,6 +294,38 @@ const ProfileScreen: React.FC = () => {
           <PrefCard label="Favorite Cafe" />
           <PrefCard label="Favorite Type" />
           <PrefCard label="Top Taste" />
+
+          {user ? (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={async () => {
+                try {
+                  await logout();
+                  // after logout, scroll to top so guest header is visible
+                  setTimeout(() => {
+                    if (
+                      scrollRef.current &&
+                      typeof scrollRef.current.scrollTo === "function"
+                    ) {
+                      scrollRef.current.scrollTo({ y: 0, animated: true });
+                    }
+                  }, 50);
+                } catch (e) {
+                  // ignore
+                }
+              }}
+              style={styles.logoutButton}
+            >
+              <View style={styles.logoutContent}>
+                <LogOut
+                  size={18}
+                  color={colors.actionText}
+                  style={styles.logoutIcon}
+                />
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </View>
+            </TouchableOpacity>
+          ) : null}
 
           <View style={{ height: 28 }} />
         </ScrollView>
@@ -438,6 +505,33 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     marginBottom: 10,
+  },
+  logoutButton: {
+    marginTop: 8,
+    borderRadius: 12,
+    height: 42,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    backgroundColor: colors.navbarBg,
+    borderWidth: 0.6,
+    borderColor: colors.navbarBorder,
+    marginBottom: 14,
+  },
+  logoutButtonText: {
+    color: colors.actionText,
+    fontWeight: "700",
+    marginLeft: 0,
+  },
+  logoutIcon: {
+    marginRight: 10,
+  },
+  logoutContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
   },
 });
 

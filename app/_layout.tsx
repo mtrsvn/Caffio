@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { StyleSheet, Text, TextInput } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import AuthProvider from "./components/AuthProvider";
 import Navigation from "./components/navigation";
 
 import {
@@ -65,7 +66,9 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <AppInner />
+      <AuthProvider>
+        <AppInner />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

@@ -54,7 +54,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       await loginWithEmail(email.trim(), password);
-      navigation.navigate("Home");
+      navigation.replace("Main");
     } catch (err: any) {
       const message = err?.message || "Login failed.";
       setError(message);
@@ -73,7 +73,7 @@ const LoginScreen = () => {
         email: userCred.user.email || "",
         username: userCred.user.displayName || "",
       });
-      navigation.navigate("Home");
+      navigation.replace("Main");
     } catch (err: any) {
       setError(err.message || "Google authentication failed.");
     } finally {

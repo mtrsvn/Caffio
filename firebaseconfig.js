@@ -7,7 +7,13 @@ import {
     signInWithEmailAndPassword,
     signOut,
 } from "firebase/auth";
-import { doc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+    doc,
+    getDoc,
+    getFirestore,
+    serverTimestamp,
+    setDoc,
+} from "firebase/firestore";
 
 // Your web app's Firebase configuration (keep this file out of app/ routes folder)
 const firebaseConfig = {
@@ -67,11 +73,35 @@ export async function logout() {
 
 export async function addUserDoc(uid, data) {
   // Write user document at users/{uid} so security rules can check request.auth.uid
-  return setDoc(doc(db, "users", uid), {
-    uid,
-    ...data,
-    createdAt: serverTimestamp(),
-  });
+  try {
+    const docRef = doc(db, "users", uid);
+    const payload = {
+      uid,
+      ...data,
+      createdAt: serverTimestamp(),
+    };
+    // eslint-disable-next-line no-console
+    console.log("[firebaseconfig] addUserDoc: writing user", uid);
+    await setDoc(docRef, payload);
+    // read back to verify write
+    const snap = await getDoc(docRef);
+    // eslint-disable-next-line no-console
+    console.log(
+      "[firebaseconfig] addUserDoc: success",
+      uid,
+      "exists:",
+      snap.exists(),
+    );
+    if (snap.exists()) {
+      // eslint-disable-next-line no-console
+      console.log("[firebaseconfig] addUserDoc: data", snap.data());
+    }
+    return true;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("[firebaseconfig] addUserDoc failed", e);
+    throw e;
+  }
 }
 
 export default app;

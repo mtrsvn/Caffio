@@ -1,5 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import * as Google from "expo-auth-session/providers/google";
+import * as Crypto from "expo-crypto";
 import { LinearGradient } from "expo-linear-gradient";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { Eye, EyeOff } from "lucide-react-native";
@@ -63,12 +64,27 @@ const RegisterScreen: React.FC = () => {
 
     setLoading(true);
     try {
+      // create auth user
       const userCred = await registerWithEmail(email.trim(), password);
       const uid = userCred.user.uid;
-      await addUserDoc(uid, { email: email.trim(), username: username.trim() });
+
+      // hash password client-side (SHA-256) and save user doc with metadata
+      const passwordHash = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        password.trim(),
+      );
+
+      await addUserDoc(uid, {
+        email: email.trim(),
+        username: username.trim(),
+        passwordHash,
+        provider: "email",
+        createdFrom: Platform.OS,
+      });
+
       setLoading(false);
       try {
-        navigation.navigate("Home");
+        navigation.replace("Main");
       } catch (e) {
         navigation.goBack();
       }
@@ -89,7 +105,7 @@ const RegisterScreen: React.FC = () => {
         email: userCred.user.email || "",
         username: userCred.user.displayName || "",
       });
-      navigation.navigate("Home");
+      navigation.replace("Main");
     } catch (err: any) {
       setError(err.message || "Google authentication failed.");
     } finally {
