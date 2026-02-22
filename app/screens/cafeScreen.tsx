@@ -231,7 +231,21 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: "transparent",
+    backgroundColor: "#fff",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: {
+        elevation: 4,
+      },
+      default: {},
+    }),
   },
   title: {
     fontSize: 22,
@@ -252,6 +266,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     // keep background transparent so shadow is visible
     backgroundColor: "transparent",
+    paddingHorizontal: 0,
   },
   searchInner: {
     flexDirection: "row",
@@ -263,13 +278,13 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
         // centered shadow
         shadowOffset: { width: 0, height: 0 },
       },
       android: {
-        elevation: 3,
+        elevation: 4,
       },
       default: {},
     }),

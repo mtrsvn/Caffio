@@ -220,7 +220,14 @@ export default function Navigation() {
 
   return (
     <>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* stack navigator with sliding animations for smoother transitions */}
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          animationTypeForReplace: "push",
+        }}
+      >
         <Stack.Screen name="Main">
           {() => <TabNavigator onFabPress={() => setSheetOpen(true)} />}
         </Stack.Screen>

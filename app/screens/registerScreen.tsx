@@ -1,9 +1,20 @@
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import {
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import colors from "../components/colors";
 
 const RegisterScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+
   return (
     <LinearGradient
       colors={[
@@ -11,20 +22,183 @@ const RegisterScreen: React.FC = () => {
         colors.pageGradientMid,
         colors.pageGradientBottomRight,
       ]}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.container}
+      start={{ x: 0.08, y: 0 }}
+      end={{ x: 0.92, y: 1 }}
+      style={styles.gradient}
     >
       <SafeAreaView style={styles.safe}>
-        <View />
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Create account</Text>
+            <Text style={styles.subtitle}>
+              Sign up to start your coffee journey
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="your@email.com"
+                placeholderTextColor="rgba(78,52,46,0.5)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor="rgba(78,52,46,0.5)"
+                secureTextEntry
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Confirm password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor="rgba(78,52,46,0.5)"
+                secureTextEntry
+              />
+            </View>
+
+            <LinearGradient
+              colors={[colors.gradientStart, colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}
+            >
+              <TouchableOpacity style={styles.buttonTouch} activeOpacity={0.8}>
+                <Text style={styles.buttonText}>Register</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+
+            <View style={styles.footerRow}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Text style={styles.linkText}>← Back</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.signupRow}>
+              <Text style={styles.helperText}>Already have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={[styles.linkText, styles.underline]}> Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safe: { flex: 1 },
+  gradient: {
+    flex: 1,
+  },
+  safe: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 28,
+    justifyContent: "center",
+  },
+  header: {
+    marginBottom: 44,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "700",
+    color: colors.gradientEnd,
+    letterSpacing: -0.3,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: colors.iconInactive,
+    marginTop: 6,
+  },
+
+  form: {
+    gap: 24,
+  },
+  field: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.iconInactive,
+    marginLeft: 4,
+  },
+  input: {
+    height: 52,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: colors.gradientEnd,
+    borderWidth: 1,
+    borderColor: "rgba(78,52,46,0.12)",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+
+  buttonGradient: {
+    borderRadius: 16,
+    marginTop: 16,
+    overflow: "hidden",
+  },
+  buttonTouch: {
+    height: 54,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: colors.navbarBg,
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.2,
+  },
+
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 24,
+    paddingHorizontal: 4,
+  },
+  linkText: {
+    fontSize: 14,
+    color: colors.iconInactive,
+  },
+
+  signupRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 32,
+  },
+  helperText: {
+    fontSize: 15,
+    color: colors.iconInactive,
+  },
+  underline: {
+    textDecorationLine: "underline",
+  },
 });
 
 export default RegisterScreen;

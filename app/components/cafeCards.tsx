@@ -9,14 +9,14 @@
 import { MapPin } from "lucide-react-native";
 import React from "react";
 import {
-  GestureResponderEvent,
-  Platform,
-  StyleSheet,
-  Text,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    GestureResponderEvent,
+    Platform,
+    StyleSheet,
+    Text,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from "react-native";
 import colors from "./colors";
 
@@ -46,12 +46,15 @@ export default function CafeCard({ name, address, onPress }: Props) {
         ]}
       >
         <View style={styles.body}>
-          <Text
-            style={[styles.title, { color: NAVBAR_TEXT }]}
-            numberOfLines={1}
-          >
-            {name}
-          </Text>
+          <View style={styles.titleRow}>
+            <View style={styles.accent} />
+            <Text
+              style={[styles.title, { color: NAVBAR_TEXT }]}
+              numberOfLines={1}
+            >
+              {name}
+            </Text>
+          </View>
 
           <View style={styles.addressRow}>
             <MapPin size={14} color={MUTED} />
@@ -74,6 +77,8 @@ type Style = {
   card: ViewStyle;
   body: ViewStyle;
   title: TextStyle;
+  titleRow: ViewStyle;
+  accent: ViewStyle;
   addressRow: ViewStyle;
   addressText: TextStyle;
 };
@@ -110,6 +115,17 @@ const styles = StyleSheet.create<Style>({
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 8,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  accent: {
+    width: 4,
+    height: 24,
+    borderRadius: 2,
+    backgroundColor: colors.gradientStart,
+    marginRight: 8,
   },
   addressRow: {
     flexDirection: "row",

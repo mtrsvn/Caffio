@@ -1,5 +1,5 @@
 const colors = {
-  // icon gradient (FAB background)
+  // icon gradient (FAB background) and button
   gradientStart: "#6D4C41",
   gradientEnd: "#4E342E",
 
