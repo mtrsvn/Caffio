@@ -1,19 +1,29 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React, { useEffect, useRef } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import AddLogSheet from "./addLogSheet";
 import colors from "./colors";
+import FAB from "./fab";
 import IconComponent from "./iconComponent";
+
+// offset used when positioning the FAB above the tab bar
+const FAB_EXTRA_OFFSET = 16; // same value as in layout
 
 // screens
 import CafeScreen from "../screens/cafeScreen";
+import ForgotPasswordScreen from "../screens/forgotPasswordScreen";
 import ForyouScreen from "../screens/foryouScreen";
 import HomeScreen from "../screens/homeScreen";
+import LoginScreen from "../screens/loginScreen";
 import LogScreen from "../screens/logScreen";
 import ProfileScreen from "../screens/profileScreen";
+import RegisterScreen from "../screens/registerScreen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 const LABEL_MAP: Record<string, string> = {
   Home: "Home",
@@ -101,91 +111,126 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
   );
 }
 
-export default function Navigation() {
+interface TabNavigatorProps {
+  onFabPress: () => void;
+}
+
+function TabNavigator({ onFabPress }: TabNavigatorProps) {
   const insets = useSafeAreaInsets();
   const baseBarHeight = 66;
   const tabBarHeight =
     baseBarHeight +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
 
+  const fabBottom = tabBarHeight + FAB_EXTRA_OFFSET;
+
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarShowLabel: true,
-        // Use our animated button wrapper
-        tabBarButton: (props) => <TabBarButton {...props} />,
-        tabBarIcon: ({ focused }) => {
-          let iconName: "home" | "book" | "star" | "map-pin" | "user";
-          switch (route.name) {
-            case "Home":
-              iconName = "home";
-              break;
-            case "Log":
-              iconName = "book";
-              break;
-            case "ForYou":
-              iconName = "star";
-              break;
-            case "Cafes":
-              iconName = "map-pin";
-              break;
-            case "Profile":
-              iconName = "user";
-              break;
-            default:
-              iconName = "home";
-          }
-          return <IconComponent name={iconName} focused={focused} />;
-        },
-        tabBarLabel: ({ focused }) => (
-          <Text
-            style={{
-              color: colors.iconInactive,
-              fontSize: 12,
-              marginTop: 12,
-              fontWeight: focused ? "600" : "400",
-              textAlign: "center",
-            }}
-          >
-            {LABEL_MAP[route.name]}
-          </Text>
-        ),
-        tabBarStyle: {
-          backgroundColor: colors.navbarBg,
-          borderTopWidth: 1,
-          borderTopColor: colors.navbarBorder,
-          height: tabBarHeight,
-          paddingTop: 14,
-          paddingBottom: insets.bottom
-            ? insets.bottom * 0.6
-            : Platform.OS === "ios"
-              ? 12
-              : 8,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          position: "absolute",
-          elevation: 4,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.04,
-          shadowRadius: 4,
-        },
-        tabBarItemStyle: {
-          alignItems: "center",
-          justifyContent: "center",
-          paddingBottom: 4,
-          paddingTop: 0,
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Log" component={LogScreen} />
-      <Tab.Screen name="ForYou" component={ForyouScreen} />
-      <Tab.Screen name="Cafes" component={CafeScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+    <>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarShowLabel: true,
+          // Use our animated button wrapper
+          tabBarButton: (props) => <TabBarButton {...props} />,
+          tabBarIcon: ({ focused }) => {
+            let iconName: "home" | "book" | "star" | "map-pin" | "user";
+            switch (route.name) {
+              case "Home":
+                iconName = "home";
+                break;
+              case "Log":
+                iconName = "book";
+                break;
+              case "ForYou":
+                iconName = "star";
+                break;
+              case "Cafes":
+                iconName = "map-pin";
+                break;
+              case "Profile":
+                iconName = "user";
+                break;
+              default:
+                iconName = "home";
+            }
+            return <IconComponent name={iconName} focused={focused} />;
+          },
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                color: colors.iconInactive,
+                fontSize: 12,
+                marginTop: 12,
+                fontWeight: focused ? "600" : "400",
+                textAlign: "center",
+              }}
+            >
+              {LABEL_MAP[route.name]}
+            </Text>
+          ),
+          tabBarStyle: {
+            backgroundColor: colors.navbarBg,
+            borderTopWidth: 1,
+            borderTopColor: colors.navbarBorder,
+            height: tabBarHeight,
+            paddingTop: 14,
+            paddingBottom: insets.bottom
+              ? insets.bottom * 0.6
+              : Platform.OS === "ios"
+                ? 12
+                : 8,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            position: "absolute",
+            elevation: 4,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.04,
+            shadowRadius: 4,
+          },
+          tabBarItemStyle: {
+            alignItems: "center",
+            justifyContent: "center",
+            paddingBottom: 4,
+            paddingTop: 0,
+          },
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Log" component={LogScreen} />
+        <Tab.Screen name="ForYou" component={ForyouScreen} />
+        <Tab.Screen name="Cafes" component={CafeScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
+      </Tab.Navigator>
+
+      {/* FAB for tabbed screens only */}
+      <FAB
+        onPress={onFabPress}
+        style={{ bottom: fabBottom, right: 16 }}
+        accessibilityLabel="Add"
+        testID="global-fab"
+      />
+    </>
+  );
+}
+
+export default function Navigation() {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  return (
+    <>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main">
+          {() => <TabNavigator onFabPress={() => setSheetOpen(true)} />}
+        </Stack.Screen>
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      </Stack.Navigator>
+
+      <AddLogSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+    </>
   );
 }
 

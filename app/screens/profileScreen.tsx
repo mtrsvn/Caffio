@@ -1,6 +1,7 @@
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Coffee, Heart, MapPin, TrendingUp, User } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -35,6 +36,10 @@ const PAGE_GRADIENT = [
    --------------------------- */
 
 const ProfileHeader: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const [createPressed, setCreatePressed] = useState(false);
+  const [loginPressed, setLoginPressed] = useState(false);
+
   return (
     <LinearGradient
       colors={[colors.gradientStart, colors.gradientEnd]}
@@ -48,7 +53,6 @@ const ProfileHeader: React.FC = () => {
         </View>
 
         <View style={styles.headerText}>
-          {/* Guest text color requested as pillUnselectedBg */}
           <Text style={[styles.headerName, { color: colors.pillUnselectedBg }]}>
             Guest
           </Text>
@@ -62,22 +66,47 @@ const ProfileHeader: React.FC = () => {
 
       <View style={styles.headerDivider} />
 
-      {/* Centered container for the body text and CTA */}
       <View style={styles.headerCenter}>
         <Text style={[styles.headerBody, { color: colors.pillUnselectedBg }]}>
           Track your coffee journey and unlock achievements
         </Text>
 
-        <TouchableOpacity activeOpacity={0.85} style={styles.headerAction}>
+        <Text
+          style={[
+            styles.headerActionText,
+            { color: colors.pillUnselectedBg, textAlign: "center" },
+          ]}
+        >
           <Text
-            style={[
-              styles.headerActionText,
-              { color: colors.pillUnselectedBg },
-            ]}
+            onPress={() => navigation.navigate("Register")}
+            onPressIn={() => setCreatePressed(true)}
+            onPressOut={() => setCreatePressed(false)}
+            suppressHighlighting={true}
+            style={{
+              fontWeight: "700",
+              color: createPressed
+                ? colors.gradientEnd
+                : colors.pillUnselectedBg,
+            }}
           >
-            Create an account or login
+            Create an Account
           </Text>
-        </TouchableOpacity>
+          <Text style={{ fontWeight: "400" }}> or </Text>
+          <Text
+            onPress={() => navigation.navigate("Login")}
+            onPressIn={() => setLoginPressed(true)}
+            onPressOut={() => setLoginPressed(false)}
+            suppressHighlighting={true}
+            style={{
+              fontWeight: "700",
+              color: loginPressed
+                ? colors.gradientEnd
+                : colors.pillUnselectedBg,
+            }}
+          >
+            Login
+          </Text>
+        </Text>
       </View>
     </LinearGradient>
   );
