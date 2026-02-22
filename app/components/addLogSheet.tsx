@@ -45,7 +45,6 @@ const COFFEE_TYPES = [
   "Flat White",
   "Cold Brew",
 ];
-
 // Chocolatey next to Nutty
 const TASTE_PROFILE = [
   "Bold",
@@ -674,49 +673,6 @@ export default function AddLogSheet({ visible, onClose }: Props) {
             )}
             {customTypeMode && renderCoffeeTypeCustomInput()}
 
-            {/* Photo */}
-            <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
-              Photo (optional)
-            </Text>
-            <TouchableOpacity
-              style={styles.photoBox}
-              activeOpacity={0.8}
-              onPress={handlePickPhoto}
-            >
-              <View style={styles.photoInner}>
-                {photoUri ? (
-                  <View style={{ position: "relative", width: 90, height: 90 }}>
-                    <Image
-                      source={{ uri: photoUri }}
-                      style={{ width: 90, height: 90, borderRadius: 8 }}
-                    />
-                    <TouchableOpacity
-                      style={{
-                        position: "absolute",
-                        top: 2,
-                        right: 2,
-                        zIndex: 2,
-                        backgroundColor: "#E53935",
-                        borderRadius: 12,
-                        padding: 2,
-                        borderWidth: 1,
-                        borderColor: "#fff",
-                      }}
-                      onPress={() => setPhotoUri(null)}
-                      activeOpacity={0.7}
-                    >
-                      <X size={18} color="#fff" strokeWidth={2.5} />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <Camera size={36} color={colors.gradientStart} />
-                )}
-                <Text style={styles.photoText}>
-                  {photoUri ? "Change Photo" : "Add Photo"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
             {/* Taste Profile (Optional) */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Taste Profile (Optional)
@@ -759,21 +715,99 @@ export default function AddLogSheet({ visible, onClose }: Props) {
                 );
               })}
             </View>
-
             {/* Photo */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
-              Photo (optional)
+              Photo (Optional)
             </Text>
-            <TouchableOpacity
-              style={styles.photoBox}
-              activeOpacity={0.8}
-              onPress={() => {}}
+            <View
+              style={[
+                styles.photoBox,
+                {
+                  padding: 0,
+                  overflow: "hidden",
+                  position: "relative",
+                  height: 120,
+                  borderRadius: 12,
+                },
+              ]}
             >
-              <View style={styles.photoInner}>
-                <Camera size={36} color={colors.gradientStart} />
-                <Text style={styles.photoText}>Add Photo</Text>
-              </View>
-            </TouchableOpacity>
+              {photoUri ? (
+                <>
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      resizeMode: "cover",
+                      borderRadius: 12,
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      borderRadius: 16,
+                      padding: 4,
+                      zIndex: 2,
+                    }}
+                    onPress={() => setPhotoUri(null)}
+                  >
+                    <X size={20} color="#fff" />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.photoInner,
+                    { height: 120, justifyContent: "center" },
+                  ]}
+                  activeOpacity={0.85}
+                  onPress={handlePickPhoto}
+                >
+                  <Camera size={36} color={colors.gradientStart} />
+                  <Text style={styles.photoText}>Add Photo</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {photoUri && (
+              <TouchableOpacity
+                style={{
+                  marginTop: 10,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  borderWidth: 1,
+                  borderColor: colors.coffeeTypeUnselectedBorder,
+                }}
+                onPress={handlePickPhoto}
+                activeOpacity={0.85}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 8,
+                  }}
+                >
+                  <Camera
+                    size={20}
+                    color={colors.gradientStart}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text
+                    style={{
+                      color: colors.gradientStart,
+                      fontWeight: "700",
+                      fontSize: 15,
+                    }}
+                  >
+                    Change Photo
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
 
             {/* Action button */}
             <View style={{ height: 12 }} />
