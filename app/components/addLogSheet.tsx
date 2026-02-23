@@ -4,26 +4,41 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Camera, Star, X } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-    Animated,
-    Easing,
-    Image,
-    Keyboard,
-    LayoutChangeEvent,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Image,
+  Keyboard,
+  LayoutChangeEvent,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { addCoffeeLog } from "../../firebaseconfig";
 import colors from "./colors";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
+  /** UID of the currently logged-in user. Required to save the log. */
+  uid: string;
+  /** Called after a log is successfully saved, with the new entry data. */
+  onSaved?: (entry: {
+    id: string;
+    coffeeType: string;
+    cafe: string;
+    rating: number;
+    tasteProfile: string[];
+    photoUri: string | null;
+    createdAt: Date;
+    uid: string;
+  }) => void;
 };
 
 const CAFES = [
@@ -57,8 +72,9 @@ const TASTE_PROFILE = [
   "Chocolatey",
 ];
 
-export default function AddLogSheet({ visible, onClose }: Props) {
+export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const insets = useSafeAreaInsets();
+  const [saving, setSaving] = useState(false);
 
   // photo state
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -557,12 +573,19 @@ export default function AddLogSheet({ visible, onClose }: Props) {
   const finalTypeValue =
     selectedType ??
     (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
-  const canSubmit = Boolean(finalCafeValue && finalTypeValue && rating > 0);
+  const canSubmit = Boolean(
+    finalCafeValue && finalTypeValue && rating > 0 && uid,
+  );
 
   // Save handler: commit custom text (if any) and close
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!uid) {
+      alert("You must be logged in to save a coffee log.");
+      return;
+    }
     if (!canSubmit) return;
 
+    // commit custom text values if necessary
     if (customCafeMode && customCafeText.trim()) {
       setSelectedCafe(customCafeText.trim());
     }
@@ -570,9 +593,61 @@ export default function AddLogSheet({ visible, onClose }: Props) {
       setSelectedType(customTypeText.trim());
     }
 
-    onClose();
-    setCustomCafeMode(false);
-    setCustomTypeMode(false);
+    // build payload for firebase helper
+    const finalCafe =
+      selectedCafe ??
+      (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+    const finalType =
+      selectedType ??
+      (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
+
+    if (!finalCafe || !finalType) {
+      // should not happen because canSubmit guards it
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // debug: log uid
+      // eslint-disable-next-line no-console
+      console.log("[addLogSheet] saving log for uid", uid);
+
+      const docId = await addCoffeeLog(uid, {
+        coffeeType: finalType,
+        cafe: finalCafe,
+        rating,
+        tasteProfile: selectedTaste,
+        photoLocalUri: photoUri ?? undefined,
+      });
+
+      // invoke callback with approximate entry data
+      const entry = {
+        id: docId,
+        coffeeType: finalType,
+        cafe: finalCafe,
+        rating,
+        tasteProfile: selectedTaste,
+        photoUri: photoUri ?? null,
+        createdAt: new Date(),
+        uid,
+      };
+      onSaved?.(entry);
+
+      // success – close sheet & reset
+      onClose();
+      setCustomCafeMode(false);
+      setCustomTypeMode(false);
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error("[addLogSheet] failed to save log", err);
+      alert(
+        `Unable to save log: ${err?.code || ""} ${
+          err?.message || err?.toString() || "unknown"
+        }\n\n${JSON.stringify(err)}`,
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   // do not render until mounted
@@ -814,11 +889,11 @@ export default function AddLogSheet({ visible, onClose }: Props) {
             <TouchableOpacity
               style={[
                 styles.actionButton,
-                !canSubmit && styles.actionButtonDisabled,
+                (!canSubmit || saving) && styles.actionButtonDisabled,
               ]}
               activeOpacity={0.9}
               onPress={handleSave}
-              disabled={!canSubmit}
+              disabled={!canSubmit || saving}
             >
               <LinearGradient
                 colors={[colors.gradientStart, colors.gradientEnd]}
@@ -826,14 +901,18 @@ export default function AddLogSheet({ visible, onClose }: Props) {
                 end={[1, 1]}
                 style={styles.actionButtonInner}
               >
-                <Text
-                  style={[
-                    styles.actionButtonText,
-                    { color: colors.iconActive },
-                  ]}
-                >
-                  Add Coffee
-                </Text>
+                {saving ? (
+                  <ActivityIndicator color={colors.iconActive} />
+                ) : (
+                  <Text
+                    style={[
+                      styles.actionButtonText,
+                      { color: colors.iconActive },
+                    ]}
+                  >
+                    Add Coffee
+                  </Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>

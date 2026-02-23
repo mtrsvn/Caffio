@@ -1,10 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AddLogSheet from "./addLogSheet";
+import { AuthContext } from "./AuthProvider";
 import colors from "./colors";
 import FAB from "./fab";
 import IconComponent from "./iconComponent";
@@ -113,9 +114,11 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
 
 interface TabNavigatorProps {
   onFabPress: () => void;
+  refreshFlag: number;
 }
 
-function TabNavigator({ onFabPress }: TabNavigatorProps) {
+function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
+  const { user } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const baseBarHeight = 66;
   const tabBarHeight =
@@ -198,25 +201,41 @@ function TabNavigator({ onFabPress }: TabNavigatorProps) {
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Log" component={LogScreen} />
+        <Tab.Screen name="Log">
+          {() => <LogScreen refreshFlag={refreshFlag} />}
+        </Tab.Screen>
         <Tab.Screen name="ForYou" component={ForyouScreen} />
         <Tab.Screen name="Cafes" component={CafeScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
 
       {/* FAB for tabbed screens only */}
-      <FAB
-        onPress={onFabPress}
-        style={{ bottom: fabBottom, right: 16 }}
-        accessibilityLabel="Add"
-        testID="global-fab"
-      />
+      {user && (
+        <FAB
+          onPress={onFabPress}
+          style={{ bottom: fabBottom, right: 16 }}
+          accessibilityLabel="Add"
+          testID="global-fab"
+        />
+      )}
     </>
   );
 }
 
 export default function Navigation() {
+  const { user } = useContext(AuthContext);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [refreshLogsFlag, setRefreshLogsFlag] = useState(0);
+
+  // always close sheet when the user logs out
+  useEffect(() => {
+    if (!user) setSheetOpen(false);
+  }, [user]);
+
+  const handleSaved = (entry: any) => {
+    // bump flag to trigger log screen refresh
+    setRefreshLogsFlag((f) => f + 1);
+  };
 
   return (
     <>
@@ -229,14 +248,24 @@ export default function Navigation() {
         }}
       >
         <Stack.Screen name="Main">
-          {() => <TabNavigator onFabPress={() => setSheetOpen(true)} />}
+          {() => (
+            <TabNavigator
+              onFabPress={() => setSheetOpen(true)}
+              refreshFlag={refreshLogsFlag}
+            />
+          )}
         </Stack.Screen>
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       </Stack.Navigator>
 
-      <AddLogSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <AddLogSheet
+        visible={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        uid={user?.uid ?? ""}
+        onSaved={handleSaved}
+      />
     </>
   );
 }
