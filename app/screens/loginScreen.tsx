@@ -1,9 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Eye, EyeOff } from "lucide-react-native";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Image,
   Platform,
   SafeAreaView,
@@ -25,9 +26,12 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const scaleAnim = useState(new Animated.Value(1))[0];
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
@@ -43,6 +47,27 @@ const LoginScreen = () => {
       setGoogleLoading(false);
     }
   }, [response]);
+
+  const animatePress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.82,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleRememberPress = () => {
+    animatePress();
+    setIsChecked((prev) => !prev);
+  };
 
   async function handleLogin() {
     setError(null);
@@ -140,7 +165,34 @@ const LoginScreen = () => {
               </View>
             </View>
 
-            {/* ─── Exact same placement & style as Register ─── */}
+            <TouchableOpacity
+              style={styles.rememberMeRow}
+              activeOpacity={1}
+              onPress={handleRememberPress}
+            >
+              <Animated.View
+                style={[
+                  styles.checkboxWrapper,
+                  { transform: [{ scale: scaleAnim }] },
+                ]}
+              >
+                {isChecked ? (
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.checkboxChecked}
+                  >
+                    <Text style={styles.checkmark}>✓</Text>
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.checkboxUnchecked} />
+                )}
+              </Animated.View>
+
+              <Text style={styles.rememberMeText}>Remember me</Text>
+            </TouchableOpacity>
+
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error || " "}</Text>
             </View>
@@ -192,9 +244,14 @@ const LoginScreen = () => {
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text style={styles.linkText}>← Back</Text>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              >
+                <ArrowLeft size={18} color={colors.iconInactive} />
+                <Text style={styles.linkText}>Back</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => navigation.navigate("ForgotPassword")}
               >
@@ -203,7 +260,7 @@ const LoginScreen = () => {
             </View>
 
             <View style={styles.signupRow}>
-              <Text style={styles.helperText}>Don't have an account?</Text>
+              <Text style={styles.helperText}>Don't have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Register")}>
                 <Text style={[styles.linkText, styles.underline]}>Sign up</Text>
               </TouchableOpacity>
@@ -216,19 +273,15 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
+  gradient: { flex: 1 },
+  safeArea: { flex: 1 },
   content: {
     flex: 1,
     paddingHorizontal: 28,
     justifyContent: "center",
   },
   header: {
-    marginBottom: 36, // ← made same as Register (was 44)
+    marginBottom: 36,
   },
   title: {
     fontSize: 30,
@@ -243,7 +296,7 @@ const styles = StyleSheet.create({
   },
 
   form: {
-    gap: 24, // ← same
+    gap: 24,
   },
   field: {
     gap: 8,
@@ -270,17 +323,50 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
       },
-      android: {
-        elevation: 3,
-      },
+      android: { elevation: 3 },
     }),
+  },
+
+  rememberMeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  checkboxWrapper: {
+    marginRight: 12,
+  },
+  checkboxUnchecked: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.iconInactive,
+    opacity: 0.5,
+  },
+  checkboxChecked: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkmark: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  rememberMeText: {
+    fontSize: 15,
+    color: colors.iconInactive,
+    fontWeight: "500",
   },
 
   errorContainer: {
     height: 22,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 4, // ← exact same as Register
+    marginVertical: 4,
   },
   errorText: {
     color: "#b00020",
@@ -292,7 +378,6 @@ const styles = StyleSheet.create({
   buttonGradient: {
     borderRadius: 16,
     overflow: "hidden",
-    // Removed extra marginTop to match Register's natural flow
   },
   buttonTouch: {
     height: 54,
@@ -347,7 +432,7 @@ const styles = StyleSheet.create({
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20, // ← adjusted closer to Register's feel
+    marginTop: 20,
     paddingHorizontal: 4,
   },
   linkText: {

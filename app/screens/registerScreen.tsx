@@ -3,7 +3,7 @@ import * as Google from "expo-auth-session/providers/google";
 import * as Crypto from "expo-crypto";
 import { LinearGradient } from "expo-linear-gradient";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { Eye, EyeOff } from "lucide-react-native";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react-native"; // ← added ArrowLeft
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -64,11 +64,9 @@ const RegisterScreen: React.FC = () => {
 
     setLoading(true);
     try {
-      // create auth user
       const userCred = await registerWithEmail(email.trim(), password);
       const uid = userCred.user.uid;
 
-      // hash password client-side (SHA-256) and save user doc with metadata
       const passwordHash = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         password.trim(),
@@ -209,7 +207,6 @@ const RegisterScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Very tight error container */}
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error || " "}</Text>
             </View>
@@ -261,13 +258,17 @@ const RegisterScreen: React.FC = () => {
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text style={styles.linkText}>← Back</Text>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              >
+                <ArrowLeft size={18} color={colors.iconInactive} />
+                <Text style={styles.linkText}>Back</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.signupRow}>
-              <Text style={styles.helperText}>Already have an account?</Text>
+              <Text style={styles.helperText}>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={[styles.linkText, styles.underline]}>Login</Text>
               </TouchableOpacity>
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#b00020",
-    fontSize: 15, // ← matched to "Already have an account?" text
+    fontSize: 15,
     lineHeight: 20,
     textAlign: "center",
   },
