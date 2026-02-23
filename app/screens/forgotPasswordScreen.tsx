@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -10,10 +10,35 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { sendResetLink } from "../../firebaseconfig";
 import colors from "../components/colors";
 
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSendReset = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!email.trim()) {
+      setError("Please enter your email.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendResetLink(email.trim());
+      setSuccess("Reset link sent. Check your email.");
+    } catch (err: any) {
+      setError(err?.message || "Failed to send reset link.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <LinearGradient
@@ -45,7 +70,18 @@ const ForgotPasswordScreen: React.FC = () => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
               />
+            </View>
+
+            {/* ─── Same compact & stable container as Register/Login ─── */}
+            <View style={styles.errorContainer}>
+              {success ? (
+                <Text style={styles.successText}>{success}</Text>
+              ) : (
+                <Text style={styles.errorText}>{error || " "}</Text>
+              )}
             </View>
 
             <LinearGradient
@@ -54,8 +90,17 @@ const ForgotPasswordScreen: React.FC = () => {
               end={{ x: 1, y: 1 }}
               style={styles.buttonGradient}
             >
-              <TouchableOpacity style={styles.buttonTouch} activeOpacity={0.8}>
-                <Text style={styles.buttonText}>Send reset link</Text>
+              <TouchableOpacity
+                style={styles.buttonTouch}
+                activeOpacity={0.8}
+                onPress={handleSendReset}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Text style={styles.buttonText}>Sending...</Text>
+                ) : (
+                  <Text style={styles.buttonText}>Send reset link</Text>
+                )}
               </TouchableOpacity>
             </LinearGradient>
 
@@ -80,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
-    marginBottom: 44,
+    marginBottom: 36, // ← matched to Register/Login
   },
   title: {
     fontSize: 30,
@@ -123,9 +168,29 @@ const styles = StyleSheet.create({
       },
     }),
   },
+
+  // ─── Same as Register & Login ───
+  errorContainer: {
+    height: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  errorText: {
+    color: "#b00020",
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+  successText: {
+    color: "#006600",
+    fontSize: 15, // ← matched size for consistency
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
   buttonGradient: {
     borderRadius: 16,
-    marginTop: 16,
     overflow: "hidden",
   },
   buttonTouch: {
@@ -142,7 +207,7 @@ const styles = StyleSheet.create({
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
+    marginTop: 20,
     paddingHorizontal: 4,
   },
   linkText: {
