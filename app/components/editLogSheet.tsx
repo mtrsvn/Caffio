@@ -4,41 +4,40 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Camera, Star, X } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Animated,
-  Easing,
-  Image,
-  Keyboard,
-  LayoutChangeEvent,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Easing,
+    Image,
+    Keyboard,
+    LayoutChangeEvent,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { addCoffeeLog } from "../../firebaseconfig";
+import {
+    deleteCoffeeLog,
+    updateCoffeeLog,
+    uploadCoffeePhoto,
+} from "../../firebaseconfig";
 import colors from "./colors";
+import { LogEntry } from "./logCard";
+
+// this component is basically AddLogSheet but prefilled and with two actions
+// (edit/save and delete) instead of a single add button.
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  /** UID of the currently logged-in user. Required to save the log. */
-  uid: string;
-  /** Called after a log is successfully saved, with the new entry data. */
-  onSaved?: (entry: {
-    id: string;
-    coffeeType: string;
-    cafe: string;
-    rating: number;
-    tasteProfile: string[];
-    photoUri: string | null;
-    createdAt: Date;
-    uid: string;
-  }) => void;
+  entry: LogEntry;
+  onSaved?: (entry: LogEntry) => void;
+  onDeleted?: () => void;
 };
 
 const CAFES = [
@@ -60,7 +59,7 @@ const COFFEE_TYPES = [
   "Flat White",
   "Cold Brew",
 ];
-// Chocolatey next to Nutty
+
 const TASTE_PROFILE = [
   "Bold",
   "Smooth",
@@ -72,14 +71,36 @@ const TASTE_PROFILE = [
   "Chocolatey",
 ];
 
-export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
+export default function EditLogSheet({
+  visible,
+  onClose,
+  entry,
+  onSaved,
+  onDeleted,
+}: Props) {
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // photo state
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(
+    entry.photoUri || null,
+  );
 
-  // Photo picker handler
+  // whenever the parent gives us a new entry object we need to re‑initialize
+  // all of our local state; otherwise the sheet may still show the previous
+  // values when reopened.
+  useEffect(() => {
+    setPhotoUri(entry.photoUri || null);
+    setSelectedCafe(entry.cafe);
+    setSelectedType(entry.coffeeType);
+    setSelectedTaste(entry.tasteProfile);
+    setRating(entry.rating);
+    setCustomCafeMode(false);
+    setCustomTypeMode(false);
+    setCustomCafeText("");
+    setCustomTypeText("");
+  }, [entry]);
+
   const handlePickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -97,10 +118,14 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   };
 
   // selection state
-  const [selectedCafe, setSelectedCafe] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedTaste, setSelectedTaste] = useState<string[]>([]);
-  const [rating, setRating] = useState<number>(0);
+  const [selectedCafe, setSelectedCafe] = useState<string | null>(entry.cafe);
+  const [selectedType, setSelectedType] = useState<string | null>(
+    entry.coffeeType,
+  );
+  const [selectedTaste, setSelectedTaste] = useState<string[]>(
+    entry.tasteProfile,
+  );
+  const [rating, setRating] = useState<number>(entry.rating);
 
   // custom input modes & values
   const [customCafeMode, setCustomCafeMode] = useState(false);
@@ -117,10 +142,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Per-item scale Animated.Values stored by key (category:name)
   const scalesRef = useRef<Record<string, Animated.Value>>({});
-
-  // helpers to get/create scale Animated.Value for a pill/star
   const getScale = (category: string, name: string) => {
     const key = `${category}:${name}`;
     if (!scalesRef.current[key]) {
@@ -128,8 +150,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
     return scalesRef.current[key];
   };
-
-  // animate scale to a target (spring)
   const animateTo = (animated: Animated.Value, toValue: number) => {
     Animated.spring(animated, {
       toValue,
@@ -138,8 +158,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       tension: 120,
     }).start();
   };
-
-  // press-in effect (quick shrink)
   const pressIn = (animated: Animated.Value) => {
     Animated.timing(animated, {
       toValue: 0.94,
@@ -148,8 +166,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       useNativeDriver: true,
     }).start();
   };
-
-  // press-out effect: spring to target (selected => slightly larger, else normal)
   const pressOutTo = (animated: Animated.Value, target = 1) => {
     Animated.spring(animated, {
       toValue: target,
@@ -159,7 +175,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }).start();
   };
 
-  // mount + animate in/out
   useEffect(() => {
     if (visible) {
       setMounted(true);
@@ -201,7 +216,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         }),
       ]).start(() => {
         setMounted(false);
-        // reset custom modes when sheet fully closed
         setCustomCafeMode(false);
         setCustomTypeMode(false);
       });
@@ -209,14 +223,12 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, sheetHeight]);
 
-  // autofocus when entering custom modes
   useEffect(() => {
     if (customCafeMode) {
       const t = setTimeout(() => customCafeRef.current?.focus(), 50);
       return () => clearTimeout(t);
     }
   }, [customCafeMode]);
-
   useEffect(() => {
     if (customTypeMode) {
       const t = setTimeout(() => customTypeRef.current?.focus(), 50);
@@ -224,63 +236,13 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
   }, [customTypeMode]);
 
-  // selection handlers with press-effect animations
-
-  const toggleTaste = (t: string) => {
-    const isSelected = selectedTaste.includes(t);
-    const scale = getScale("taste", t);
-    // press-in + press-out to final target
-    pressIn(scale);
-    const nextSelected = !isSelected;
-    pressOutTo(scale, nextSelected ? 1.03 : 1);
-    setSelectedTaste((prev) =>
-      isSelected ? prev.filter((p) => p !== t) : [...prev, t],
-    );
-  };
-
-  const selectType = (t: string) => {
-    const prevSelected = selectedType;
-    const nextSelected = prevSelected === t ? null : t;
-
-    const tappedScale = getScale("type", t);
-    pressIn(tappedScale);
-    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
-
-    if (prevSelected && prevSelected !== t) {
-      const prevScale = getScale("type", prevSelected);
-      animateTo(prevScale, 1);
-    }
-
-    setCustomTypeMode(false);
-    setSelectedType((prev) => (prev === t ? null : t));
-  };
-
-  const selectCafe = (c: string) => {
-    const prevSelected = selectedCafe;
-    const nextSelected = prevSelected === c ? null : c;
-
-    const tappedScale = getScale("cafe", c);
-    pressIn(tappedScale);
-    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
-
-    if (prevSelected && prevSelected !== c) {
-      const prevScale = getScale("cafe", prevSelected);
-      animateTo(prevScale, 1);
-    }
-
-    setCustomCafeMode(false);
-    setSelectedCafe((prev) => (prev === c ? null : c));
-  };
-
-  // ensure scales reflect selection state on changes
+  // animate selected state for pills including custom values
   useEffect(() => {
     CAFES.forEach((c) => {
       const scale = getScale("cafe", c);
       const isSelected = selectedCafe === c;
       animateTo(scale, isSelected ? 1.03 : 1);
     });
-
-    // custom cafe value (not in list) should also animate when selected
     if (selectedCafe && !CAFES.includes(selectedCafe)) {
       const scale = getScale("cafe", selectedCafe);
       animateTo(scale, 1.03);
@@ -291,7 +253,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       const isSelected = selectedType === t;
       animateTo(scale, isSelected ? 1.03 : 1);
     });
-
     if (selectedType && !COFFEE_TYPES.includes(selectedType)) {
       const scale = getScale("type", selectedType);
       animateTo(scale, 1.03);
@@ -305,29 +266,164 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCafe, selectedType, selectedTaste]);
 
-  // capture sheet height for animation
+  const toggleTaste = (t: string) => {
+    const isSelected = selectedTaste.includes(t);
+    const scale = getScale("taste", t);
+    pressIn(scale);
+    const nextSelected = !isSelected;
+    pressOutTo(scale, nextSelected ? 1.03 : 1);
+    setSelectedTaste((prev) =>
+      isSelected ? prev.filter((p) => p !== t) : [...prev, t],
+    );
+  };
+  const selectType = (t: string) => {
+    const prevSelected = selectedType;
+    const nextSelected = prevSelected === t ? null : t;
+    const tappedScale = getScale("type", t);
+    pressIn(tappedScale);
+    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
+    if (prevSelected && prevSelected !== t) {
+      const prevScale = getScale("type", prevSelected);
+      animateTo(prevScale, 1);
+    }
+    setCustomTypeMode(false);
+    setSelectedType((prev) => (prev === t ? null : t));
+  };
+  const selectCafe = (c: string) => {
+    const prevSelected = selectedCafe;
+    const nextSelected = prevSelected === c ? null : c;
+    const tappedScale = getScale("cafe", c);
+    pressIn(tappedScale);
+    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
+    if (prevSelected && prevSelected !== c) {
+      const prevScale = getScale("cafe", prevSelected);
+      animateTo(prevScale, 1);
+    }
+    setCustomCafeMode(false);
+    setSelectedCafe((prev) => (prev === c ? null : c));
+  };
+
+  useEffect(() => {
+    CAFES.forEach((c) => {
+      const scale = getScale("cafe", c);
+      const isSelected = selectedCafe === c;
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+    COFFEE_TYPES.forEach((t) => {
+      const scale = getScale("type", t);
+      const isSelected = selectedType === t;
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+    TASTE_PROFILE.forEach((tp) => {
+      const scale = getScale("taste", tp);
+      const isSelected = selectedTaste.includes(tp);
+      animateTo(scale, isSelected ? 1.03 : 1);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCafe, selectedType, selectedTaste]);
+
   const onSheetLayout = (e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height;
     if (h && h > 0 && h !== sheetHeight) setSheetHeight(h);
   };
 
-  // STAR animations: scale per star, press effect
   useEffect(() => {
     const stars = [1, 2, 3, 4, 5];
     stars.forEach((s) => {
       const scale = getScale("star", String(s));
       const isActive = rating >= s;
-      // active stars slightly larger (keep consistent with pills) — star size also reduced below
       animateTo(scale, isActive ? 1.12 : 1);
     });
   }, [rating]);
 
-  // Render helpers that use Animated.View for scale
+  const finalCafeValue =
+    selectedCafe ??
+    (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+  const finalTypeValue =
+    selectedType ??
+    (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
+  const canSubmit = Boolean(finalCafeValue && finalTypeValue && rating > 0);
+
+  const handleSave = async () => {
+    if (!canSubmit) return;
+
+    // commit custom texts
+    if (customCafeMode && customCafeText.trim()) {
+      setSelectedCafe(customCafeText.trim());
+    }
+    if (customTypeMode && customTypeText.trim()) {
+      setSelectedType(customTypeText.trim());
+    }
+
+    const cafe =
+      selectedCafe ??
+      (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+    const coffeeType =
+      selectedType ??
+      (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
+
+    if (!cafe || !coffeeType) return;
+
+    setSaving(true);
+    try {
+      let photoUrl = entry.photoUri ?? null;
+      if (photoUri && photoUri !== entry.photoUri) {
+        // upload new photo
+        photoUrl = await uploadCoffeePhoto(entry.uid, photoUri);
+      }
+      await updateCoffeeLog(entry.uid, entry.id, {
+        cafe,
+        coffeeType,
+        rating,
+        tasteProfile: selectedTaste,
+        photoUrl,
+      });
+
+      const updated: LogEntry = {
+        ...entry,
+        cafe,
+        coffeeType,
+        rating,
+        tasteProfile: selectedTaste,
+        photoUri: photoUrl,
+      };
+      onSaved?.(updated);
+      onClose();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[editLogSheet] failed to save", err);
+      alert(`Unable to save: ${(err as any)?.message || err}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    // confirm with RN Alert
+    const result = await new Promise<boolean>((resolve) => {
+      // eslint-disable-next-line no-alert
+      Alert.alert("Delete log", "This cannot be undone. Continue?", [
+        { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
+        { text: "Delete", style: "destructive", onPress: () => resolve(true) },
+      ]);
+    });
+    if (!result) return;
+    setDeleting(true);
+    try {
+      await deleteCoffeeLog(entry.uid, entry.id);
+      onDeleted?.();
+      onClose();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[editLogSheet] delete failed", err);
+      alert(`Unable to delete: ${(err as any)?.message || err}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-  // render a custom pill when the user has entered a value that
-  // isn't part of the hard‑coded list.  tapping the pill brings the
-  // sheet back into custom‑input mode so the value can be changed.
   const renderCustomCafePill = () => {
     if (!selectedCafe || CAFES.includes(selectedCafe)) return null;
     const c = selectedCafe;
@@ -336,7 +432,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       <AnimatedTouchable
         key="__custom_cafe_selected"
         onPress={() => {
-          // reopen input with current text for editing
           setCustomCafeText(c);
           setCustomCafeMode(true);
           setSelectedCafe(null);
@@ -371,8 +466,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     if (isCustom) {
       if (customCafeMode) {
         return (
-          <View key="custom-cafe-input" style={{ marginBottom: 7 }}>
-            <Text style={styles.fieldLabel}>Cafe</Text>
+          <View key="__custom_cafe_input" style={{ marginBottom: 7 }}>
             <TextInput
               ref={customCafeRef}
               value={customCafeText}
@@ -419,7 +513,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
           activeOpacity={0.85}
           style={[styles.pillAdd, { margin: 5, transform: [{ scale }] } as any]}
         >
-          <Text style={styles.pillAddText}>Custom Cafe</Text>
+          <Text style={styles.pillAddText}>+</Text>
         </AnimatedTouchable>
       );
     }
@@ -474,7 +568,6 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       <AnimatedTouchable
         key="__custom_type_selected"
         onPress={() => {
-          // re-enter custom mode with existing text
           setCustomTypeText(t);
           setCustomTypeMode(true);
           setSelectedType(null);
@@ -650,94 +743,9 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
 
   const stars = useMemo(() => [1, 2, 3, 4, 5], []);
 
-  // Determine whether submit should be enabled.
-  const finalCafeValue =
-    selectedCafe ??
-    (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
-  const finalTypeValue =
-    selectedType ??
-    (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
-  const canSubmit = Boolean(
-    finalCafeValue && finalTypeValue && rating > 0 && uid,
-  );
-
-  // Save handler: commit custom text (if any) and close
-  const handleSave = async () => {
-    if (!uid) {
-      alert("You must be logged in to save a coffee log.");
-      return;
-    }
-    if (!canSubmit) return;
-
-    // commit custom text values if necessary
-    if (customCafeMode && customCafeText.trim()) {
-      setSelectedCafe(customCafeText.trim());
-    }
-    if (customTypeMode && customTypeText.trim()) {
-      setSelectedType(customTypeText.trim());
-    }
-
-    // build payload for firebase helper
-    const finalCafe =
-      selectedCafe ??
-      (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
-    const finalType =
-      selectedType ??
-      (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
-
-    if (!finalCafe || !finalType) {
-      // should not happen because canSubmit guards it
-      return;
-    }
-
-    setSaving(true);
-    try {
-      // debug: log uid
-      // eslint-disable-next-line no-console
-      console.log("[addLogSheet] saving log for uid", uid);
-
-      const docId = await addCoffeeLog(uid, {
-        coffeeType: finalType,
-        cafe: finalCafe,
-        rating,
-        tasteProfile: selectedTaste,
-        photoLocalUri: photoUri ?? undefined,
-      });
-
-      // invoke callback with approximate entry data
-      const entry = {
-        id: docId,
-        coffeeType: finalType,
-        cafe: finalCafe,
-        rating,
-        tasteProfile: selectedTaste,
-        photoUri: photoUri ?? null,
-        createdAt: new Date(),
-        uid,
-      };
-      onSaved?.(entry);
-
-      // success – close sheet & reset
-      onClose();
-      setCustomCafeMode(false);
-      setCustomTypeMode(false);
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("[addLogSheet] failed to save log", err);
-      alert(
-        `Unable to save log: ${err?.code || ""} ${
-          err?.message || err?.toString() || "unknown"
-        }\n\n${JSON.stringify(err)}`,
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // do not render until mounted
   if (!mounted) return null;
 
-  // animated styles
   const backdropStyle = { opacity: backdropAnim };
   const tintOpacity = backdropAnim.interpolate({
     inputRange: [0, 1],
@@ -785,14 +793,13 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         >
           {/* Header with title and close */}
           <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Add Coffee Purchase</Text>
+            <Text style={styles.headerTitle}>Edit Coffee Log</Text>
             <TouchableOpacity
               onPress={onClose}
               style={styles.closeButton}
               accessibilityRole="button"
               activeOpacity={0.85}
             >
-              {/* plain X icon no background (size reduced by 1) */}
               <X size={17} color={colors.gradientStart} strokeWidth={3} />
             </TouchableOpacity>
           </View>
@@ -876,6 +883,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
                 );
               })}
             </View>
+
             {/* Photo */}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Photo (Optional)
@@ -970,7 +978,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               </TouchableOpacity>
             )}
 
-            {/* Action button */}
+            {/* Action buttons: save and delete */}
             <View style={{ height: 12 }} />
             <TouchableOpacity
               style={[
@@ -996,10 +1004,36 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
                       { color: colors.iconActive },
                     ]}
                   >
-                    Add Coffee
+                    Save Changes
                   </Text>
                 )}
               </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                { marginTop: 8, backgroundColor: "#E53935" },
+                deleting && styles.actionButtonDisabled,
+              ]}
+              activeOpacity={0.9}
+              onPress={handleDelete}
+              disabled={deleting}
+            >
+              <View
+                style={[
+                  styles.actionButtonInner,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
+                {deleting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={[styles.actionButtonText, { color: "#fff" }]}>
+                    Delete Log
+                  </Text>
+                )}
+              </View>
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>

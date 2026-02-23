@@ -1,29 +1,30 @@
 // firebaseconfig.js
 import { getApps, initializeApp } from "firebase/app";
 import {
-    createUserWithEmailAndPassword,
-    getAuth,
-    sendPasswordResetEmail,
-    signInWithEmailAndPassword,
-    signOut,
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
 import {
-    addDoc,
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    getFirestore,
-    orderBy,
-    query,
-    serverTimestamp,
-    setDoc,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import {
-    getDownloadURL,
-    getStorage,
-    ref as storageRef,
-    uploadBytes,
+  getDownloadURL,
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
 } from "firebase/storage";
 
 // Your web app's Firebase configuration (keep this file out of app/ routes folder)
@@ -225,6 +226,27 @@ export async function addCoffeeLog(uid, data) {
   const colRef = collection(db, "users", uid, "coffeeLogs");
   const docSnap = await addDoc(colRef, payload);
   return docSnap.id;
+}
+
+// update an existing coffee log document
+export async function updateCoffeeLog(uid, logId, data) {
+  const docRef = doc(db, "users", uid, "coffeeLogs", logId);
+  const payload = {
+    coffeeType: data.coffeeType,
+    cafe: data.cafe,
+    rating: data.rating,
+    tasteProfile: data.tasteProfile ?? [],
+    // if photoUrl provided we overwrite; if undefined leave unchanged
+    ...(data.photoUrl !== undefined ? { photoUrl: data.photoUrl } : {}),
+    updatedAt: serverTimestamp(),
+  };
+  await setDoc(docRef, payload, { merge: true });
+}
+
+// delete a coffee log
+export async function deleteCoffeeLog(uid, logId) {
+  const docRef = doc(db, "users", uid, "coffeeLogs", logId);
+  await deleteDoc(docRef);
 }
 
 /**

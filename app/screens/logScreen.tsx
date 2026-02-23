@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
+import EditLogSheet from "../components/editLogSheet";
 import LogCard, { LogEntry } from "../components/logCard";
 
 const PAGE_GRADIENT = [
@@ -28,6 +29,9 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const { user } = useContext(AuthContext);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
+  const [editVisible, setEditVisible] = useState(false);
 
   const fetchLogs = async () => {
     if (!user) {
@@ -83,11 +87,40 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
           <FlatList
             data={logs}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <LogCard entry={item} />}
+            renderItem={({ item }) => (
+              <LogCard
+                entry={item}
+                onMenuPress={() => {
+                  setEditingEntry(item);
+                  setEditVisible(true);
+                }}
+              />
+            )}
             contentContainerStyle={{ padding: 16, paddingTop: 8 }}
           />
         )}
       </View>
+
+      {editingEntry && (
+        <EditLogSheet
+          visible={editVisible}
+          onClose={() => {
+            setEditVisible(false);
+            setEditingEntry(null);
+          }}
+          entry={editingEntry}
+          onSaved={(updated) => {
+            setLogs((prev) =>
+              prev.map((l) => (l.id === updated.id ? updated : l)),
+            );
+            setEditingEntry(null);
+          }}
+          onDeleted={() => {
+            setLogs((prev) => prev.filter((l) => l.id !== editingEntry.id));
+            setEditingEntry(null);
+          }}
+        />
+      )}
     </LinearGradient>
   );
 };

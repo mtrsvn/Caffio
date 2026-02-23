@@ -6,7 +6,7 @@
  * Styled to match CafeCard (same shadow, border, background tokens).
  */
 
-import { Star } from "lucide-react-native";
+import { MoreVertical, Star } from "lucide-react-native";
 import React from "react";
 import {
     Image,
@@ -32,6 +32,7 @@ export type LogEntry = {
 type Props = {
   entry: LogEntry;
   onPress?: () => void;
+  onMenuPress?: () => void;
 };
 
 function daysAgo(date: Date): string {
@@ -45,7 +46,7 @@ function daysAgo(date: Date): string {
 
 const IMAGE_SIZE = 80;
 
-export default function LogCard({ entry, onPress }: Props) {
+export default function LogCard({ entry, onPress, onMenuPress }: Props) {
   const stars = [1, 2, 3, 4, 5];
 
   return (
@@ -78,7 +79,6 @@ export default function LogCard({ entry, onPress }: Props) {
             </View>
           )}
         </View>
-
         {/* Right: info */}
         <View style={styles.body}>
           {/* Coffee type (title) */}
@@ -116,6 +116,16 @@ export default function LogCard({ entry, onPress }: Props) {
             {daysAgo(entry.createdAt)}
           </Text>
         </View>
+        {onMenuPress && (
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={onMenuPress}
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            <MoreVertical size={20} color={colors.iconInactive} />
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -141,6 +151,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.6,
     flexDirection: "row",
     alignItems: "center",
+    paddingRight: 8, // leave space for menu button
   },
   imageContainer: {
     width: IMAGE_SIZE,
@@ -183,5 +194,8 @@ const styles = StyleSheet.create({
   },
   daysAgo: {
     fontSize: 12,
+  },
+  menuButton: {
+    padding: 12,
   },
 });
