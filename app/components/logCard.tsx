@@ -6,9 +6,11 @@
  * Styled to match CafeCard (same shadow, border, background tokens).
  */
 
-import { MoreVertical, Star } from "lucide-react-native";
-import React from "react";
+import { Plus, Star } from "lucide-react-native";
+import React, { useRef, useState } from "react";
 import {
+    Animated,
+    Easing,
     Image,
     Platform,
     StyleSheet,
@@ -32,7 +34,6 @@ export type LogEntry = {
 type Props = {
   entry: LogEntry;
   onPress?: () => void;
-  onMenuPress?: () => void;
 };
 
 function daysAgo(date: Date): string {
@@ -46,14 +47,56 @@ function daysAgo(date: Date): string {
 
 const IMAGE_SIZE = 80;
 
-export default function LogCard({ entry, onPress, onMenuPress }: Props) {
+export default function LogCard({ entry, onPress }: Props) {
   const stars = [1, 2, 3, 4, 5];
+  // animated scale for tap feedback
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pressIn = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0.94,
+      duration: 80,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  };
+  const pressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 7,
+      tension: 160,
+    }).start();
+  };
+
+  const [plusActive, setPlusActive] = useState(false);
+  const plusScale = useRef(new Animated.Value(1)).current;
+  const onPlusPress = () => {
+    Animated.sequence([
+      Animated.timing(plusScale, {
+        toValue: 0.88,
+        duration: 80,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.spring(plusScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 7,
+        tension: 160,
+      }),
+    ]).start();
+    setPlusActive((p) => !p);
+  };
+
+  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
   return (
-    <TouchableOpacity
+    <AnimatedTouchable
       activeOpacity={0.95}
       onPress={onPress}
-      style={styles.wrapper}
+      onPressIn={pressIn}
+      onPressOut={pressOut}
+      style={[styles.wrapper, { transform: [{ scale: scaleAnim }] }]}
       accessibilityRole="button"
     >
       <View
@@ -116,18 +159,30 @@ export default function LogCard({ entry, onPress, onMenuPress }: Props) {
             {daysAgo(entry.createdAt)}
           </Text>
         </View>
-        {onMenuPress && (
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={onMenuPress}
-            accessibilityRole="button"
-            activeOpacity={0.7}
-          >
-            <MoreVertical size={20} color={colors.iconInactive} />
-          </TouchableOpacity>
-        )}
+
+        {/* plus icon at right side */}
+        <AnimatedTouchable
+          onPress={onPlusPress}
+          activeOpacity={0.85}
+          style={[
+            styles.plusButton,
+            {
+              transform: [{ scale: plusScale }],
+              backgroundColor: plusActive
+                ? colors.gradientStart
+                : "transparent",
+              borderColor: plusActive ? "transparent" : colors.iconInactive,
+              borderWidth: plusActive ? 0 : 1.2,
+            },
+          ]}
+        >
+          <Plus
+            size={20}
+            color={plusActive ? colors.navbarBg : colors.iconInactive}
+          />
+        </AnimatedTouchable>
       </View>
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 }
 
@@ -151,7 +206,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.6,
     flexDirection: "row",
     alignItems: "center",
-    paddingRight: 8, // leave space for menu button
+    // paddingRight reserved for menu removed
+    paddingRight: 4,
   },
   imageContainer: {
     width: IMAGE_SIZE,
@@ -177,6 +233,17 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingRight: 14,
     justifyContent: "center",
+  },
+  plusButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    // default border is transparent; color set inline
+    borderWidth: 1.2,
+    borderColor: "transparent",
   },
   title: {
     fontSize: 16,

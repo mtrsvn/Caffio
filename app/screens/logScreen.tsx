@@ -90,7 +90,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
             renderItem={({ item }) => (
               <LogCard
                 entry={item}
-                onMenuPress={() => {
+                onPress={() => {
                   setEditingEntry(item);
                   setEditVisible(true);
                 }}
