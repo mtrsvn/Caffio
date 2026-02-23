@@ -26,9 +26,9 @@ import colors from "./colors";
 type Props = {
   visible: boolean;
   onClose: () => void;
-  /** UID of the currently logged-in user. Required to save the log. */
+  
   uid: string;
-  /** Called after a log is successfully saved, with the new entry data. */
+  
   onSaved?: (entry: {
     id: string;
     coffeeType: string;
@@ -60,7 +60,7 @@ const COFFEE_TYPES = [
   "Flat White",
   "Cold Brew",
 ];
-// Chocolatey next to Nutty
+
 const TASTE_PROFILE = [
   "Bold",
   "Smooth",
@@ -76,10 +76,10 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
 
-  // photo state
+  
   const [photoUri, setPhotoUri] = useState<string | null>(null);
 
-  // Photo picker handler
+  
   const handlePickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -96,13 +96,13 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
   };
 
-  // selection state
+  
   const [selectedCafe, setSelectedCafe] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTaste, setSelectedTaste] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(0);
 
-  // custom input modes & values
+  
   const [customCafeMode, setCustomCafeMode] = useState(false);
   const [customCafeText, setCustomCafeText] = useState("");
   const customCafeRef = useRef<TextInput | null>(null);
@@ -111,16 +111,16 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const [customTypeText, setCustomTypeText] = useState("");
   const customTypeRef = useRef<TextInput | null>(null);
 
-  // animation values
-  const sheetAnim = useRef(new Animated.Value(0)).current; // translateY for sheet
-  const backdropAnim = useRef(new Animated.Value(0)).current; // opacity for blur + tint
+  
+  const sheetAnim = useRef(new Animated.Value(0)).current; 
+  const backdropAnim = useRef(new Animated.Value(0)).current; 
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Per-item scale Animated.Values stored by key (category:name)
+  
   const scalesRef = useRef<Record<string, Animated.Value>>({});
 
-  // helpers to get/create scale Animated.Value for a pill/star
+  
   const getScale = (category: string, name: string) => {
     const key = `${category}:${name}`;
     if (!scalesRef.current[key]) {
@@ -129,7 +129,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     return scalesRef.current[key];
   };
 
-  // animate scale to a target (spring)
+  
   const animateTo = (animated: Animated.Value, toValue: number) => {
     Animated.spring(animated, {
       toValue,
@@ -139,7 +139,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }).start();
   };
 
-  // press-in effect (quick shrink)
+  
   const pressIn = (animated: Animated.Value) => {
     Animated.timing(animated, {
       toValue: 0.94,
@@ -149,7 +149,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }).start();
   };
 
-  // press-out effect: spring to target (selected => slightly larger, else normal)
+  
   const pressOutTo = (animated: Animated.Value, target = 1) => {
     Animated.spring(animated, {
       toValue: target,
@@ -159,7 +159,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }).start();
   };
 
-  // mount + animate in/out
+  
   useEffect(() => {
     if (visible) {
       setMounted(true);
@@ -201,15 +201,15 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         }),
       ]).start(() => {
         setMounted(false);
-        // reset custom modes when sheet fully closed
+        
         setCustomCafeMode(false);
         setCustomTypeMode(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [visible, sheetHeight]);
 
-  // autofocus when entering custom modes
+  
   useEffect(() => {
     if (customCafeMode) {
       const t = setTimeout(() => customCafeRef.current?.focus(), 50);
@@ -224,12 +224,12 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
   }, [customTypeMode]);
 
-  // selection handlers with press-effect animations
+  
 
   const toggleTaste = (t: string) => {
     const isSelected = selectedTaste.includes(t);
     const scale = getScale("taste", t);
-    // press-in + press-out to final target
+    
     pressIn(scale);
     const nextSelected = !isSelected;
     pressOutTo(scale, nextSelected ? 1.03 : 1);
@@ -272,7 +272,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     setSelectedCafe((prev) => (prev === c ? null : c));
   };
 
-  // ensure scales reflect selection state on changes
+  
   useEffect(() => {
     CAFES.forEach((c) => {
       const scale = getScale("cafe", c);
@@ -280,7 +280,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       animateTo(scale, isSelected ? 1.03 : 1);
     });
 
-    // custom cafe value (not in list) should also animate when selected
+    
     if (selectedCafe && !CAFES.includes(selectedCafe)) {
       const scale = getScale("cafe", selectedCafe);
       animateTo(scale, 1.03);
@@ -302,32 +302,32 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       const isSelected = selectedTaste.includes(tp);
       animateTo(scale, isSelected ? 1.03 : 1);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [selectedCafe, selectedType, selectedTaste]);
 
-  // capture sheet height for animation
+  
   const onSheetLayout = (e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height;
     if (h && h > 0 && h !== sheetHeight) setSheetHeight(h);
   };
 
-  // STAR animations: scale per star, press effect
+  
   useEffect(() => {
     const stars = [1, 2, 3, 4, 5];
     stars.forEach((s) => {
       const scale = getScale("star", String(s));
       const isActive = rating >= s;
-      // active stars slightly larger (keep consistent with pills) — star size also reduced below
+      
       animateTo(scale, isActive ? 1.12 : 1);
     });
   }, [rating]);
 
-  // Render helpers that use Animated.View for scale
+  
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-  // render a custom pill when the user has entered a value that
-  // isn't part of the hard‑coded list.  tapping the pill brings the
-  // sheet back into custom‑input mode so the value can be changed.
+  
+  
+  
   const renderCustomCafePill = () => {
     if (!selectedCafe || CAFES.includes(selectedCafe)) return null;
     const c = selectedCafe;
@@ -336,7 +336,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       <AnimatedTouchable
         key="__custom_cafe_selected"
         onPress={() => {
-          // reopen input with current text for editing
+          
           setCustomCafeText(c);
           setCustomCafeMode(true);
           setSelectedCafe(null);
@@ -474,7 +474,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       <AnimatedTouchable
         key="__custom_type_selected"
         onPress={() => {
-          // re-enter custom mode with existing text
+          
           setCustomTypeText(t);
           setCustomTypeMode(true);
           setSelectedType(null);
@@ -650,7 +650,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
 
   const stars = useMemo(() => [1, 2, 3, 4, 5], []);
 
-  // Determine whether submit should be enabled.
+  
   const finalCafeValue =
     selectedCafe ??
     (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
@@ -661,7 +661,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     finalCafeValue && finalTypeValue && rating > 0 && uid,
   );
 
-  // Save handler: commit custom text (if any) and close
+  
   const handleSave = async () => {
     if (!uid) {
       alert("You must be logged in to save a coffee log.");
@@ -669,7 +669,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
     if (!canSubmit) return;
 
-    // commit custom text values if necessary
+    
     if (customCafeMode && customCafeText.trim()) {
       setSelectedCafe(customCafeText.trim());
     }
@@ -677,7 +677,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       setSelectedType(customTypeText.trim());
     }
 
-    // build payload for firebase helper
+    
     const finalCafe =
       selectedCafe ??
       (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
@@ -686,14 +686,14 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
 
     if (!finalCafe || !finalType) {
-      // should not happen because canSubmit guards it
+      
       return;
     }
 
     setSaving(true);
     try {
-      // debug: log uid
-      // eslint-disable-next-line no-console
+      
+      
       console.log("[addLogSheet] saving log for uid", uid);
 
       const docId = await addCoffeeLog(uid, {
@@ -704,7 +704,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         photoLocalUri: photoUri ?? undefined,
       });
 
-      // invoke callback with approximate entry data
+      
       const entry = {
         id: docId,
         coffeeType: finalType,
@@ -718,12 +718,12 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       };
       onSaved?.(entry);
 
-      // success – close sheet & reset
+      
       onClose();
       setCustomCafeMode(false);
       setCustomTypeMode(false);
     } catch (err: any) {
-      // eslint-disable-next-line no-console
+      
       console.error("[addLogSheet] failed to save log", err);
       alert(
         `Unable to save log: ${err?.code || ""} ${
@@ -735,10 +735,10 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
   };
 
-  // do not render until mounted
+  
   if (!mounted) return null;
 
-  // animated styles
+  
   const backdropStyle = { opacity: backdropAnim };
   const tintOpacity = backdropAnim.interpolate({
     inputRange: [0, 1],
@@ -753,7 +753,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Animated blur backdrop */}
+        {}
         <Animated.View style={[styles.backdrop, backdropStyle]}>
           <BlurView
             intensity={30}
@@ -773,7 +773,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
           />
         </Animated.View>
 
-        {/* Animated sheet */}
+        {}
         <Animated.View
           onLayout={onSheetLayout}
           style={[
@@ -784,7 +784,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
             },
           ]}
         >
-          {/* Header with title and close */}
+          {}
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Add Coffee Purchase</Text>
             <TouchableOpacity
@@ -793,7 +793,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               accessibilityRole="button"
               activeOpacity={0.85}
             >
-              {/* plain X icon no background (size reduced by 1) */}
+              {}
               <X size={17} color={colors.gradientStart} strokeWidth={3} />
             </TouchableOpacity>
           </View>
@@ -804,7 +804,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
             contentContainerStyle={styles.sheetBody}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Cafes / Custom input */}
+            {}
             <View style={{ marginBottom: customCafeMode ? 6 : 0 }}>
               {!customCafeMode && (
                 <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
@@ -820,7 +820,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               {customCafeMode && renderCafePill("Custom Cafe")}
             </View>
 
-            {/* Coffee Type / Custom input */}
+            {}
             {!customTypeMode && (
               <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
                 Coffee Type
@@ -835,7 +835,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
             )}
             {customTypeMode && renderCoffeeTypeCustomInput()}
 
-            {/* Taste Profile (Optional) */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Taste Profile (Optional)
             </Text>
@@ -843,7 +843,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               {TASTE_PROFILE.map((t) => renderTastePill(t))}
             </View>
 
-            {/* Rating */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Rating</Text>
             <View style={styles.starsRow}>
               {stars.map((s) => {
@@ -877,7 +877,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
                 );
               })}
             </View>
-            {/* Photo */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Photo (Optional)
             </Text>
@@ -971,7 +971,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               </TouchableOpacity>
             )}
 
-            {/* Action button */}
+            {}
             <View style={{ height: 12 }} />
             <TouchableOpacity
               style={[
@@ -1036,7 +1036,7 @@ const styles = StyleSheet.create({
     }),
   },
 
-  /* Header */
+  
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1054,7 +1054,7 @@ const styles = StyleSheet.create({
 
   pillRow: { flexDirection: "row", flexWrap: "wrap" },
 
-  // Reduced paddingHorizontal by 1 and paddingVertical by 1 (was 14/8 -> now 13/7)
+  
   pillSelected: {
     paddingHorizontal: 13,
     paddingVertical: 7,
@@ -1075,7 +1075,7 @@ const styles = StyleSheet.create({
   },
   pillUnselectedText: { color: "#4E342E", fontWeight: "600" },
 
-  // Coffee-type / cafe unselected pill also reduced
+  
   pillUnselectedCoffee: {
     paddingHorizontal: 13,
     paddingVertical: 7,
@@ -1109,7 +1109,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
 
-  /* Full-width input used for Custom Cafe / Custom Type */
+  
   fieldLabel: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
   fullInput: {
     width: "100%",

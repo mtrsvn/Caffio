@@ -30,7 +30,7 @@ export default function FAB({
 }: Props) {
   const insets = useSafeAreaInsets();
 
-  // default bottom (will be overridden by passed style in Layout)
+  
   const defaultBottom = (insets.bottom ?? 12) + 16;
 
   return (
@@ -68,7 +68,7 @@ export default function FAB({
         {icon ? (
           <View>{icon}</View>
         ) : (
-          // plus color uses iconActive (white) for good contrast on the brown gradient
+          
           <Plus size={28} color={colors.iconActive} strokeWidth={3} />
         )}
       </LinearGradient>
@@ -83,16 +83,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
 
-    // shadow (iOS)
+    
     shadowColor: "#000",
     shadowOpacity: 0.16,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
 
-    // elevation (Android)
+    
     elevation: 14,
 
-    // ensure it's above other UI
+    
     zIndex: 2000,
   },
   gradient: {

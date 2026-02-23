@@ -6,7 +6,7 @@
  * Styled to match CafeCard (same shadow, border, background tokens).
  */
 
-import { Plus, Star } from "lucide-react-native";
+import { Coffee, Plus, Star } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
     Animated,
@@ -135,8 +135,13 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
               resizeMode="cover"
             />
           ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.placeholderEmoji}>☕</Text>
+            <View
+              style={[
+                styles.imagePlaceholder,
+                { backgroundColor: colors.gradientStart },
+              ]}
+            >
+              <Coffee size={36} color="#fff" fill="none" strokeWidth={2} />
             </View>
           )}
         </View>

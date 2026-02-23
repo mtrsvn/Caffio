@@ -35,7 +35,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const snap = await getDoc(ref);
           const data = snap.exists() ? (snap.data() as any) : null;
 
-          // Firestore serverTimestamp resolves to a Timestamp with toDate()
+          
           let createdAt: Date | null = null;
           if (data?.createdAt) {
             if (typeof data.createdAt.toDate === "function") {
@@ -45,7 +45,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           }
 
-          // Fallback to Firebase user metadata creationTime if available
+          
           if (!createdAt && (fbUser as any)?.metadata?.creationTime) {
             const ct = (fbUser as any).metadata.creationTime;
             const parsed = new Date(ct);

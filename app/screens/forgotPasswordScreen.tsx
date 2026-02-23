@@ -75,7 +75,7 @@ const ForgotPasswordScreen: React.FC = () => {
               />
             </View>
 
-            {/* ─── Same compact & stable container as Register/Login ─── */}
+            {}
             <View style={styles.errorContainer}>
               {success ? (
                 <Text style={styles.successText}>{success}</Text>
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
-    marginBottom: 36, // ← matched to Register/Login
+    marginBottom: 36, 
   },
   title: {
     fontSize: 30,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     }),
   },
 
-  // ─── Same as Register & Login ───
+  
   errorContainer: {
     height: 22,
     justifyContent: "center",
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   successText: {
     color: "#006600",
-    fontSize: 15, // ← matched size for consistency
+    fontSize: 15, 
     lineHeight: 20,
     textAlign: "center",
   },

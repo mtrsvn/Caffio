@@ -18,9 +18,9 @@ const ICON_MAP = {
 };
 
 const ICON_SIZE = 24;
-const ITEM_DIMENSION = 48; // container size for each tab item
-const CIRCLE_DIMENSION = 44; // focused background size
-const BORDER_RADIUS = 15; // your rounded rectangle radius
+const ITEM_DIMENSION = 48; 
+const CIRCLE_DIMENSION = 44; 
+const BORDER_RADIUS = 15; 
 
 const IconComponent: React.FC<IconProps> = ({ name, focused }) => {
   const LucideIcon = ICON_MAP[name] || Home;

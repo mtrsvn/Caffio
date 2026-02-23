@@ -1,16 +1,3 @@
-/**
- * app/utils/places.ts
- *
- * Geoapify Places implementation to fetch nearby cafes with caching + image fallback.
- *
- * Usage:
- * import { fetchNearbyCafes, getImageForPlace, SimplePlace } from '../utils/places';
- *
- * Notes:
- * - Sign up at https://www.geoapify.com and put your key into app/config.ts (GEOAPIFY_API_KEY).
- * - Geoapify free tier is suitable for small apps; monitor quotas on their dashboard.
- */
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GEOAPIFY_API_KEY } from "../config";
 
@@ -30,15 +17,12 @@ export type SimplePlace = {
 const GEOAPIFY_PLACES = "https://api.geoapify.com/v2/places";
 const WIKIMEDIA_API = "https://commons.wikimedia.org/w/api.php";
 const UNSPLASH_SOURCE = (w = 800, h = 600) =>
-  `https://source.unsplash.com/${w}x${h}/?coffee,cafe`;
+  `https://source.unsplash.com/random/${w}x${h}`;
 
-const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+const CACHE_TTL = 1000 * 60 * 5;
 const MAX_RADIUS = 5000;
 const MAX_RESULTS = 200;
 
-/* -------------------------
-   Simple AsyncStorage cache helpers
-   ------------------------- */
 function cacheKey(lat: number, lng: number, radius: number) {
   const roundedLat = Math.round(lat * 10000) / 10000;
   const roundedLng = Math.round(lng * 10000) / 10000;
@@ -64,29 +48,22 @@ async function setCachedPlaces(key: string, value: SimplePlace[]) {
   try {
     const payload = JSON.stringify({ ts: Date.now(), value });
     await AsyncStorage.setItem(key, payload);
-  } catch {
-    // ignore cache write errors
-  }
+  } catch {}
 }
 
-/* -------------------------
-   Helpers
-   ------------------------- */
 function buildGeoapifyUrl(
   lat: number,
   lng: number,
   radius: number,
   limit = 50,
 ) {
-  // categories=catering.cafe (Geoapify category for cafes)
-  // filter=circle:lng,lat,radius
   const params = new URLSearchParams({
     apiKey: GEOAPIFY_API_KEY,
     categories: "catering.cafe",
     limit: String(limit),
-    // Geoapify expects filter=circle:lon,lat,radius
+
     filter: `circle:${lng},${lat},${radius}`,
-    // prefer results near the center
+
     bias: `proximity:${lng},${lat}`,
   });
   return `${GEOAPIFY_PLACES}?${params.toString()}`;
@@ -114,9 +91,6 @@ async function fetchWithTimeout(
   });
 }
 
-/* -------------------------
-   Main: fetchNearbyCafes
-   ------------------------- */
 export async function fetchNearbyCafes(
   lat: number,
   lng: number,
@@ -148,7 +122,6 @@ export async function fetchNearbyCafes(
   }
   const data = await res.json();
 
-  // Geoapify returns features[]
   const features = Array.isArray(data.features) ? data.features : [];
 
   const places: SimplePlace[] = features
@@ -187,9 +160,6 @@ export async function fetchNearbyCafes(
   return places;
 }
 
-/* -------------------------
-   Image helpers: try Geoapify image -> Wikimedia -> Unsplash fallback
-   ------------------------- */
 async function getImageCache(key: string): Promise<string | null> {
   try {
     const raw = await AsyncStorage.getItem(key);
@@ -209,9 +179,7 @@ async function setImageCache(key: string, value: string) {
   try {
     const payload = JSON.stringify({ ts: Date.now(), value });
     await AsyncStorage.setItem(key, payload);
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
 export async function getImageForPlace(
@@ -222,36 +190,29 @@ export async function getImageForPlace(
   const cached = await getImageCache(cacheK);
   if (cached) return cached;
 
-  // 1) Geoapify provided image
-  if (place.photoUrl && /^https?:\/\//i.test(place.photoUrl)) {
+  if (place.photoUrl && /^https?:\/\//.test(place.photoUrl)) {
     await setImageCache(cacheK, place.photoUrl);
     return place.photoUrl;
   }
 
-  // 2) raw.properties.image_url or similar
   const maybe =
     place.raw?.properties?.image_url ?? place.raw?.properties?.photo?.url;
-  if (maybe && /^https?:\/\//i.test(maybe)) {
+  if (maybe && /^https?:\/\//.test(maybe)) {
     await setImageCache(cacheK, maybe);
     return maybe;
   }
 
-  // 3) Wikimedia Commons search
   const commons = await searchWikimediaCommonsImage(place.name, width);
   if (commons) {
     await setImageCache(cacheK, commons);
     return commons;
   }
 
-  // 4) Fallback Unsplash source
   const fallback = UNSPLASH_SOURCE(width, Math.round((width * 3) / 4));
   await setImageCache(cacheK, fallback);
   return fallback;
 }
 
-/* -------------------------
-   Wikimedia helpers (same approach as earlier)
-   ------------------------- */
 export async function searchWikimediaCommonsImage(
   query: string,
   width = 800,
@@ -262,7 +223,7 @@ export async function searchWikimediaCommonsImage(
       generator: "search",
       gsrlimit: "5",
       gsrsearch: query,
-      gsrnamespace: "6", // File:
+      gsrnamespace: "6",
       prop: "imageinfo",
       iiprop: "url",
       iiurlwidth: String(width),

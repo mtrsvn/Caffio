@@ -10,10 +10,10 @@ import colors from "./colors";
 import FAB from "./fab";
 import IconComponent from "./iconComponent";
 
-// offset used when positioning the FAB above the tab bar
-const FAB_EXTRA_OFFSET = 16; // same value as in layout
 
-// screens
+const FAB_EXTRA_OFFSET = 16; 
+
+
 import CafeScreen from "../screens/cafeScreen";
 import ForgotPasswordScreen from "../screens/forgotPasswordScreen";
 import ForyouScreen from "../screens/foryouScreen";
@@ -37,11 +37,11 @@ const LABEL_MAP: Record<string, string> = {
 function TabBarButton({ children, onPress, accessibilityState }: any) {
   const selected = !!accessibilityState?.selected;
 
-  // focusAnim: 1 -> not selected, 1.03 -> selected (subtle lift)
+  
   const focusAnim = useRef(new Animated.Value(selected ? 1.03 : 1)).current;
-  // pressAnim: 1 -> idle, 0.92 -> pressed (quick press feedback)
+  
   const pressAnim = useRef(new Animated.Value(1)).current;
-  // translateY for press (0 -> idle, 4 -> pressed)
+  
   const pressTranslate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -85,7 +85,7 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
     ]).start();
   };
 
-  // Combined scale = focusAnim * pressAnim
+  
   const combinedScale = Animated.multiply(focusAnim, pressAnim);
 
   return (
@@ -133,7 +133,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: true,
-          // Use our animated button wrapper
+          
           tabBarButton: (props) => <TabBarButton {...props} />,
           tabBarIcon: ({ focused }) => {
             let iconName: "home" | "book" | "star" | "map-pin" | "user";
@@ -211,7 +211,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
         </Tab.Screen>
       </Tab.Navigator>
 
-      {/* FAB for tabbed screens only */}
+      {}
       {user && (
         <FAB
           onPress={onFabPress}
@@ -229,19 +229,19 @@ export default function Navigation() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [refreshLogsFlag, setRefreshLogsFlag] = useState(0);
 
-  // always close sheet when the user logs out
+  
   useEffect(() => {
     if (!user) setSheetOpen(false);
   }, [user]);
 
   const handleSaved = (entry: any) => {
-    // bump flag to trigger log screen refresh
+    
     setRefreshLogsFlag((f) => f + 1);
   };
 
   return (
     <>
-      {/* stack navigator with sliding animations for smoother transitions */}
+      {}
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -273,5 +273,5 @@ export default function Navigation() {
 }
 
 const styles = StyleSheet.create({
-  // reserved for future styles if needed
+  
 });

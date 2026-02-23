@@ -26,7 +26,7 @@ const ForyouScreen: React.FC = () => {
       </View>
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
-        {/* Put For You content here */}
+        {}
       </View>
     </LinearGradient>
   );

@@ -1,4 +1,4 @@
-// cafeScreen UI & logic
+
 
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
@@ -26,7 +26,7 @@ const PAGE_GRADIENT = [
   colors.pageGradientBottomRight,
 ] as readonly string[];
 
-const DEFAULT_RADIUS = 5000; // meters
+const DEFAULT_RADIUS = 5000; 
 const BASE_TABBAR_HEIGHT = 66;
 
 type PlaceUI = SimplePlace & {
@@ -46,11 +46,11 @@ export default function CafeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // adjust spacing for tab bar
+  
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
-  const footerSpacing = tabBarHeight + 16; // extra gap
+  const footerSpacing = tabBarHeight + 16; 
 
   const filteredPlaces = useMemo(() => {
     if (!searchQuery) return places;
@@ -159,7 +159,7 @@ export default function CafeScreen() {
     );
   };
 
-  // search bar stays below header
+  
   const SearchBar = (
     <View style={styles.searchContainerWrapper}>
       <View style={styles.searchInner}>
@@ -185,10 +185,10 @@ export default function CafeScreen() {
       style={styles.screenContainer}
     >
       {Header}
-      {/* search bar outside list */}
+      {}
       <View style={{ paddingHorizontal: 16 }}>{SearchBar}</View>
 
-      {/* Cards list */}
+      {}
       <FlatList
         data={filteredPlaces}
         keyExtractor={(item) => String(item.id)}
@@ -208,12 +208,12 @@ export default function CafeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            // darker spinner color
+            
             tintColor="#000"
             colors={["#000"]}
           />
         }
-        // align cards with search bar
+        
         contentContainerStyle={{
           paddingBottom: footerSpacing,
           paddingHorizontal: 16,
@@ -247,10 +247,10 @@ const styles = StyleSheet.create({
   emptyText: { color: "#666" },
   errorText: { color: "#b71c1c" },
 
-  // wrapper for fixed search bar
+  
   searchContainerWrapper: {
     marginBottom: 12,
-    // keep background transparent so shadow is visible
+    
     backgroundColor: "transparent",
   },
   searchInner: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         shadowOpacity: 0.08,
         shadowRadius: 6,
-        // centered shadow
+        
         shadowOffset: { width: 0, height: 0 },
       },
       android: {

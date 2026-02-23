@@ -1,11 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
@@ -28,36 +29,39 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [firstRun, setFirstRun] = useState(true);
 
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [editVisible, setEditVisible] = useState(false);
 
-  const fetchLogs = async () => {
+  // showSpinner: whether to toggle the refreshing indicator (only for manual pull-to-refresh)
+  const fetchLogs = async (showSpinner = true) => {
     if (!user) {
       setLogs([]);
+      if (showSpinner) setRefreshing(false);
+      setFirstRun(false);
       return;
     }
-    setLoading(true);
+    if (showSpinner) setRefreshing(true);
     try {
-      // debug
-      // eslint-disable-next-line no-console
       console.log("[LogScreen] fetching logs for uid", user.uid);
-      const fetched = await getCoffeeLogs(user.uid);
+      const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
       setLogs(fetched);
     } catch (err: any) {
-      // eslint-disable-next-line no-console
       console.error("[LogScreen] failed to load logs", err);
       alert(
         `Unable to load logs: ${err?.message || err?.toString() || "unknown"}`,
       );
     } finally {
-      setLoading(false);
+      if (showSpinner) setRefreshing(false);
+      setFirstRun(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    // initial load without showing loader
+    fetchLogs(false);
   }, [user, refreshFlag]);
 
   return (
@@ -75,37 +79,55 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       </View>
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.gradientStart} />
-        ) : logs.length === 0 ? (
-          <View style={{ alignItems: "center", marginTop: 40 }}>
-            <Text style={{ color: colors.iconInactive }}>
-              {user ? "No logs yet" : "Log in to view your entries"}
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={logs}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <LogCard
-                entry={item}
-                onPress={() => {
-                  setEditingEntry(item);
-                  setEditVisible(true);
-                }}
-                onToggleFavorite={(newVal) => {
-                  setLogs((prev) =>
-                    prev.map((l) =>
-                      l.id === item.id ? { ...l, favorite: newVal } : l,
-                    ),
-                  );
-                }}
-              />
-            )}
-            contentContainerStyle={{ padding: 16, paddingTop: 8 }}
-          />
-        )}
+        <FlatList
+          data={logs}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <LogCard
+              entry={item}
+              onPress={() => {
+                setEditingEntry(item);
+                setEditVisible(true);
+              }}
+              onToggleFavorite={(newVal) => {
+                setLogs((prev) =>
+                  prev.map((l) =>
+                    l.id === item.id ? { ...l, favorite: newVal } : l,
+                  ),
+                );
+              }}
+            />
+          )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchLogs(true)}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
+            />
+          }
+          ListEmptyComponent={() => {
+            if (firstRun) {
+              // don't render anything while the initial load is in progress
+              return null;
+            }
+            return (
+              <View style={{ alignItems: "center", marginTop: 40 }}>
+                {refreshing ? (
+                  <ActivityIndicator
+                    size="large"
+                    color={colors.gradientStart}
+                  />
+                ) : (
+                  <Text style={{ color: colors.iconInactive }}>
+                    {user ? "No logs yet" : "Log in to view your entries"}
+                  </Text>
+                )}
+              </View>
+            );
+          }}
+          contentContainerStyle={{ padding: 16, paddingTop: 8 }}
+        />
       </View>
 
       {editingEntry && (

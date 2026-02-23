@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs, logout } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
+import { LogEntry } from "../components/logCard";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -33,21 +34,6 @@ const PAGE_GRADIENT = [
 interface Props {
   refreshFlag?: number;
 }
-
-/**
- * Profile screen
- *
- * - Header uses gradientStart / gradientEnd
- * - Stat cards use navbarBg / navbarBorder for card look
- * - Preference cards use same card wrapper/card properties as CafeCard (shadow on wrapper,
- *   overflow: 'hidden' card, borderWidth 0.6, paddingHorizontal 14 / paddingVertical 25)
- * - Icon circles and numeric badges use gradientStart/gradientEnd
- * - Text colors follow tokens supplied in colors.ts
- */
-
-/* ---------------------------
-   Reusable components
-   --------------------------- */
 
 const ProfileHeader: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -156,8 +142,8 @@ const StatCard: React.FC<StatCardProps> = ({ Icon, label, value = 0 }) => {
       style={[
         styles.statCard,
         {
-          backgroundColor: colors.navbarBg, // card color same as navbarBg
-          borderColor: colors.navbarBorder, // border color from navbarBorder
+          backgroundColor: colors.navbarBg,
+          borderColor: colors.navbarBorder,
         },
       ]}
     >
@@ -182,22 +168,20 @@ const StatCard: React.FC<StatCardProps> = ({ Icon, label, value = 0 }) => {
   );
 };
 
-/* Preference card reimplemented to match CafeCard wrapper/card style */
 type PrefCardProps = {
   label: string;
   value?: string;
 };
 
 const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
-  // wrapper provides the shadow (keeps overflow hidden on card)
   return (
     <TouchableOpacity activeOpacity={0.95} style={styles.prefWrapper}>
       <View
         style={[
           styles.prefCardInner,
           {
-            backgroundColor: colors.navbarBg, // same as cafe card background
-            borderColor: colors.navbarBorder, // same border
+            backgroundColor: colors.navbarBg,
+            borderColor: colors.navbarBorder,
           },
         ]}
       >
@@ -232,10 +216,6 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
   );
 };
 
-/* ---------------------------
-   Screen
-   --------------------------- */
-
 const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
@@ -251,7 +231,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // refresh both stats and whatever else is needed
+
     await loadStats();
     setTimeout(() => setRefreshing(false), 500);
   }, []);
@@ -262,7 +242,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       return;
     }
     try {
-      const logs = await getCoffeeLogs(user.uid);
+      const logs = (await getCoffeeLogs(user.uid)) as LogEntry[];
       const now = new Date();
       const coffees = logs.length;
       const cafes = new Set(logs.map((l) => l.cafe)).size;
@@ -276,7 +256,6 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       }).length;
       setStats({ coffees, cafes, favorites, thisMonth });
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error("[ProfileScreen] loadStats failed", e);
     }
   }, [user]);
@@ -345,7 +324,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
               onPress={async () => {
                 try {
                   await logout();
-                  // after logout, scroll to top so guest header is visible
+
                   setTimeout(() => {
                     if (
                       scrollRef.current &&
@@ -354,9 +333,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
                       scrollRef.current.scrollTo({ y: 0, animated: true });
                     }
                   }, 50);
-                } catch (e) {
-                  // ignore
-                }
+                } catch (e) {}
               }}
               style={styles.logoutButton}
             >
@@ -378,10 +355,6 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   );
 };
 
-/* ---------------------------
-   Styles
-   --------------------------- */
-
 const styles = StyleSheet.create({
   screenContainer: { flex: 1 },
   safe: { flex: 1 },
@@ -390,12 +363,11 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
 
-  /* Header */
   headerCard: {
     borderRadius: 14,
-    padding: 12, // reduced from 16
+    padding: 12,
     marginBottom: 12,
-    // use same shadow as cafeCard.wrapper
+
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -423,26 +395,24 @@ const styles = StyleSheet.create({
   headerDivider: {
     height: 1,
     backgroundColor: "rgba(255,255,255,0.12)",
-    marginVertical: 8, // reduced spacing
+    marginVertical: 8,
   },
 
-  /* Center container to horizontally center the two lines and CTA */
   headerCenter: {
     alignItems: "center",
-    // reduce vertical spacing so it sits closer to header
+
     paddingBottom: 4,
   },
 
   headerBody: {
     fontSize: 13,
     lineHeight: 18,
-    textAlign: "center", // centered
-    marginHorizontal: 8, // slightly reduce side padding
-    marginBottom: 6, // small spacing to CTA
+    textAlign: "center",
+    marginHorizontal: 8,
+    marginBottom: 6,
   },
 
   headerAction: {
-    // Make CTA even more compact
     paddingTop: 1,
     paddingBottom: 0,
     paddingHorizontal: 6,
@@ -451,10 +421,9 @@ const styles = StyleSheet.create({
   },
   headerActionText: {
     fontWeight: "700",
-    fontSize: 14, // reduce font size
+    fontSize: 14,
   },
 
-  /* Stats */
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -468,7 +437,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     justifyContent: "flex-start",
-    // apply same shadow as cafeCard.wrapper
+
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -497,10 +466,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  /* Preferences: wrapper + inner card (matches CafeCard) */
   prefWrapper: {
     marginBottom: 14,
-    // subtle cross-platform shadow (matches CafeCard wrapper)
+
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -516,18 +484,17 @@ const styles = StyleSheet.create({
   },
   prefCardInner: {
     borderRadius: 12,
-    overflow: "hidden", // keep rounded corners for inner content (same as CafeCard.card)
+    overflow: "hidden",
     borderWidth: 0.6,
   },
   prefBody: {
     paddingHorizontal: 14,
-    paddingVertical: 22, // slightly reduced
+    paddingVertical: 22,
     backgroundColor: "transparent",
     flexDirection: "row",
     alignItems: "center",
   },
 
-  /* Preference text + badge */
   prefLabel: { fontSize: 12 },
   prefValue: { fontSize: 16, fontWeight: "700", marginTop: 6 },
 
@@ -544,7 +511,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* Misc */
   sectionTitle: {
     fontSize: 15,
     fontWeight: "700",

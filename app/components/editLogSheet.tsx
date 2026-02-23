@@ -29,8 +29,8 @@ import {
 import colors from "./colors";
 import { LogEntry } from "./logCard";
 
-// this component is basically AddLogSheet but prefilled and with two actions
-// (edit/save and delete) instead of a single add button.
+
+
 
 type Props = {
   visible: boolean;
@@ -86,9 +86,9 @@ export default function EditLogSheet({
     entry.photoUri || null,
   );
 
-  // whenever the parent gives us a new entry object we need to re‑initialize
-  // all of our local state; otherwise the sheet may still show the previous
-  // values when reopened.
+  
+  
+  
   useEffect(() => {
     setPhotoUri(entry.photoUri || null);
     setSelectedCafe(entry.cafe);
@@ -117,7 +117,7 @@ export default function EditLogSheet({
     }
   };
 
-  // selection state
+  
   const [selectedCafe, setSelectedCafe] = useState<string | null>(entry.cafe);
   const [selectedType, setSelectedType] = useState<string | null>(
     entry.coffeeType,
@@ -127,7 +127,7 @@ export default function EditLogSheet({
   );
   const [rating, setRating] = useState<number>(entry.rating);
 
-  // custom input modes & values
+  
   const [customCafeMode, setCustomCafeMode] = useState(false);
   const [customCafeText, setCustomCafeText] = useState("");
   const customCafeRef = useRef<TextInput | null>(null);
@@ -136,9 +136,9 @@ export default function EditLogSheet({
   const [customTypeText, setCustomTypeText] = useState("");
   const customTypeRef = useRef<TextInput | null>(null);
 
-  // animation values
-  const sheetAnim = useRef(new Animated.Value(0)).current; // translateY for sheet
-  const backdropAnim = useRef(new Animated.Value(0)).current; // opacity for blur + tint
+  
+  const sheetAnim = useRef(new Animated.Value(0)).current; 
+  const backdropAnim = useRef(new Animated.Value(0)).current; 
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -220,7 +220,7 @@ export default function EditLogSheet({
         setCustomTypeMode(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [visible, sheetHeight]);
 
   useEffect(() => {
@@ -236,7 +236,7 @@ export default function EditLogSheet({
     }
   }, [customTypeMode]);
 
-  // animate selected state for pills including custom values
+  
   useEffect(() => {
     CAFES.forEach((c) => {
       const scale = getScale("cafe", c);
@@ -263,7 +263,7 @@ export default function EditLogSheet({
       const isSelected = selectedTaste.includes(tp);
       animateTo(scale, isSelected ? 1.03 : 1);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [selectedCafe, selectedType, selectedTaste]);
 
   const toggleTaste = (t: string) => {
@@ -319,7 +319,7 @@ export default function EditLogSheet({
       const isSelected = selectedTaste.includes(tp);
       animateTo(scale, isSelected ? 1.03 : 1);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [selectedCafe, selectedType, selectedTaste]);
 
   const onSheetLayout = (e: LayoutChangeEvent) => {
@@ -347,7 +347,7 @@ export default function EditLogSheet({
   const handleSave = async () => {
     if (!canSubmit) return;
 
-    // commit custom texts
+    
     if (customCafeMode && customCafeText.trim()) {
       setSelectedCafe(customCafeText.trim());
     }
@@ -368,7 +368,7 @@ export default function EditLogSheet({
     try {
       let photoUrl = entry.photoUri ?? null;
       if (photoUri && photoUri !== entry.photoUri) {
-        // upload new photo
+        
         photoUrl = await uploadCoffeePhoto(entry.uid, photoUri);
       }
       await updateCoffeeLog(entry.uid, entry.id, {
@@ -390,7 +390,7 @@ export default function EditLogSheet({
       onSaved?.(updated);
       onClose();
     } catch (err) {
-      // eslint-disable-next-line no-console
+      
       console.error("[editLogSheet] failed to save", err);
       alert(`Unable to save: ${(err as any)?.message || err}`);
     } finally {
@@ -399,9 +399,9 @@ export default function EditLogSheet({
   };
 
   const handleDelete = async () => {
-    // confirm with RN Alert
+    
     const result = await new Promise<boolean>((resolve) => {
-      // eslint-disable-next-line no-alert
+      
       Alert.alert("Delete log", "This cannot be undone. Continue?", [
         { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
         { text: "Delete", style: "destructive", onPress: () => resolve(true) },
@@ -414,7 +414,7 @@ export default function EditLogSheet({
       onDeleted?.();
       onClose();
     } catch (err) {
-      // eslint-disable-next-line no-console
+      
       console.error("[editLogSheet] delete failed", err);
       alert(`Unable to delete: ${(err as any)?.message || err}`);
     } finally {
@@ -743,7 +743,7 @@ export default function EditLogSheet({
 
   const stars = useMemo(() => [1, 2, 3, 4, 5], []);
 
-  // do not render until mounted
+  
   if (!mounted) return null;
 
   const backdropStyle = { opacity: backdropAnim };
@@ -760,7 +760,7 @@ export default function EditLogSheet({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Animated blur backdrop */}
+        {}
         <Animated.View style={[styles.backdrop, backdropStyle]}>
           <BlurView
             intensity={30}
@@ -780,7 +780,7 @@ export default function EditLogSheet({
           />
         </Animated.View>
 
-        {/* Animated sheet */}
+        {}
         <Animated.View
           onLayout={onSheetLayout}
           style={[
@@ -791,7 +791,7 @@ export default function EditLogSheet({
             },
           ]}
         >
-          {/* Header with title and close */}
+          {}
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Edit Coffee Log</Text>
             <TouchableOpacity
@@ -810,7 +810,7 @@ export default function EditLogSheet({
             contentContainerStyle={styles.sheetBody}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Cafes / Custom input */}
+            {}
             <View style={{ marginBottom: customCafeMode ? 6 : 0 }}>
               {!customCafeMode && (
                 <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
@@ -826,7 +826,7 @@ export default function EditLogSheet({
               {customCafeMode && renderCafePill("Custom Cafe")}
             </View>
 
-            {/* Coffee Type / Custom input */}
+            {}
             {!customTypeMode && (
               <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
                 Coffee Type
@@ -841,7 +841,7 @@ export default function EditLogSheet({
             )}
             {customTypeMode && renderCoffeeTypeCustomInput()}
 
-            {/* Taste Profile (Optional) */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Taste Profile (Optional)
             </Text>
@@ -849,7 +849,7 @@ export default function EditLogSheet({
               {TASTE_PROFILE.map((t) => renderTastePill(t))}
             </View>
 
-            {/* Rating */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Rating</Text>
             <View style={styles.starsRow}>
               {stars.map((s) => {
@@ -884,7 +884,7 @@ export default function EditLogSheet({
               })}
             </View>
 
-            {/* Photo */}
+            {}
             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
               Photo (Optional)
             </Text>
@@ -978,7 +978,7 @@ export default function EditLogSheet({
               </TouchableOpacity>
             )}
 
-            {/* Action buttons: save and delete */}
+            {}
             <View style={{ height: 12 }} />
             <TouchableOpacity
               style={[
@@ -1069,7 +1069,7 @@ const styles = StyleSheet.create({
     }),
   },
 
-  /* Header */
+  
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1087,7 +1087,7 @@ const styles = StyleSheet.create({
 
   pillRow: { flexDirection: "row", flexWrap: "wrap" },
 
-  // Reduced paddingHorizontal by 1 and paddingVertical by 1 (was 14/8 -> now 13/7)
+  
   pillSelected: {
     paddingHorizontal: 13,
     paddingVertical: 7,
@@ -1108,7 +1108,7 @@ const styles = StyleSheet.create({
   },
   pillUnselectedText: { color: "#4E342E", fontWeight: "600" },
 
-  // Coffee-type / cafe unselected pill also reduced
+  
   pillUnselectedCoffee: {
     paddingHorizontal: 13,
     paddingVertical: 7,
@@ -1142,7 +1142,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
 
-  /* Full-width input used for Custom Cafe / Custom Type */
+  
   fieldLabel: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
   fullInput: {
     width: "100%",

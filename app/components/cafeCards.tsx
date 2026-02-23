@@ -1,11 +1,3 @@
-/**
- * app/components/cafeCards.tsx
- *
- * Card styled to match the design and include a subtle shadow that matches the search box.
- * - shadow moved to the wrapper so rounded corners are preserved (card keeps overflow: 'hidden')
- * - uses the same subtle cross-platform shadow as the search box (iOS shadow + Android elevation)
- */
-
 import { MapPin } from "lucide-react-native";
 import React from "react";
 import {

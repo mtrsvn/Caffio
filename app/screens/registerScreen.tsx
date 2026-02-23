@@ -3,7 +3,7 @@ import * as Google from "expo-auth-session/providers/google";
 import * as Crypto from "expo-crypto";
 import { LinearGradient } from "expo-linear-gradient";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react-native"; // ← added ArrowLeft
+import { ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -245,7 +245,7 @@ const RegisterScreen: React.FC = () => {
                 <View style={styles.googleContent}>
                   <Image
                     source={{
-                      uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/40px-Google_%22G%22_logo.svg.png?20230822192911",
+                      uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/250px-Google_%22G%22_logo.svg.png",
                     }}
                     style={styles.googleIcon}
                     resizeMode="contain"
