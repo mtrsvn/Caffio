@@ -18,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { updateCoffeeLog } from "../../firebaseconfig";
 import colors from "./colors";
 
 export type LogEntry = {
@@ -27,6 +28,7 @@ export type LogEntry = {
   rating: number;
   tasteProfile: string[];
   photoUri?: string | null;
+  favorite?: boolean; // may be undefined for legacy entries
   createdAt: Date;
   uid: string;
 };
@@ -34,6 +36,7 @@ export type LogEntry = {
 type Props = {
   entry: LogEntry;
   onPress?: () => void;
+  onToggleFavorite?: (newValue: boolean) => void;
 };
 
 function daysAgo(date: Date): string {
@@ -47,7 +50,7 @@ function daysAgo(date: Date): string {
 
 const IMAGE_SIZE = 80;
 
-export default function LogCard({ entry, onPress }: Props) {
+export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
   const stars = [1, 2, 3, 4, 5];
   // animated scale for tap feedback
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -68,9 +71,13 @@ export default function LogCard({ entry, onPress }: Props) {
     }).start();
   };
 
-  const [plusActive, setPlusActive] = useState(false);
+  const [plusActive, setPlusActive] = useState(entry.favorite ?? false);
+  // keep in sync if parent changes favorite flag
+  React.useEffect(() => {
+    setPlusActive(entry.favorite ?? false);
+  }, [entry.favorite]);
   const plusScale = useRef(new Animated.Value(1)).current;
-  const onPlusPress = () => {
+  const onPlusPress = async () => {
     Animated.sequence([
       Animated.timing(plusScale, {
         toValue: 0.88,
@@ -85,7 +92,18 @@ export default function LogCard({ entry, onPress }: Props) {
         tension: 160,
       }),
     ]).start();
-    setPlusActive((p) => !p);
+    const newVal = !plusActive;
+    setPlusActive(newVal);
+    try {
+      // update backend
+      await updateCoffeeLog(entry.uid, entry.id, { favorite: newVal });
+    } catch (err) {
+      // revert state on failure
+      setPlusActive(plusActive);
+      // eslint-disable-next-line no-console
+      console.error("[LogCard] failed to set favorite", err);
+    }
+    onToggleFavorite?.(newVal);
   };
 
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);

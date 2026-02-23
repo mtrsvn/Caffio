@@ -712,6 +712,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         rating,
         tasteProfile: selectedTaste,
         photoUri: photoUri ?? null,
+        favorite: false,
         createdAt: new Date(),
         uid,
       };

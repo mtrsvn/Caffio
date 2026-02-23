@@ -94,6 +94,13 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
                   setEditingEntry(item);
                   setEditVisible(true);
                 }}
+                onToggleFavorite={(newVal) => {
+                  setLogs((prev) =>
+                    prev.map((l) =>
+                      l.id === item.id ? { ...l, favorite: newVal } : l,
+                    ),
+                  );
+                }}
               />
             )}
             contentContainerStyle={{ padding: 16, paddingTop: 8 }}

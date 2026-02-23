@@ -220,6 +220,7 @@ export async function addCoffeeLog(uid, data) {
     rating: data.rating,
     tasteProfile: data.tasteProfile ?? [],
     photoUrl: photoUrl ?? null,
+    favorite: data.favorite ?? false,
     createdAt: serverTimestamp(),
   };
 
@@ -231,13 +232,9 @@ export async function addCoffeeLog(uid, data) {
 // update an existing coffee log document
 export async function updateCoffeeLog(uid, logId, data) {
   const docRef = doc(db, "users", uid, "coffeeLogs", logId);
+  // simply merge whatever fields the caller provides
   const payload = {
-    coffeeType: data.coffeeType,
-    cafe: data.cafe,
-    rating: data.rating,
-    tasteProfile: data.tasteProfile ?? [],
-    // if photoUrl provided we overwrite; if undefined leave unchanged
-    ...(data.photoUrl !== undefined ? { photoUrl: data.photoUrl } : {}),
+    ...data,
     updatedAt: serverTimestamp(),
   };
   await setDoc(docRef, payload, { merge: true });
@@ -265,6 +262,7 @@ export async function getCoffeeLogs(uid) {
       ...data,
       // make sure UI components expect "photoUri" instead of backend photoUrl
       photoUri: data.photoUrl ?? null,
+      favorite: data.favorite ?? false,
       // Convert Firestore Timestamp to JS Date
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
     };
