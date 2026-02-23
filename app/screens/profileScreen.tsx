@@ -1,26 +1,26 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  Coffee,
-  Heart,
-  LogOut,
-  MapPin,
-  TrendingUp,
-  User,
+    Coffee,
+    Heart,
+    LogOut,
+    MapPin,
+    TrendingUp,
+    User,
 } from "lucide-react-native";
 import React, { useContext, useRef, useState } from "react";
 import {
-  Platform,
-  RefreshControl,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Platform,
+    RefreshControl,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { logout } from "../../firebaseconfig";
+import { getCoffeeLogs, logout } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 
@@ -29,6 +29,10 @@ const PAGE_GRADIENT = [
   colors.pageGradientMid,
   colors.pageGradientBottomRight,
 ] as readonly string[];
+
+interface Props {
+  refreshFlag?: number;
+}
 
 /**
  * Profile screen
@@ -232,18 +236,50 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
    Screen
    --------------------------- */
 
-const ProfileScreen: React.FC = () => {
+const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({
+    coffees: 0,
+    cafes: 0,
+    favorites: 0,
+    thisMonth: 0,
+  });
   const scrollRef = useRef<any>(null);
   const offsetRef = useRef<number>(0);
   const { user } = useContext(AuthContext);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // placeholder for refresh logic, e.g. re-fetch profile data
+    // refresh both stats and whatever else is needed
+    await loadStats();
     setTimeout(() => setRefreshing(false), 500);
   }, []);
+
+  const loadStats = React.useCallback(async () => {
+    if (!user) {
+      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+      return;
+    }
+    try {
+      const logs = await getCoffeeLogs(user.uid);
+      const now = new Date();
+      const coffees = logs.length;
+      const cafes = new Set(logs.map((l) => l.cafe)).size;
+      const favorites = logs.filter((l) => l.favorite).length;
+      const thisMonth = logs.filter((l) => {
+        const d = l.createdAt;
+        return (
+          d.getMonth() === now.getMonth() &&
+          d.getFullYear() === now.getFullYear()
+        );
+      }).length;
+      setStats({ coffees, cafes, favorites, thisMonth });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[ProfileScreen] loadStats failed", e);
+    }
+  }, [user]);
 
   return (
     <LinearGradient
@@ -276,10 +312,18 @@ const ProfileScreen: React.FC = () => {
           <ProfileHeader />
 
           <View style={styles.statsGrid}>
-            <StatCard Icon={Coffee} label="Coffees Tried" value={0} />
-            <StatCard Icon={MapPin} label="Cafes Visited" value={0} />
-            <StatCard Icon={Heart} label="Favorites" value={0} />
-            <StatCard Icon={TrendingUp} label="This Month" value={0} />
+            <StatCard
+              Icon={Coffee}
+              label="Coffees Tried"
+              value={stats.coffees}
+            />
+            <StatCard Icon={MapPin} label="Cafes Visited" value={stats.cafes} />
+            <StatCard Icon={Heart} label="Favorites" value={stats.favorites} />
+            <StatCard
+              Icon={TrendingUp}
+              label="This Month"
+              value={stats.thisMonth}
+            />
           </View>
 
           <Text

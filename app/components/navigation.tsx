@@ -206,7 +206,9 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
         </Tab.Screen>
         <Tab.Screen name="ForYou" component={ForyouScreen} />
         <Tab.Screen name="Cafes" component={CafeScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Profile">
+          {() => <ProfileScreen refreshFlag={refreshFlag} />}
+        </Tab.Screen>
       </Tab.Navigator>
 
       {/* FAB for tabbed screens only */}
