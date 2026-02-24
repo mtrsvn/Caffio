@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../components/colors";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
+import LogCard, { LogEntry } from "../components/logCard";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -23,6 +24,16 @@ const HomeScreen: React.FC = () => {
     return list[idx];
   }, []);
 
+  // sample log entries for home screen preview
+  const sampleLogs: LogEntry[] = React.useMemo(() => {
+    const now = new Date();
+    return [
+      { id: "h1", coffeeType: "Espresso", cafe: "Starbucks", rating: 4, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
+      { id: "h2", coffeeType: "Latte", cafe: "Krispy Kreme", rating: 5, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
+      { id: "h3", coffeeType: "Cold Brew", cafe: "Dunkin", rating: 3, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
+    ];
+  }, []);
+
   return (
     <LinearGradient
       colors={PAGE_GRADIENT as any}
@@ -38,6 +49,18 @@ const HomeScreen: React.FC = () => {
         }}
       >
         <PersonalityCard personality={personality} />
+
+        {/* sample recent logs displayed below personality */}
+        <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
+          {sampleLogs.map((entry) => (
+            <LogCard
+              key={entry.id}
+              entry={entry}
+              onPress={() => {}}
+              onToggleFavorite={() => {}}
+            />
+          ))}
+        </View>
       </View>
     </LinearGradient>
   );
