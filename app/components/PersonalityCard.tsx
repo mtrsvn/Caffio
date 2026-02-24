@@ -60,7 +60,7 @@ const styles = StyleSheet.create<{
     margin: 16,
     borderRadius: 16,
     backgroundColor: colors.navbarBg,
-    borderWidth: 0.6,
+    borderWidth: 1.2,
     borderColor: colors.navbarBorder,
     padding: 20,
     ...Platform.select({
