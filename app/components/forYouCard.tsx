@@ -77,7 +77,7 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
           <View style={styles.row}>
             <View style={styles.pinWrapper}>
               <MapPin
-                size={14}
+                size={12}
                 color={colors.gradientStart}
                 fill={colors.gradientStart}
                 strokeWidth={0}
@@ -116,6 +116,8 @@ const styles = StyleSheet.create<{
   title: TextStyle;
   row: ViewStyle;
   rowText: TextStyle;
+  pinWrapper: ViewStyle;
+  pinHole: ViewStyle;
 }>({
   wrapper: {
     marginBottom: 14,
@@ -177,16 +179,19 @@ const styles = StyleSheet.create<{
     flex: 1,
   },
   pinWrapper: {
-    width: 14,
-    height: 14,
-    marginRight: 2,
+    width: 12,
+    height: 12,
+    marginRight: 4,
     alignItems: "center",
     justifyContent: "center",
+    alignSelf: "flex-start",
   },
   pinHole: {
     position: "absolute",
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    top: 1,
+    left: 1,
   },
 });
