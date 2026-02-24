@@ -1,14 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getCoffeeLogs } from "../../firebaseconfig";
+import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
+import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
-import LogCard, { LogEntry } from "../components/logCard";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../components/AuthProvider";
-import { getCoffeeLogs } from "../../firebaseconfig";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -30,22 +29,31 @@ const HomeScreen: React.FC = () => {
   // fetch last three logs for current user
   const { user } = useContext(AuthContext);
   const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadLogs = async () => {
+    if (!user) {
+      setRecentLogs([]);
+      return;
+    }
+    try {
+      const all = (await getCoffeeLogs(user.uid)) as LogEntry[];
+      setRecentLogs(all.slice(0, 3));
+    } catch (err) {
+      console.error("[HomeScreen] fetch logs", err);
+    }
+  };
 
   useEffect(() => {
-    async function load() {
-      if (!user) {
-        setRecentLogs([]);
-        return;
-      }
-      try {
-        const all = (await getCoffeeLogs(user.uid)) as LogEntry[];
-        setRecentLogs(all.slice(0, 3));
-      } catch (err) {
-        console.error("[HomeScreen] fetch logs", err);
-      }
-    }
-    load();
+    loadLogs();
   }, [user]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // re-randomize personality as well
+    loadLogs();
+    setRefreshing(false);
+  };
 
   return (
     <LinearGradient
@@ -54,12 +62,20 @@ const HomeScreen: React.FC = () => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <View
-        style={{
+      <ScrollView
+        contentContainerStyle={{
           flex: 1,
           paddingTop: insets.top ?? 0,
           paddingBottom: insets.bottom ?? 0,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.gradientStart}
+            colors={[colors.gradientStart]}
+          />
+        }
       >
         <PersonalityCard personality={personality} />
 
@@ -74,7 +90,7 @@ const HomeScreen: React.FC = () => {
             />
           ))}
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
