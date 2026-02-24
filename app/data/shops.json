@@ -182,14 +182,14 @@
         "item_id": "SB-26",
         "name": "Strawberries & Cream Frappuccino®",
         "description": "A bright, fruity cream frappuccino blending real strawberry puree with milk and ice.",
-        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_StrawberriesCreamFrappuccino.jpg",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_StrawberriesandCreamFrappuccino.jpg",
         "category": "Frappuccino® (Cream-based)"
       },
       {
         "item_id": "SB-27",
         "name": "Pure Matcha Cream Frappuccino®",
         "description": "Creamy frappuccino featuring ceremonial-grade matcha for a subtly grassy, sweet green-tea flavor.",
-        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_PureMatchaCreamFrappuccino.jpg",
+        "image_url": "https://starbucks.ph/seed_data/FRAPCRE_GreenTeaCreamFrappuccino.jpg",
         "category": "Frappuccino® (Cream-based)"
       },
       {
@@ -339,13 +339,7 @@
         "image_url": "https://starbucks.ph/seed_data/ITEA_VanillaColdFoamIcedShakenBlackTeawithCoffeeJelly.jpg",
         "category": "Teavana Tea (Iced Shaken Teas)"
       },
-      {
-        "item_id": "SB-49",
-        "name": "Pink Drink with Strawberry Açaí",
-        "description": "A fan-favorite refresher: strawberry açaí and coconut milk with real strawberry pieces for a fruity, creamy refreshment.",
-        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/351/Y6NAnHFmewQN4MkXEuvWv6KZCZQMvYhspP4ybFYt.jpegg",
-        "category": "Starbucks Refreshers™"
-      },
+
       {
         "item_id": "SB-50",
         "name": "Strawberry Açaí with Lemonade",
@@ -357,7 +351,7 @@
         "item_id": "SB-51",
         "name": "Mango Dragonfruit with Lemonade",
         "description": "Tropical mango and dragonfruit flavors shaken with lemonade for a vibrant, fruity refresher.",
-        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/447/7bPOYfjrBAZ3PJFb6Pn0kOy1mVd1w3djqlD2YQ5P.jpeg",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/675/pz83LTYfwFhSpX1nIcKPgKdreaOCEuJijl1Xiz1P.jpeg",
         "category": "Starbucks Refreshers™"
       },
       {
@@ -377,8 +371,8 @@
       {
         "item_id": "SB-54",
         "name": "Frozen Mango Dragonfruit Lemonade",
-        "description": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/675/pz83LTYfwFhSpX1nIcKPgKdreaOCEuJijl1Xiz1P.jpeg",
-        "image_url": "  ",
+        "description": "",
+        "image_url": "https://starbuckscard.ph/sbcard-admin/storage/app/public/menu/675/pz83LTYfwFhSpX1nIcKPgKdreaOCEuJijl1Xiz1P.jpeg",
         "category": "Starbucks Refreshers™"
       },
       {
@@ -429,13 +423,6 @@
         "description": "Simply steamed milk (available in various milk alternatives) — great on its own or as a mellow base for other drinks.",
         "image_url": "https://starbucks.ph/seed_data/OTH_SteamedMilk.jpg",
         "category": "Chocolate & More (Others)"
-      },
-      {
-        "item_id": "SB-63",
-        "name": "Starbucks Reserve Cold Brew",
-        "description": "A small-lot, specially roasted cold brew with nuanced flavors and an exceptionally smooth finish.",
-        "image_url": "",
-        "category": "Starbucks Reserve® (Brewed Coffee)"
       }
     ]
   },
@@ -530,8 +517,8 @@
       {
         "item_id": "KK-13",
         "name": "Caramel Almond Milk Cold Brew",
-        "description": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Caramel.jpg",
-        "image_url": "",
+        "description": "Cold brew blended with caramel flavor and almond milk for a sweet, nutty twist.",
+        "image_url": "https://mgi-deliveryportal.s3.amazonaws.com/Cold%20Brew%20Caramel.jpg",
         "category": "Coffee"
       },
       {
