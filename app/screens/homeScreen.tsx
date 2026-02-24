@@ -1,13 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View, SafeAreaView } from "react-native";
+import React from "react";
+import { StyleSheet, View, ScrollView, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getCoffeeLogs } from "../../firebaseconfig";
-import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
-import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
+import LogCard, { LogEntry } from "../components/logCard";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../components/AuthProvider";
+import { getCoffeeLogs } from "../../firebaseconfig";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -27,11 +28,11 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   // fetch last three logs for current user
-  const { user } = useContext(AuthContext);
+  const { user } = useContext<AuthContext>(AuthContext);
   const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadLogs = async () => {
+  const loadLogs = React.useCallback(async () => {
     if (!user) {
       setRecentLogs([]);
       return;
@@ -42,18 +43,17 @@ const HomeScreen: React.FC = () => {
     } catch (err) {
       console.error("[HomeScreen] fetch logs", err);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadLogs();
-  }, [user]);
+  }, [loadLogs]);
 
-  const onRefresh = async () => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // re-randomize personality as well
-    loadLogs();
+    await loadLogs();
     setRefreshing(false);
-  };
+  }, [loadLogs]);
 
   return (
     <LinearGradient
@@ -62,37 +62,31 @@ const HomeScreen: React.FC = () => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <SafeAreaView style={styles.safe}>
-        <ScrollView
-          contentContainerStyle={{
-            flex: 1,
-            paddingTop: insets.top ?? 0,
-            paddingBottom: insets.bottom ?? 0,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.gradientStart}
-              colors={[colors.gradientStart]}
-            />
-          }
-        >
-          <PersonalityCard personality={personality} />
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top ?? 0, paddingBottom: insets.bottom ?? 0 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.gradientStart}
+            colors={[colors.gradientStart]}
+          />
+        }
+      >
+        <PersonalityCard personality={personality} />
 
-          {/* most recent logs for logged-in user */}
-          <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
-            {recentLogs.map((entry) => (
-              <LogCard
-                key={entry.id}
-                entry={entry}
-                onPress={() => {}}
-                onToggleFavorite={() => {}}
-              />
-            ))}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+        {/* most recent logs for logged-in user */}
+        <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
+          {recentLogs.map((entry) => (
+            <LogCard
+              key={entry.id}
+              entry={entry}
+              onPress={() => {}}
+              onToggleFavorite={() => {}}
+            />
+          ))}
+        </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
