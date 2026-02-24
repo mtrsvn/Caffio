@@ -6,6 +6,9 @@ import colors from "../components/colors";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
 import LogCard, { LogEntry } from "../components/logCard";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../components/AuthProvider";
+import { getCoffeeLogs } from "../../firebaseconfig";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -24,15 +27,25 @@ const HomeScreen: React.FC = () => {
     return list[idx];
   }, []);
 
-  // sample log entries for home screen preview
-  const sampleLogs: LogEntry[] = React.useMemo(() => {
-    const now = new Date();
-    return [
-      { id: "h1", coffeeType: "Espresso", cafe: "Starbucks", rating: 4, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
-      { id: "h2", coffeeType: "Latte", cafe: "Krispy Kreme", rating: 5, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
-      { id: "h3", coffeeType: "Cold Brew", cafe: "Dunkin", rating: 3, tasteProfile: [], createdAt: now, uid: "", photoUri: null },
-    ];
-  }, []);
+  // fetch last three logs for current user
+  const { user } = useContext(AuthContext);
+  const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      if (!user) {
+        setRecentLogs([]);
+        return;
+      }
+      try {
+        const all = (await getCoffeeLogs(user.uid)) as LogEntry[];
+        setRecentLogs(all.slice(0, 3));
+      } catch (err) {
+        console.error("[HomeScreen] fetch logs", err);
+      }
+    }
+    load();
+  }, [user]);
 
   return (
     <LinearGradient
@@ -50,9 +63,9 @@ const HomeScreen: React.FC = () => {
       >
         <PersonalityCard personality={personality} />
 
-        {/* sample recent logs displayed below personality */}
+        {/* most recent logs for logged-in user */}
         <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
-          {sampleLogs.map((entry) => (
+          {recentLogs.map((entry) => (
             <LogCard
               key={entry.id}
               entry={entry}
