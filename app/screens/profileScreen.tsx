@@ -12,14 +12,16 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Platform,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { getCoffeeLogs, logout } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
@@ -277,7 +279,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         <ScrollView
           ref={scrollRef}
           onScroll={({ nativeEvent }) => {

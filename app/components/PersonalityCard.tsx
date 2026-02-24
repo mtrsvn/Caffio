@@ -31,14 +31,14 @@ export default function PersonalityCard({ personality }: Props) {
         <View style={styles.info}>
           <Text style={styles.name}>{personality.name}</Text>
           <Text style={styles.desc}>{personality.description}</Text>
-          <View style={styles.tagsRow}>
-            {personality.tags.map((tag) => (
-              <View key={tag} style={styles.tagPill}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
         </View>
+      </View>
+      <View style={styles.tagsRow}>
+        {personality.tags.map((tag) => (
+          <View key={tag} style={styles.tagPill}>
+            <Text style={styles.tagText}>{tag}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -112,6 +112,7 @@ const styles = StyleSheet.create<{
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
+    marginTop: 12,
   },
   tagPill: {
     backgroundColor: colors.navbarBorder,
