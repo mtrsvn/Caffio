@@ -77,7 +77,13 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
           </View>
 
           <View style={styles.row}>
-            <Star size={14} color={MUTED} />
+            <Star
+              size={13}
+              color={colors.gradientStart}
+              fill={colors.gradientStart}
+              strokeWidth={0}
+              style={{ marginRight: 2 }}
+            />
             <Text style={[styles.rowText, { color: MUTED }]}>0% Match</Text>
           </View>
         </View>
@@ -86,7 +92,7 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
   );
 }
 
-const IMAGE_SIZE = 60;
+const IMAGE_SIZE = 80;
 
 const styles = StyleSheet.create<{wrapper: ViewStyle; card: ViewStyle; imageContainer: ViewStyle; imagePlaceholder: ViewStyle; body: ViewStyle; title: TextStyle; row: ViewStyle; rowText: TextStyle;}>(
   {
