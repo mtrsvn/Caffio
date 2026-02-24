@@ -9,10 +9,9 @@ import { AuthContext } from "./AuthProvider";
 import colors from "./colors";
 import FAB from "./fab";
 import IconComponent from "./iconComponent";
+import TransitionView, { withTransition } from "./transitionView";
 
-
-const FAB_EXTRA_OFFSET = 16; 
-
+const FAB_EXTRA_OFFSET = 16;
 
 import CafeScreen from "../screens/cafeScreen";
 import ForgotPasswordScreen from "../screens/forgotPasswordScreen";
@@ -37,11 +36,10 @@ const LABEL_MAP: Record<string, string> = {
 function TabBarButton({ children, onPress, accessibilityState }: any) {
   const selected = !!accessibilityState?.selected;
 
-  
   const focusAnim = useRef(new Animated.Value(selected ? 1.03 : 1)).current;
-  
+
   const pressAnim = useRef(new Animated.Value(1)).current;
-  
+
   const pressTranslate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -85,7 +83,6 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
     ]).start();
   };
 
-  
   const combinedScale = Animated.multiply(focusAnim, pressAnim);
 
   return (
@@ -133,7 +130,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: true,
-          
+
           tabBarButton: (props) => <TabBarButton {...props} />,
           tabBarIcon: ({ focused }) => {
             let iconName: "home" | "book" | "star" | "map-pin" | "user";
@@ -200,14 +197,22 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Home" component={withTransition(HomeScreen)} />
         <Tab.Screen name="Log">
-          {() => <LogScreen refreshFlag={refreshFlag} />}
+          {(props) => (
+            <TransitionView>
+              <LogScreen refreshFlag={refreshFlag} {...(props as any)} />
+            </TransitionView>
+          )}
         </Tab.Screen>
-        <Tab.Screen name="ForYou" component={ForyouScreen} />
-        <Tab.Screen name="Cafes" component={CafeScreen} />
+        <Tab.Screen name="ForYou" component={withTransition(ForyouScreen)} />
+        <Tab.Screen name="Cafes" component={withTransition(CafeScreen)} />
         <Tab.Screen name="Profile">
-          {() => <ProfileScreen refreshFlag={refreshFlag} />}
+          {(props) => (
+            <TransitionView>
+              <ProfileScreen refreshFlag={refreshFlag} {...(props as any)} />
+            </TransitionView>
+          )}
         </Tab.Screen>
       </Tab.Navigator>
 
@@ -229,13 +234,11 @@ export default function Navigation() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [refreshLogsFlag, setRefreshLogsFlag] = useState(0);
 
-  
   useEffect(() => {
     if (!user) setSheetOpen(false);
   }, [user]);
 
   const handleSaved = (entry: any) => {
-    
     setRefreshLogsFlag((f) => f + 1);
   };
 
@@ -272,6 +275,4 @@ export default function Navigation() {
   );
 }
 
-const styles = StyleSheet.create({
-  
-});
+const styles = StyleSheet.create({});
