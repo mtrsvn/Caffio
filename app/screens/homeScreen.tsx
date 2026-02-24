@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../components/colors";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
@@ -12,6 +13,7 @@ const PAGE_GRADIENT = [
 ] as readonly string[];
 
 const HomeScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const personality: Personality = React.useMemo(() => {
     const list: Personality[] = personalitiesData as any;
     if (list.length === 0) {
@@ -28,7 +30,15 @@ const HomeScreen: React.FC = () => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <PersonalityCard personality={personality} />
+      <View
+        style={{
+          flex: 1,
+          paddingTop: insets.top ?? 0,
+          paddingBottom: insets.bottom ?? 0,
+        }}
+      >
+        <PersonalityCard personality={personality} />
+      </View>
     </LinearGradient>
   );
 };
