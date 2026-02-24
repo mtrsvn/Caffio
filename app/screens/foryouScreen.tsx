@@ -41,7 +41,9 @@ const ForyouScreen: React.FC = () => {
       </View>
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
-        <ScrollView contentContainerStyle={styles.listContainer}>
+        <ScrollView
+          contentContainerStyle={[styles.listContainer, { paddingBottom: 20 }]}
+        >
           {items.map((it) => (
             <ForYouCard
               key={it.item_id + "-" + it.shopName}

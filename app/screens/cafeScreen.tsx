@@ -1,19 +1,17 @@
-
-
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { Search } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  FlatList,
-  ListRenderItemInfo,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    FlatList,
+    ListRenderItemInfo,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CafeCard from "../components/cafeCards";
@@ -26,7 +24,7 @@ const PAGE_GRADIENT = [
   colors.pageGradientBottomRight,
 ] as readonly string[];
 
-const DEFAULT_RADIUS = 5000; 
+const DEFAULT_RADIUS = 5000;
 const BASE_TABBAR_HEIGHT = 66;
 
 type PlaceUI = SimplePlace & {
@@ -46,11 +44,10 @@ export default function CafeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
-  const footerSpacing = tabBarHeight + 16; 
+  const footerSpacing = tabBarHeight + 16;
 
   const filteredPlaces = useMemo(() => {
     if (!searchQuery) return places;
@@ -159,7 +156,6 @@ export default function CafeScreen() {
     );
   };
 
-  
   const SearchBar = (
     <View style={styles.searchContainerWrapper}>
       <View style={styles.searchInner}>
@@ -208,12 +204,10 @@ export default function CafeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            
             tintColor="#000"
             colors={["#000"]}
           />
         }
-        
         contentContainerStyle={{
           paddingBottom: footerSpacing,
           paddingHorizontal: 16,
@@ -247,10 +241,9 @@ const styles = StyleSheet.create({
   emptyText: { color: "#666" },
   errorText: { color: "#b71c1c" },
 
-  
   searchContainerWrapper: {
     marginBottom: 12,
-    
+
     backgroundColor: "transparent",
   },
   searchInner: {
@@ -265,7 +258,7 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         shadowOpacity: 0.08,
         shadowRadius: 6,
-        
+
         shadowOffset: { width: 0, height: 0 },
       },
       android: {

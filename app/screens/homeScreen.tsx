@@ -1,9 +1,20 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
+import EditLogSheet from "../components/editLogSheet";
 import ForYouCard from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
@@ -31,39 +42,39 @@ const HomeScreen: React.FC = () => {
   const { user } = useContext(AuthContext);
   // logs are no longer displayed on home; state removed
 
-  // sample log cards for display (static examples)
-  const sampleLogs: LogEntry[] = React.useMemo(() => {
-    const now = new Date();
-    return [
-      {
-        id: "1",
-        coffeeType: "Espresso",
-        cafe: "Central Perk",
-        rating: 4,
-        tasteProfile: [],
-        createdAt: new Date(now.getTime() - 86400000), // 1 day ago
-        uid: "",
-      },
-      {
-        id: "2",
-        coffeeType: "Latte",
-        cafe: "Bean There",
-        rating: 5,
-        tasteProfile: [],
-        createdAt: new Date(now.getTime() - 2 * 86400000),
-        uid: "",
-      },
-      {
-        id: "3",
-        coffeeType: "Cold Brew",
-        cafe: "Java House",
-        rating: 3,
-        tasteProfile: [],
-        createdAt: new Date(now.getTime() - 3 * 86400000),
-        uid: "",
-      },
-    ];
-  }, []);
+  // logs fetched from Firebase; show latest three
+  const [logs, setLogs] = React.useState<LogEntry[]>([]);
+  const [firstRun, setFirstRun] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const [editingEntry, setEditingEntry] = React.useState<LogEntry | null>(null);
+  const [editVisible, setEditVisible] = React.useState(false);
+
+  const fetchLogs = React.useCallback(
+    async (showSpinner = true) => {
+      if (!user) {
+        setLogs([]);
+        if (showSpinner) setRefreshing(false);
+        setFirstRun(false);
+        return;
+      }
+      if (showSpinner) setRefreshing(true);
+      try {
+        const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
+        setLogs(fetched.slice(0, 3));
+      } catch (err: any) {
+        console.error("[HomeScreen] failed to load logs", err);
+      } finally {
+        if (showSpinner) setRefreshing(false);
+        setFirstRun(false);
+      }
+    },
+    [user],
+  );
+
+  React.useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   // prepare For You items (same logic as foryouScreen)
   const items = React.useMemo(() => {
@@ -86,16 +97,24 @@ const HomeScreen: React.FC = () => {
     >
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchLogs(true)}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
+            />
+          }
           contentContainerStyle={{
             flexGrow: 1,
-            paddingTop: insets.top ?? 0,
+            paddingTop: (insets.top ?? 0) * 0.5, // reduced gap above personality card
             paddingBottom: insets.bottom ?? 0,
           }}
         >
           <PersonalityCard personality={personality} />
 
           {/* sample logs */}
-          <View style={{ marginTop: 20 }}>
+          <View style={{ marginTop: 12 }}>
             <View style={styles.header}>
               <Text style={styles.title}>Your Coffee Logs</Text>
               <Text style={styles.subtitle}>
@@ -103,24 +122,38 @@ const HomeScreen: React.FC = () => {
               </Text>
             </View>
             <View style={{ paddingHorizontal: 16 }}>
-              {sampleLogs.map((entry) => (
+              {logs.map((entry) => (
                 <LogCard
                   key={entry.id}
                   entry={entry}
-                  onPress={() => {}}
-                  onToggleFavorite={() => {}}
+                  onPress={() => {
+                    setEditingEntry(entry);
+                    setEditVisible(true);
+                  }}
+                  onToggleFavorite={(newVal) => {
+                    setLogs((prev) =>
+                      prev.map((l) =>
+                        l.id === entry.id ? { ...l, favorite: newVal } : l,
+                      ),
+                    );
+                  }}
                 />
               ))}
+              {!user && !firstRun && (
+                <Text style={{ color: colors.iconInactive, marginTop: 8 }}>
+                  Log in to view your entries
+                </Text>
+              )}
             </View>
           </View>
 
           {/* For You recommendations */}
-          <View style={[{ marginTop: 20, paddingHorizontal: 16 }]}>
+          <View style={[{ marginTop: 12, paddingHorizontal: 16 }]}>
             <Text style={styles.foryouTitle}>Curated For You</Text>
             <Text style={styles.foryouSubtitle}>
               Based on your taste preferences
             </Text>
-            {items.map((it) => (
+            {items.slice(0, 3).map((it) => (
               <ForYouCard
                 key={it.item_id + "-" + it.shopName}
                 item={it}
@@ -129,6 +162,27 @@ const HomeScreen: React.FC = () => {
             ))}
           </View>
         </ScrollView>
+
+        {editingEntry && (
+          <EditLogSheet
+            visible={editVisible}
+            onClose={() => {
+              setEditVisible(false);
+              setEditingEntry(null);
+            }}
+            entry={editingEntry}
+            onSaved={(updated) => {
+              setLogs((prev) =>
+                prev.map((l) => (l.id === updated.id ? updated : l)),
+              );
+              setEditingEntry(null);
+            }}
+            onDeleted={() => {
+              setLogs((prev) => prev.filter((l) => l.id !== editingEntry?.id));
+              setEditingEntry(null);
+            }}
+          />
+        )}
       </SafeAreaView>
     </LinearGradient>
   );

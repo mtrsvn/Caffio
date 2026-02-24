@@ -14,7 +14,7 @@ import {
 } from "@expo-google-fonts/funnel-sans";
 
 const BASE_TABBAR_HEIGHT = 66;
-const FAB_EXTRA_OFFSET = 16; 
+const FAB_EXTRA_OFFSET = 16;
 
 function AppInner() {
   const PAGE_GRADIENT = ["#EFEBE9", "#F5F5F5", "#D7CCC8"] as readonly string[];
@@ -39,18 +39,16 @@ export default function Layout() {
     FunnelSans_700Bold,
   });
 
-  
   if (fontsLoaded) {
     if ((Text as any).defaultProps == null) {
       (Text as any).defaultProps = {};
     }
-    
+
     (Text as any).defaultProps.style = {
       ...(Text as any).defaultProps.style,
       fontFamily: "FunnelSans_400Regular",
     };
 
-    
     if ((TextInput as any).defaultProps == null) {
       (TextInput as any).defaultProps = {};
     }
@@ -62,7 +60,6 @@ export default function Layout() {
 
   if (!fontsLoaded) return null;
 
-  
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
