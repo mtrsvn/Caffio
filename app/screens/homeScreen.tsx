@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, View, SafeAreaView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
@@ -62,35 +62,37 @@ const HomeScreen: React.FC = () => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <ScrollView
-        contentContainerStyle={{
-          flex: 1,
-          paddingTop: insets.top ?? 0,
-          paddingBottom: insets.bottom ?? 0,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.gradientStart}
-            colors={[colors.gradientStart]}
-          />
-        }
-      >
-        <PersonalityCard personality={personality} />
-
-        {/* most recent logs for logged-in user */}
-        <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
-          {recentLogs.map((entry) => (
-            <LogCard
-              key={entry.id}
-              entry={entry}
-              onPress={() => {}}
-              onToggleFavorite={() => {}}
+      <SafeAreaView style={styles.safe}>
+        <ScrollView
+          contentContainerStyle={{
+            flex: 1,
+            paddingTop: insets.top ?? 0,
+            paddingBottom: insets.bottom ?? 0,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
             />
-          ))}
-        </View>
-      </ScrollView>
+          }
+        >
+          <PersonalityCard personality={personality} />
+
+          {/* most recent logs for logged-in user */}
+          <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
+            {recentLogs.map((entry) => (
+              <LogCard
+                key={entry.id}
+                entry={entry}
+                onPress={() => {}}
+                onToggleFavorite={() => {}}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
