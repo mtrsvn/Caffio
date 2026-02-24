@@ -1,8 +1,10 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../components/colors";
+import ForYouCard from "../components/forYouCard";
+import shops from "../data/shops.json";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -12,6 +14,15 @@ const PAGE_GRADIENT = [
 
 const ForyouScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+
+  // flatten menu items from all shops
+  const items = React.useMemo(() => {
+    type Shop = { shop_id: string; name: string; menu: any[] };
+    const shopsData: Shop[] = shops as any;
+    return shopsData.flatMap((shop) =>
+      (shop.menu || []).map((it) => ({ ...it, shopName: shop.name }))
+    );
+  }, []);
 
   return (
     <LinearGradient
@@ -25,8 +36,16 @@ const ForyouScreen: React.FC = () => {
         <Text style={styles.subtitle}>Based on your taste preferences</Text>
       </View>
 
-      <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
-        {}
+      <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>      
+        <ScrollView contentContainerStyle={styles.listContainer}>
+          {items.slice(0, 50).map((it) => (
+            <ForYouCard
+              key={it.item_id + "-" + it.shopName}
+              item={it}
+              shopName={it.shopName}
+            />
+          ))}
+        </ScrollView>
       </View>
     </LinearGradient>
   );
@@ -51,6 +70,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });
 
