@@ -33,6 +33,8 @@ const PAGE_GRADIENT = [
   colors.pageGradientBottomRight,
 ] as readonly string[];
 
+const BASE_TABBAR_HEIGHT = 66;
+
 interface Props {
   refreshFlag?: number;
 }
@@ -220,6 +222,9 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
 
 const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const insets = useSafeAreaInsets();
+  const tabBarHeight =
+    BASE_TABBAR_HEIGHT +
+    (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
     coffees: 0,
@@ -288,7 +293,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
           scrollEventThrottle={16}
           contentContainerStyle={[
             styles.container,
-            { paddingBottom: (insets.bottom ?? 12) + 24 },
+            { paddingBottom: tabBarHeight + 16 },
           ]}
           showsVerticalScrollIndicator={false}
           refreshControl={

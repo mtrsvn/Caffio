@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -21,6 +22,8 @@ const PAGE_GRADIENT = [
   colors.pageGradientBottomRight,
 ] as readonly string[];
 
+const BASE_TABBAR_HEIGHT = 66;
+
 interface Props {
   refreshFlag?: number;
 }
@@ -28,6 +31,9 @@ interface Props {
 const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
+  const tabBarHeight =
+    BASE_TABBAR_HEIGHT +
+    (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [firstRun, setFirstRun] = useState(true);
@@ -126,7 +132,11 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
               </View>
             );
           }}
-          contentContainerStyle={{ padding: 16, paddingTop: 8 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingTop: 8,
+            paddingBottom: tabBarHeight + 16,
+          }}
         />
       </View>
 

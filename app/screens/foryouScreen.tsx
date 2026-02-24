@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../components/colors";
 import ForYouCard from "../components/forYouCard";
@@ -11,6 +11,8 @@ const PAGE_GRADIENT = [
   colors.pageGradientMid,
   colors.pageGradientBottomRight,
 ] as readonly string[];
+
+const BASE_TABBAR_HEIGHT = 66;
 
 const ForyouScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -28,6 +30,10 @@ const ForyouScreen: React.FC = () => {
     });
   }, []);
 
+  const tabBarHeight =
+    BASE_TABBAR_HEIGHT +
+    (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
+
   return (
     <LinearGradient
       colors={PAGE_GRADIENT as any}
@@ -42,7 +48,10 @@ const ForyouScreen: React.FC = () => {
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
         <ScrollView
-          contentContainerStyle={[styles.listContainer, { paddingBottom: 20 }]}
+          contentContainerStyle={[
+            styles.listContainer,
+            { paddingBottom: tabBarHeight + 12 },
+          ]}
         >
           {items.map((it) => (
             <ForYouCard

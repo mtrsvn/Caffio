@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
 import {
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -26,6 +27,8 @@ const PAGE_GRADIENT = [
   colors.pageGradientMid,
   colors.pageGradientBottomRight,
 ] as readonly string[];
+
+const BASE_TABBAR_HEIGHT = 66;
 
 const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -108,7 +111,10 @@ const HomeScreen: React.FC = () => {
           contentContainerStyle={{
             flexGrow: 1,
             paddingTop: (insets.top ?? 0) * 0.5, // reduced gap above personality card
-            paddingBottom: insets.bottom ?? 0,
+            paddingBottom:
+              BASE_TABBAR_HEIGHT +
+              (insets.bottom ?? (Platform.OS === "ios" ? 20 : 8)) +
+              12,
           }}
         >
           <PersonalityCard personality={personality} />
