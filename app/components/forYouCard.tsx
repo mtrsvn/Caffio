@@ -1,4 +1,4 @@
-import { MapPin, Star } from "lucide-react-native";
+import { MapPin, Star, Coffee } from "lucide-react-native";
 import React from "react";
 import {
   Image,
@@ -55,7 +55,7 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
                 { backgroundColor: colors.gradientStart },
               ]}
             >
-              {/* You could put a default icon or emoji here */}
+              <Coffee size={36} color="#fff" fill="none" strokeWidth={2} />
             </View>
           )}
         </View>

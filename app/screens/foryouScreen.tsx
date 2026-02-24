@@ -15,13 +15,17 @@ const PAGE_GRADIENT = [
 const ForyouScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
-  // flatten menu items from all shops
+  // flatten menu items from all shops (menu arrays might be nested)
   const items = React.useMemo(() => {
     type Shop = { shop_id: string; name: string; menu: any[] };
     const shopsData: Shop[] = shops as any;
-    return shopsData.flatMap((shop) =>
-      (shop.menu || []).map((it) => ({ ...it, shopName: shop.name }))
-    );
+    return shopsData.flatMap((shop) => {
+      // ensure we have a flat list of menu objects
+      const flatMenu = Array.isArray(shop.menu)
+        ? (shop.menu as any[]).flat(Infinity)
+        : [];
+      return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
+    });
   }, []);
 
   return (
