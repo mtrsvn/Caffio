@@ -1,14 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { StyleSheet, View, ScrollView, RefreshControl } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useContext } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
+import ForYouCard from "../components/forYouCard";
+import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import personalitiesData from "../data/personalities.json";
-import LogCard, { LogEntry } from "../components/logCard";
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../components/AuthProvider";
-import { getCoffeeLogs } from "../../firebaseconfig";
+import shops from "../data/shops.json";
 
 const PAGE_GRADIENT = [
   colors.pageGradientTopLeft,
@@ -27,33 +27,55 @@ const HomeScreen: React.FC = () => {
     return list[idx];
   }, []);
 
-  // fetch last three logs for current user
-  const { user } = useContext<AuthContext>(AuthContext);
-  const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
+  // useContext infers the type from the AuthContext value
+  const { user } = useContext(AuthContext);
+  // logs are no longer displayed on home; state removed
 
-  const loadLogs = React.useCallback(async () => {
-    if (!user) {
-      setRecentLogs([]);
-      return;
-    }
-    try {
-      const all = (await getCoffeeLogs(user.uid)) as LogEntry[];
-      setRecentLogs(all.slice(0, 3));
-    } catch (err) {
-      console.error("[HomeScreen] fetch logs", err);
-    }
-  }, [user]);
+  // sample log cards for display (static examples)
+  const sampleLogs: LogEntry[] = React.useMemo(() => {
+    const now = new Date();
+    return [
+      {
+        id: "1",
+        coffeeType: "Espresso",
+        cafe: "Central Perk",
+        rating: 4,
+        tasteProfile: [],
+        createdAt: new Date(now.getTime() - 86400000), // 1 day ago
+        uid: "",
+      },
+      {
+        id: "2",
+        coffeeType: "Latte",
+        cafe: "Bean There",
+        rating: 5,
+        tasteProfile: [],
+        createdAt: new Date(now.getTime() - 2 * 86400000),
+        uid: "",
+      },
+      {
+        id: "3",
+        coffeeType: "Cold Brew",
+        cafe: "Java House",
+        rating: 3,
+        tasteProfile: [],
+        createdAt: new Date(now.getTime() - 3 * 86400000),
+        uid: "",
+      },
+    ];
+  }, []);
 
-  useEffect(() => {
-    loadLogs();
-  }, [loadLogs]);
-
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    await loadLogs();
-    setRefreshing(false);
-  }, [loadLogs]);
+  // prepare For You items (same logic as foryouScreen)
+  const items = React.useMemo(() => {
+    type Shop = { shop_id: string; name: string; menu: any[] };
+    const shopsData: Shop[] = shops as any;
+    return shopsData.flatMap((shop) => {
+      const flatMenu = Array.isArray(shop.menu)
+        ? (shop.menu as any[]).flat(Infinity)
+        : [];
+      return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
+    });
+  }, []);
 
   return (
     <LinearGradient
@@ -62,37 +84,90 @@ const HomeScreen: React.FC = () => {
       end={[1, 1]}
       style={styles.screenContainer}
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top ?? 0, paddingBottom: insets.bottom ?? 0 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.gradientStart}
-            colors={[colors.gradientStart]}
-          />
-        }
-      >
-        <PersonalityCard personality={personality} />
+      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingTop: insets.top ?? 0,
+            paddingBottom: insets.bottom ?? 0,
+          }}
+        >
+          <PersonalityCard personality={personality} />
 
-        {/* most recent logs for logged-in user */}
-        <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
-          {recentLogs.map((entry) => (
-            <LogCard
-              key={entry.id}
-              entry={entry}
-              onPress={() => {}}
-              onToggleFavorite={() => {}}
-            />
-          ))}
-        </View>
-      </ScrollView>
+          {/* sample logs */}
+          <View style={{ marginTop: 20 }}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Your Coffee Logs</Text>
+              <Text style={styles.subtitle}>
+                Track and review your coffee experiences
+              </Text>
+            </View>
+            <View style={{ paddingHorizontal: 16 }}>
+              {sampleLogs.map((entry) => (
+                <LogCard
+                  key={entry.id}
+                  entry={entry}
+                  onPress={() => {}}
+                  onToggleFavorite={() => {}}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* For You recommendations */}
+          <View style={[{ marginTop: 20, paddingHorizontal: 16 }]}>
+            <Text style={styles.foryouTitle}>Curated For You</Text>
+            <Text style={styles.foryouSubtitle}>
+              Based on your taste preferences
+            </Text>
+            {items.map((it) => (
+              <ForYouCard
+                key={it.item_id + "-" + it.shopName}
+                item={it}
+                shopName={it.shopName}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   screenContainer: { flex: 1 },
+  foryouTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#4E342E",
+    marginBottom: 6,
+  },
+  foryouSubtitle: {
+    fontSize: 14,
+    color: "#6D4C41",
+    marginBottom: 12,
+  },
+  logsTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#4E342E",
+    marginBottom: 6,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: "transparent",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#4E342E",
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6D4C41",
+  },
 });
 
 export default HomeScreen;
