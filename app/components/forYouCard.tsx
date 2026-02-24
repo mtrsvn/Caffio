@@ -77,10 +77,10 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
           <View style={styles.row}>
             <MapPin
               size={14}
-              color={MUTED}
-              fill={MUTED}
+              color={colors.gradientStart}
+              fill={colors.gradientStart}
               strokeWidth={0}
-              style={{ marginRight: 4 }}
+              style={{ marginRight: 2 }}
             />
             <Text style={[styles.rowText, { color: MUTED }]} numberOfLines={1}>
               {shopName}
