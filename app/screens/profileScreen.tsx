@@ -1,23 +1,23 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-    Coffee,
-    Heart,
-    LogOut,
-    MapPin,
-    TrendingUp,
-    User,
+  Coffee,
+  Heart,
+  LogOut,
+  MapPin,
+  TrendingUp,
+  User,
 } from "lucide-react-native";
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
-    Platform,
-    RefreshControl,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Platform,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs, logout } from "../../firebaseconfig";
@@ -229,13 +229,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const offsetRef = useRef<number>(0);
   const { user } = useContext(AuthContext);
 
-  const handleRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-
-    await loadStats();
-    setTimeout(() => setRefreshing(false), 500);
-  }, []);
-
+  // stats loader, defined before any hook uses it
   const loadStats = React.useCallback(async () => {
     if (!user) {
       setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
@@ -259,6 +253,22 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       console.error("[ProfileScreen] loadStats failed", e);
     }
   }, [user]);
+
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+
+    await loadStats();
+    setTimeout(() => setRefreshing(false), 500);
+  }, [loadStats]);
+
+  // reload stats when user changes (e.g. after login/logout)
+  useEffect(() => {
+    if (user) {
+      loadStats();
+    } else {
+      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+    }
+  }, [user, loadStats]);
 
   return (
     <LinearGradient
