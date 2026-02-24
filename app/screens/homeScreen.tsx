@@ -110,7 +110,7 @@ const HomeScreen: React.FC = () => {
           }
           contentContainerStyle={{
             flexGrow: 1,
-            paddingTop: (insets.top ?? 0) * 0.5, // reduced gap above personality card
+            paddingTop: Math.max(6, (insets.top ?? 0) * 0.05), // smaller gap above personality card
             paddingBottom:
               BASE_TABBAR_HEIGHT +
               (insets.bottom ?? (Platform.OS === "ios" ? 20 : 8)) +
