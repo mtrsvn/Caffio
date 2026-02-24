@@ -22,21 +22,23 @@ type Props = {
 
 export default function PersonalityCard({ personality }: Props) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.header}>Your Coffee Personality</Text>
-      <View style={styles.body}>
-        <View style={styles.iconCircle}>
-          <Coffee size={36} color="#fff" />
-        </View>
-        <View style={styles.info}>
-          <Text style={styles.name}>{personality.name}</Text>
-          <Text style={styles.desc}>{personality.description}</Text>
-          <View style={styles.tagsRow}>
-            {personality.tags.map((tag) => (
-              <View key={tag} style={styles.tagPill}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
+    <View style={styles.wrapper}>
+      <View style={styles.card}>
+        <Text style={styles.header}>Your Coffee Personality</Text>
+        <View style={styles.body}>
+          <View style={styles.iconCircle}>
+            <Coffee size={36} color="#fff" />
+          </View>
+          <View style={styles.info}>
+            <Text style={styles.name}>{personality.name}</Text>
+            <Text style={styles.desc}>{personality.description}</Text>
+            <View style={styles.tagsRow}>
+              {personality.tags.map((tag) => (
+                <View key={tag} style={styles.tagPill}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
       </View>
@@ -45,6 +47,7 @@ export default function PersonalityCard({ personality }: Props) {
 }
 
 const styles = StyleSheet.create<{
+  wrapper: ViewStyle;
   card: ViewStyle;
   header: TextStyle;
   body: ViewStyle;
@@ -56,23 +59,28 @@ const styles = StyleSheet.create<{
   tagPill: ViewStyle;
   tagText: TextStyle;
 }>({
-  card: {
-    margin: 16,
-    borderRadius: 16,
-    backgroundColor: colors.navbarBg,
-    padding: 20,
+  wrapper: {
+    marginBottom: 14,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
       default: {},
     }),
+  },
+  card: {
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 0.6,
+    borderColor: colors.navbarBorder,
+    backgroundColor: colors.navbarBg,
+    padding: 20,
   },
   header: {
     fontSize: 16,
