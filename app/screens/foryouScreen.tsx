@@ -1,6 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../components/colors";
 import ForYouCard from "../components/forYouCard";
@@ -17,6 +24,9 @@ const BASE_TABBAR_HEIGHT = 66;
 const ForyouScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshCounter, setRefreshCounter] = React.useState(0);
+
   // flatten menu items from all shops (menu arrays might be nested)
   const items = React.useMemo(() => {
     type Shop = { shop_id: string; name: string; menu: any[] };
@@ -28,6 +38,15 @@ const ForyouScreen: React.FC = () => {
         : [];
       return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
     });
+  }, [refreshCounter]);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // simulate network / reloading data
+    setTimeout(() => {
+      setRefreshCounter((c) => c + 1);
+      setRefreshing(false);
+    }, 800);
   }, []);
 
   const tabBarHeight =
@@ -52,6 +71,14 @@ const ForyouScreen: React.FC = () => {
             styles.listContainer,
             { paddingBottom: tabBarHeight + 12 },
           ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.pageGradientMid]}
+              tintColor="#6D4C41"
+            />
+          }
         >
           {items.map((it) => (
             <ForYouCard
