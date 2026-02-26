@@ -244,9 +244,7 @@ const RegisterScreen: React.FC = () => {
               ) : (
                 <View style={styles.googleContent}>
                   <Image
-                    source={{
-                      uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/250px-Google_%22G%22_logo.svg.png",
-                    }}
+                    source={require("../assets/google.png")}
                     style={styles.googleIcon}
                     resizeMode="contain"
                   />
