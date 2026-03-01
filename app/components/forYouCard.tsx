@@ -23,10 +23,16 @@ export type MenuItem = {
 type Props = {
   item: MenuItem;
   shopName: string;
+  matchScore?: number;
   onPress?: () => void;
 };
 
-export default function ForYouCard({ item, shopName, onPress }: Props) {
+export default function ForYouCard({
+  item,
+  shopName,
+  matchScore,
+  onPress,
+}: Props) {
   const NAVBAR_BG = colors.navbarBg;
   const BORDER = colors.navbarBorder;
   const NAVBAR_TEXT = colors.gradientEnd;
@@ -97,7 +103,11 @@ export default function ForYouCard({ item, shopName, onPress }: Props) {
               strokeWidth={0}
               style={{ marginRight: 2 }}
             />
-            <Text style={[styles.rowText, { color: MUTED }]}>0% Match</Text>
+            <Text style={[styles.rowText, { color: MUTED }]}>
+              {typeof matchScore === "number"
+                ? `${Math.round(matchScore)}% Match`
+                : "Match"}
+            </Text>
           </View>
         </View>
       </View>

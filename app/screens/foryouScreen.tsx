@@ -9,8 +9,11 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getCoffeeLogs } from "../../firebaseconfig";
+import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import ForYouCard from "../components/forYouCard";
+import { GEMINI_BACKEND_URL } from "../config";
 import shops from "../data/shops.json";
 
 const PAGE_GRADIENT = [
@@ -23,9 +26,14 @@ const BASE_TABBAR_HEIGHT = 66;
 
 const ForyouScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { user } = React.useContext(AuthContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [refreshCounter, setRefreshCounter] = React.useState(0);
+  const [recommendations, setRecommendations] = React.useState<
+    Record<string, { score: number }>
+  >({});
+  const [recError, setRecError] = React.useState<string | null>(null);
 
   // flatten menu items from all shops (menu arrays might be nested)
   const items = React.useMemo(() => {
@@ -40,14 +48,112 @@ const ForyouScreen: React.FC = () => {
     });
   }, [refreshCounter]);
 
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    // simulate network / reloading data
-    setTimeout(() => {
-      setRefreshCounter((c) => c + 1);
+  const makeKey = React.useCallback(
+    (itemId: string, shopName: string) => `${itemId}::${shopName}`,
+    [],
+  );
+
+  const fetchRecommendations = React.useCallback(async () => {
+    if (!user) {
+      setRecommendations({});
+      setRecError("Log in to see personalized matches.");
       setRefreshing(false);
-    }, 800);
-  }, []);
+      return;
+    }
+
+    setRecError(null);
+    setRefreshing(true);
+
+    try {
+      const logs = await getCoffeeLogs(user.uid);
+      const normalizedLogs = (logs || []).map((log: any) => ({
+        coffeeType: log.coffeeType ?? "",
+        tasteProfile: Array.isArray(log.tasteProfile) ? log.tasteProfile : [],
+        rating: Number(log.rating ?? 0),
+        favorite: Boolean(log.favorite),
+        cafe: log.cafe ?? "",
+      }));
+
+      if (normalizedLogs.length === 0) {
+        setRecommendations({});
+        setRecError("Add a coffee log to get personalized matches.");
+        setRefreshing(false);
+        return;
+      }
+
+      const payload = {
+        userId: user.uid,
+        userLogs: normalizedLogs,
+        items: items.map((it) => ({
+          item_id: it.item_id,
+          name: it.name,
+          shopName: it.shopName,
+          tasteProfile: it.tasteProfile ?? [],
+          coffeeType: it.coffeeType ?? it.category ?? "",
+        })),
+      };
+
+      const response = await fetch(
+        `${GEMINI_BACKEND_URL}/api/recommendations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "Failed to load recommendations");
+      }
+
+      const data = await response.json();
+      const map: Record<string, { score: number }> = {};
+      (data.recommendations || []).forEach((rec: any) => {
+        const key = makeKey(rec.item_id, rec.shopName);
+        map[key] = {
+          score: typeof rec.score === "number" ? rec.score : 0,
+        };
+      });
+      setRecommendations(map);
+    } catch (err: any) {
+      console.error("[ForyouScreen] recommendation fetch failed", err);
+      setRecError(
+        err?.message
+          ? `${err.message} (backend: ${GEMINI_BACKEND_URL})`
+          : `Unable to load matches (backend: ${GEMINI_BACKEND_URL})`,
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, [items, makeKey, user]);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshCounter((c) => c + 1);
+    fetchRecommendations();
+  }, [fetchRecommendations]);
+
+  const recommendedItems = React.useMemo(() => {
+    const scored = items
+      .map((it) => {
+        const rec = recommendations[makeKey(it.item_id, it.shopName)];
+        return rec ? { item: it, score: rec.score } : null;
+      })
+      .filter(Boolean) as { item: any; score: number }[];
+
+    if (scored.length === 0) {
+      return [];
+    }
+
+    return scored
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 30) // show more recommendations
+      .map((s) => ({ ...s.item, _score: s.score }));
+  }, [items, recommendations, makeKey]);
+
+  React.useEffect(() => {
+    fetchRecommendations();
+  }, [fetchRecommendations]);
 
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
@@ -80,13 +186,23 @@ const ForyouScreen: React.FC = () => {
             />
           }
         >
-          {items.map((it) => (
-            <ForYouCard
-              key={it.item_id + "-" + it.shopName}
-              item={it}
-              shopName={it.shopName}
-            />
-          ))}
+          {recommendedItems.length === 0 ? (
+            <Text style={{ color: colors.iconInactive, marginTop: 6 }}>
+              {recError || "No recommendations yet."}
+            </Text>
+          ) : (
+            recommendedItems.map((it) => {
+              const rec = recommendations[makeKey(it.item_id, it.shopName)];
+              return (
+                <ForYouCard
+                  key={it.item_id + "-" + it.shopName}
+                  item={it}
+                  shopName={it.shopName}
+                  matchScore={rec?.score}
+                />
+              );
+            })
+          )}
         </ScrollView>
       </View>
     </LinearGradient>

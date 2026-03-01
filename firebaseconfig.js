@@ -112,15 +112,7 @@ export async function addUserDoc(uid, data) {
 
 export async function uploadCoffeePhoto(uid, localUri) {
   console.log("[firebaseconfig] uploadCoffeePhoto called with", localUri);
-
-  const response = await fetch(localUri);
-  if (!response.ok) {
-    const msg = `fetch failed status ${response.status}`;
-
-    console.error("[firebaseconfig] uploadCoffeePhoto fetch error", msg);
-    throw new Error(msg);
-  }
-  const blob = await response.blob();
+  const blob = await localUriToBlob(localUri);
   const filename = `${Date.now()}.jpg`;
   const photoRef = storageRef(storage, `coffeePhotos/${uid}/${filename}`);
 
@@ -160,6 +152,30 @@ export async function uploadCoffeePhoto(uid, localUri) {
       err,
     );
     throw err;
+  }
+}
+
+async function localUriToBlob(localUri) {
+  try {
+    const response = await fetch(localUri);
+    if (!response.ok) {
+      throw new Error(`fetch failed status ${response.status}`);
+    }
+    return await response.blob();
+  } catch (fetchErr) {
+    console.warn(
+      "[firebaseconfig] localUriToBlob fetch failed, trying XHR fallback",
+      fetchErr,
+    );
+
+    return await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => resolve(xhr.response);
+      xhr.onerror = () => reject(new Error("XHR blob conversion failed"));
+      xhr.responseType = "blob";
+      xhr.open("GET", localUri, true);
+      xhr.send(null);
+    });
   }
 }
 
