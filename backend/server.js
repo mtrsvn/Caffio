@@ -66,12 +66,27 @@ app.post("/api/recommendations", async (req, res) => {
     );
     return res.json({ recommendations: diversified, scored_by: "gemini" });
   } catch (geminiErr) {
-    console.error("[backend] Gemini failed:", geminiErr.message);
-    return res.status(500).json({
-      error: "Gemini scoring failed",
-      details: geminiErr.message,
-      scored_by: "none",
-    });
+    const isQuota =
+      geminiErr.status === 429 ||
+      /quota|resource.?exhausted|rate.?limit/i.test(geminiErr.message || "");
+
+    console.warn(
+      isQuota
+        ? "[backend] Gemini quota exceeded – falling back to local scorer"
+        : "[backend] Gemini failed – falling back to local scorer",
+      geminiErr.message,
+    );
+
+    try {
+      const fallback = diversify(localScore(preparedItems, logs));
+      return res.json({ recommendations: fallback, scored_by: "local" });
+    } catch (localErr) {
+      return res.status(500).json({
+        error: "Scoring failed",
+        details: geminiErr.message,
+        scored_by: "none",
+      });
+    }
   }
 });
 

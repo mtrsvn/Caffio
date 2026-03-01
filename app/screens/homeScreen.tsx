@@ -31,22 +31,89 @@ const PAGE_GRADIENT = [
 
 const BASE_TABBAR_HEIGHT = 66;
 
+// Match personality by scoring each one against the user's log tags
+function matchPersonality(
+  logs: any[],
+  personalities: Personality[],
+): Personality | null {
+  if (!personalities.length) return null;
+  if (!logs.length) return null;
+
+  const tagWeights = new Map<string, number>();
+
+  logs.forEach((log) => {
+    const w = Math.max(1, Number(log.rating || 1)) + (log.favorite ? 2 : 0);
+    const ct = (log.coffeeType || "").trim().toLowerCase();
+
+    // Add coffeeType as a matchable tag + derived synonyms
+    if (ct) {
+      tagWeights.set(ct, (tagWeights.get(ct) || 0) + w);
+      if (ct.includes("cold brew")) {
+        ["cold", "iced", "cold brew"].forEach((t) =>
+          tagWeights.set(t, (tagWeights.get(t) || 0) + w),
+        );
+      }
+      if (ct === "espresso" || ct.includes("espresso")) {
+        ["espresso", "strong", "bold"].forEach((t) =>
+          tagWeights.set(t, (tagWeights.get(t) || 0) + w),
+        );
+      }
+      if (ct.includes("frapp")) {
+        ["frappe", "sweet", "creamy"].forEach((t) =>
+          tagWeights.set(t, (tagWeights.get(t) || 0) + w),
+        );
+      }
+      if (ct === "americano") {
+        ["americano", "black", "pure"].forEach((t) =>
+          tagWeights.set(t, (tagWeights.get(t) || 0) + w),
+        );
+      }
+      if (ct === "latte") {
+        tagWeights.set("latte", (tagWeights.get("latte") || 0) + w);
+        tagWeights.set("milky", (tagWeights.get("milky") || 0) + w);
+      }
+      if (ct === "cappuccino") {
+        tagWeights.set("cappuccino", (tagWeights.get("cappuccino") || 0) + w);
+        tagWeights.set("smooth", (tagWeights.get("smooth") || 0) + w);
+      }
+      if (ct === "matcha") {
+        tagWeights.set("matcha", (tagWeights.get("matcha") || 0) + w);
+        tagWeights.set("trend", (tagWeights.get("trend") || 0) + w);
+      }
+      if (ct === "mocha") {
+        tagWeights.set("mocha", (tagWeights.get("mocha") || 0) + w);
+        tagWeights.set("sweet", (tagWeights.get("sweet") || 0) + w);
+      }
+    }
+
+    // Add tasteProfile tags directly
+    (log.tasteProfile || []).forEach((tag: string) => {
+      const t = (tag || "").trim().toLowerCase();
+      if (t) tagWeights.set(t, (tagWeights.get(t) || 0) + w);
+    });
+  });
+
+  let bestScore = -1;
+  let best = personalities[0];
+  personalities.forEach((p) => {
+    const score = p.tags.reduce(
+      (sum, tag) => sum + (tagWeights.get(tag.toLowerCase()) || 0),
+      0,
+    );
+    if (score > bestScore) {
+      bestScore = score;
+      best = p;
+    }
+  });
+
+  return best;
+}
+
 const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const personality: Personality = React.useMemo(() => {
-    const list: Personality[] = personalitiesData as any;
-    if (list.length === 0) {
-      return { name: "", description: "", tags: [] };
-    }
-    const idx = Math.floor(Math.random() * list.length);
-    return list[idx];
-  }, []);
 
-  // useContext infers the type from the AuthContext value
   const { user } = useContext(AuthContext);
-  // logs are no longer displayed on home; state removed
 
-  // logs fetched from Firebase; show latest three
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
   const [firstRun, setFirstRun] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -54,6 +121,13 @@ const HomeScreen: React.FC = () => {
   const [editingEntry, setEditingEntry] = React.useState<LogEntry | null>(null);
   const [editVisible, setEditVisible] = React.useState(false);
 
+  // Derive personality from logs; fall back to first entry until logs load
+  const personality: Personality = React.useMemo(() => {
+    const list: Personality[] = personalitiesData as any;
+    if (!list.length) return { name: "", description: "", tags: [] };
+    const matched = matchPersonality(logs, list);
+    return matched ?? list[0];
+  }, [logs]);
   // AI recommendations (top 3)
   const [topRecs, setTopRecs] = React.useState<
     Array<{ item: any; shopName: string; score: number }>
@@ -142,7 +216,7 @@ const HomeScreen: React.FC = () => {
       if (showSpinner) setRefreshing(true);
       try {
         const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
-        setLogs(fetched.slice(0, 3));
+        setLogs(fetched); // keep all for personality matching
         fetchRecommendations(fetched);
       } catch (err: any) {
         console.error("[HomeScreen] failed to load logs", err);
@@ -195,7 +269,7 @@ const HomeScreen: React.FC = () => {
               </Text>
             </View>
             <View style={{ paddingHorizontal: 16 }}>
-              {logs.map((entry) => (
+              {logs.slice(0, 3).map((entry) => (
                 <LogCard
                   key={entry.id}
                   entry={entry}
@@ -212,10 +286,25 @@ const HomeScreen: React.FC = () => {
                   }}
                 />
               ))}
-              {!user && !firstRun && (
-                <Text style={{ color: colors.iconInactive, marginTop: 8 }}>
-                  Log in to view your entries
-                </Text>
+              {!firstRun && !user && (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyIcon}>☕</Text>
+                  <Text style={styles.emptyTitle}>
+                    Log in to view your entries
+                  </Text>
+                  <Text style={styles.emptySubtitle}>
+                    Sign in to track your coffee journey
+                  </Text>
+                </View>
+              )}
+              {!firstRun && user && logs.length === 0 && (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyIcon}>📝</Text>
+                  <Text style={styles.emptyTitle}>No logs yet</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Tap the + button to log your first coffee!
+                  </Text>
+                </View>
               )}
             </View>
           </View>
@@ -226,14 +315,34 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.foryouSubtitle}>
               Based on your taste preferences
             </Text>
-            {topRecs.map((rec) => (
-              <ForYouCard
-                key={rec.item.item_id + "-" + rec.shopName}
-                item={rec.item}
-                shopName={rec.shopName}
-                matchScore={rec.score}
-              />
-            ))}
+            {topRecs.length > 0 ? (
+              topRecs.map((rec) => (
+                <ForYouCard
+                  key={rec.item.item_id + "-" + rec.shopName}
+                  item={rec.item}
+                  shopName={rec.shopName}
+                  matchScore={rec.score}
+                />
+              ))
+            ) : !firstRun && !user ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyIcon}>✨</Text>
+                <Text style={styles.emptyTitle}>
+                  Log in for personalised picks
+                </Text>
+                <Text style={styles.emptySubtitle}>
+                  Sign in so we can match drinks to your taste
+                </Text>
+              </View>
+            ) : !firstRun && user && logs.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyIcon}>🎯</Text>
+                <Text style={styles.emptyTitle}>Log a coffee first</Text>
+                <Text style={styles.emptySubtitle}>
+                  We'll curate picks based on what you enjoy
+                </Text>
+              </View>
+            ) : null}
           </View>
         </ScrollView>
 
@@ -295,6 +404,43 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "#6D4C41",
+  },
+  emptyCard: {
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 8,
+    borderRadius: 14,
+    backgroundColor: colors.navbarBg,
+    borderWidth: 1,
+    borderColor: colors.navbarBorder,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: { elevation: 2 },
+      default: {},
+    }),
+  },
+  emptyIcon: {
+    fontSize: 36,
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#4E342E",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: "#6D4C41",
+    textAlign: "center",
   },
 });
 

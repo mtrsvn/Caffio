@@ -1,26 +1,28 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  Coffee,
-  Heart,
-  LogOut,
-  MapPin,
-  TrendingUp,
-  User,
+    Coffee,
+    Heart,
+    LogOut,
+    MapPin,
+    Store,
+    Tag,
+    TrendingUp,
+    User
 } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { getCoffeeLogs, logout } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
@@ -175,9 +177,14 @@ const StatCard: React.FC<StatCardProps> = ({ Icon, label, value = 0 }) => {
 type PrefCardProps = {
   label: string;
   value?: string;
+  Icon: React.FC<any>;
 };
 
-const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
+const PrefCard: React.FC<PrefCardProps> = ({
+  label,
+  value = "None yet",
+  Icon,
+}) => {
   return (
     <TouchableOpacity activeOpacity={0.95} style={styles.prefWrapper}>
       <View
@@ -210,9 +217,7 @@ const PrefCard: React.FC<PrefCardProps> = ({ label, value = "None yet" }) => {
             end={[1, 1]}
             style={styles.prefBadge}
           >
-            <Text style={[styles.prefBadgeText, { color: colors.navbarBg }]}>
-              0
-            </Text>
+            <Icon size={22} color={colors.navbarBg} />
           </LinearGradient>
         </View>
       </View>
@@ -232,6 +237,11 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
     favorites: 0,
     thisMonth: 0,
   });
+  const [prefs, setPrefs] = useState({
+    favoriteCafe: "None yet",
+    favoriteType: "None yet",
+    topTaste: "None yet",
+  });
   const scrollRef = useRef<any>(null);
   const offsetRef = useRef<number>(0);
   const { user } = useContext(AuthContext);
@@ -240,6 +250,11 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const loadStats = React.useCallback(async () => {
     if (!user) {
       setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+      setPrefs({
+        favoriteCafe: "None yet",
+        favoriteType: "None yet",
+        topTaste: "None yet",
+      });
       return;
     }
     try {
@@ -256,6 +271,27 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
         );
       }).length;
       setStats({ coffees, cafes, favorites, thisMonth });
+
+      // compute preferences
+      const topBy = <T extends string>(vals: T[]): string => {
+        if (!vals.length) return "None yet";
+        const freq = new Map<string, number>();
+        vals.forEach((v) => {
+          if (v) freq.set(v, (freq.get(v) ?? 0) + 1);
+        });
+        return (
+          [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "None yet"
+        );
+      };
+
+      const favoriteCafe = topBy(logs.map((l) => l.cafe ?? ""));
+      const favoriteType = topBy(logs.map((l) => (l as any).coffeeType ?? ""));
+      const allTastes = logs.flatMap((l) =>
+        Array.isArray((l as any).tasteProfile) ? (l as any).tasteProfile : [],
+      );
+      const topTaste = topBy(allTastes);
+
+      setPrefs({ favoriteCafe, favoriteType, topTaste });
     } catch (e) {
       console.error("[ProfileScreen] loadStats failed", e);
     }
@@ -274,6 +310,11 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       loadStats();
     } else {
       setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+      setPrefs({
+        favoriteCafe: "None yet",
+        favoriteType: "None yet",
+        topTaste: "None yet",
+      });
     }
   }, [user, loadStats]);
 
@@ -331,9 +372,17 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
             Your Preferences
           </Text>
 
-          <PrefCard label="Favorite Cafe" />
-          <PrefCard label="Favorite Type" />
-          <PrefCard label="Top Taste" />
+          <PrefCard
+            label="Favorite Cafe"
+            value={prefs.favoriteCafe}
+            Icon={Store}
+          />
+          <PrefCard
+            label="Favorite Type"
+            value={prefs.favoriteType}
+            Icon={Coffee}
+          />
+          <PrefCard label="Top Taste" value={prefs.topTaste} Icon={Tag} />
 
           {user ? (
             <TouchableOpacity
@@ -522,10 +571,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 16,
-  },
-  prefBadgeText: {
-    fontWeight: "700",
-    fontSize: 16,
   },
 
   sectionTitle: {
