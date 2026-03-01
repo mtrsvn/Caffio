@@ -1,16 +1,16 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
 import {
-  Platform,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
@@ -19,6 +19,7 @@ import EditLogSheet from "../components/editLogSheet";
 import ForYouCard from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
+import { GEMINI_BACKEND_URL } from "../config";
 import personalitiesData from "../data/personalities.json";
 import shops from "../data/shops.json";
 
@@ -53,34 +54,12 @@ const HomeScreen: React.FC = () => {
   const [editingEntry, setEditingEntry] = React.useState<LogEntry | null>(null);
   const [editVisible, setEditVisible] = React.useState(false);
 
-  const fetchLogs = React.useCallback(
-    async (showSpinner = true) => {
-      if (!user) {
-        setLogs([]);
-        if (showSpinner) setRefreshing(false);
-        setFirstRun(false);
-        return;
-      }
-      if (showSpinner) setRefreshing(true);
-      try {
-        const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
-        setLogs(fetched.slice(0, 3));
-      } catch (err: any) {
-        console.error("[HomeScreen] failed to load logs", err);
-      } finally {
-        if (showSpinner) setRefreshing(false);
-        setFirstRun(false);
-      }
-    },
-    [user],
-  );
+  // AI recommendations (top 3)
+  const [topRecs, setTopRecs] = React.useState<
+    Array<{ item: any; shopName: string; score: number }>
+  >([]);
 
-  React.useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
-  // prepare For You items (same logic as foryouScreen)
-  const items = React.useMemo(() => {
+  const allItems = React.useMemo(() => {
     type Shop = { shop_id: string; name: string; menu: any[] };
     const shopsData: Shop[] = shops as any;
     return shopsData.flatMap((shop) => {
@@ -90,6 +69,94 @@ const HomeScreen: React.FC = () => {
       return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
     });
   }, []);
+
+  const fetchRecommendations = React.useCallback(
+    async (userLogs: LogEntry[]) => {
+      if (!user || userLogs.length === 0) {
+        setTopRecs([]);
+        return;
+      }
+      try {
+        const normalizedLogs = userLogs.map((log: any) => ({
+          coffeeType: log.coffeeType ?? "",
+          tasteProfile: Array.isArray(log.tasteProfile) ? log.tasteProfile : [],
+          rating: Number(log.rating ?? 0),
+          favorite: Boolean(log.favorite),
+          cafe: log.cafe ?? "",
+        }));
+
+        const payload = {
+          userId: user.uid,
+          userLogs: normalizedLogs,
+          items: allItems.map((it) => ({
+            item_id: it.item_id,
+            name: it.name,
+            shopName: it.shopName,
+            tasteProfile: it.tasteProfile ?? [],
+            coffeeType: it.coffeeType ?? it.category ?? "",
+          })),
+        };
+
+        const response = await fetch(
+          `${GEMINI_BACKEND_URL}/api/recommendations`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const top3 = (data.recommendations || [])
+          .slice(0, 3)
+          .map((rec: any) => {
+            const itemData = allItems.find(
+              (it) =>
+                it.item_id === rec.item_id && it.shopName === rec.shopName,
+            );
+            return itemData
+              ? { item: itemData, shopName: rec.shopName, score: rec.score }
+              : null;
+          })
+          .filter(Boolean);
+
+        setTopRecs(top3);
+      } catch (err) {
+        console.error("[HomeScreen] recommendation fetch failed", err);
+      }
+    },
+    [user, allItems],
+  );
+
+  const fetchLogs = React.useCallback(
+    async (showSpinner = true) => {
+      if (!user) {
+        setLogs([]);
+        setTopRecs([]);
+        if (showSpinner) setRefreshing(false);
+        setFirstRun(false);
+        return;
+      }
+      if (showSpinner) setRefreshing(true);
+      try {
+        const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
+        setLogs(fetched.slice(0, 3));
+        fetchRecommendations(fetched);
+      } catch (err: any) {
+        console.error("[HomeScreen] failed to load logs", err);
+      } finally {
+        if (showSpinner) setRefreshing(false);
+        setFirstRun(false);
+      }
+    },
+    [user, fetchRecommendations],
+  );
+
+  React.useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   return (
     <LinearGradient
@@ -159,11 +226,12 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.foryouSubtitle}>
               Based on your taste preferences
             </Text>
-            {items.slice(0, 3).map((it) => (
+            {topRecs.map((rec) => (
               <ForYouCard
-                key={it.item_id + "-" + it.shopName}
-                item={it}
-                shopName={it.shopName}
+                key={rec.item.item_id + "-" + rec.shopName}
+                item={rec.item}
+                shopName={rec.shopName}
+                matchScore={rec.score}
               />
             ))}
           </View>

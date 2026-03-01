@@ -95,20 +95,20 @@ export default function ForYouCard({
             </Text>
           </View>
 
-          <View style={styles.row}>
-            <Star
-              size={13}
-              color={colors.gradientStart}
-              fill={colors.gradientStart}
-              strokeWidth={0}
-              style={{ marginRight: 2 }}
-            />
-            <Text style={[styles.rowText, { color: MUTED }]}>
-              {typeof matchScore === "number"
-                ? `${Math.round(matchScore)}% Match`
-                : "Match"}
-            </Text>
-          </View>
+          {typeof matchScore === "number" && (
+            <View style={styles.row}>
+              <Star
+                size={13}
+                color={colors.gradientStart}
+                fill={colors.gradientStart}
+                strokeWidth={0}
+                style={{ marginRight: 2 }}
+              />
+              <Text style={[styles.rowText, { color: MUTED }]}>
+                {Math.round(matchScore)}% Match
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>

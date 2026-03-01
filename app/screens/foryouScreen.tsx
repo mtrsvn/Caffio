@@ -191,17 +191,16 @@ const ForyouScreen: React.FC = () => {
               {recError || "No recommendations yet."}
             </Text>
           ) : (
-            recommendedItems.map((it) => {
-              const rec = recommendations[makeKey(it.item_id, it.shopName)];
-              return (
-                <ForYouCard
-                  key={it.item_id + "-" + it.shopName}
-                  item={it}
-                  shopName={it.shopName}
-                  matchScore={rec?.score}
-                />
-              );
-            })
+            recommendedItems.map((it) => (
+              <ForYouCard
+                key={it.item_id + "-" + it.shopName}
+                item={it}
+                shopName={it.shopName}
+                matchScore={
+                  typeof it._score === "number" ? it._score : undefined
+                }
+              />
+            ))
           )}
         </ScrollView>
       </View>
