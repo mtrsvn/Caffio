@@ -1,13 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Platform,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
@@ -118,14 +118,14 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
               return null;
             }
             return (
-              <View style={{ alignItems: "center", marginTop: 40 }}>
+              <View style={styles.emptyState}>
                 {refreshing ? (
                   <ActivityIndicator
                     size="large"
                     color={colors.gradientStart}
                   />
                 ) : (
-                  <Text style={{ color: colors.iconInactive }}>
+                  <Text style={styles.emptyText}>
                     {user ? "No logs yet" : "Log in to view your entries"}
                   </Text>
                 )}
@@ -183,6 +183,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  emptyState: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+  },
+  emptyText: {
+    color: colors.iconInactive,
+    marginTop: 6,
   },
 });
 

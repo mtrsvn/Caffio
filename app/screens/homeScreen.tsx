@@ -1,4 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { LogIn, Sparkles } from "lucide-react-native";
 import React, { useContext } from "react";
 import {
     Platform,
@@ -258,7 +259,28 @@ const HomeScreen: React.FC = () => {
               12,
           }}
         >
-          <PersonalityCard personality={personality} />
+          {user ? (
+            <PersonalityCard personality={personality} />
+          ) : (
+            <View style={styles.personalityEmptyCard}>
+              <Text style={styles.personalityHeader}>
+                Your Coffee Personality
+              </Text>
+              <View style={styles.personalityBody}>
+                <View style={styles.personalityIconCircle}>
+                  <LogIn size={36} color="#fff" />
+                </View>
+                <View style={styles.personalityInfo}>
+                  <Text style={styles.emptyTitle}>
+                    Log in to see your personality
+                  </Text>
+                  <Text style={styles.emptySubtitle}>
+                    Sign in so we can show your coffee match
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* sample logs */}
           <View style={{ marginTop: 12 }}>
@@ -288,7 +310,11 @@ const HomeScreen: React.FC = () => {
               ))}
               {!firstRun && !user && (
                 <View style={styles.emptyCard}>
-                  <Text style={styles.emptyIcon}>☕</Text>
+                  <LogIn
+                    size={32}
+                    color={colors.gradientStart}
+                    style={styles.emptyIcon}
+                  />
                   <Text style={styles.emptyTitle}>
                     Log in to view your entries
                   </Text>
@@ -326,7 +352,11 @@ const HomeScreen: React.FC = () => {
               ))
             ) : !firstRun && !user ? (
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyIcon}>✨</Text>
+                <Sparkles
+                  size={32}
+                  color={colors.gradientStart}
+                  style={styles.emptyIcon}
+                />
                 <Text style={styles.emptyTitle}>
                   Log in for personalised picks
                 </Text>
@@ -427,20 +457,60 @@ const styles = StyleSheet.create({
     }),
   },
   emptyIcon: {
-    fontSize: 36,
     marginBottom: 10,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#4E342E",
+    color: colors.gradientEnd,
     marginBottom: 4,
     textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 13,
-    color: "#6D4C41",
+    color: colors.iconInactive,
     textAlign: "center",
+  },
+  personalityEmptyCard: {
+    margin: 16,
+    borderRadius: 16,
+    backgroundColor: colors.navbarBg,
+    borderWidth: 1.2,
+    borderColor: colors.navbarBorder,
+    padding: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
+      },
+      android: { elevation: 4 },
+      default: {},
+    }),
+  },
+  personalityHeader: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.gradientEnd,
+    marginBottom: 12,
+  },
+  personalityBody: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  personalityIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.gradientStart,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  personalityInfo: {
+    flex: 1,
+    alignItems: "flex-start",
   },
 });
 

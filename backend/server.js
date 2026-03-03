@@ -52,10 +52,15 @@ app.post("/api/recommendations", async (req, res) => {
       JSON.stringify({ logs: logs.length, items: preparedItems.length }),
     );
 
-    const prompt = buildPrompt(logs, preparedItems);
+    // Shuffle items so Gemini sees them in different order each call → varied scores on refresh
+    const shuffledItems = [...preparedItems].sort(() => Math.random() - 0.5);
+    const prompt = buildPrompt(logs, shuffledItems);
     const geminiResult = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: "application/json" },
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 1.0, // introduce variety so refresh gives different results
+      },
     });
     const text = geminiResult.response.text();
     const parsed = parseGeminiJson(text, preparedItems, logs);
@@ -78,7 +83,11 @@ app.post("/api/recommendations", async (req, res) => {
     );
 
     try {
-      const fallback = diversify(localScore(preparedItems, logs));
+      // Add small noise so refreshing shows different ordering
+      const fallback = diversify(localScore(preparedItems, logs)).map((r) => ({
+        ...r,
+        score: Math.min(100, Math.max(0, r.score + (Math.random() * 10 - 5))),
+      }));
       return res.json({ recommendations: fallback, scored_by: "local" });
     } catch (localErr) {
       return res.status(500).json({

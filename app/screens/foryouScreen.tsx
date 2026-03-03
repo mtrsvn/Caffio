@@ -29,7 +29,6 @@ const ForyouScreen: React.FC = () => {
   const { user } = React.useContext(AuthContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
-  const [refreshCounter, setRefreshCounter] = React.useState(0);
   const [recommendations, setRecommendations] = React.useState<
     Record<string, { score: number }>
   >({});
@@ -46,7 +45,7 @@ const ForyouScreen: React.FC = () => {
         : [];
       return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
     });
-  }, [refreshCounter]);
+  }, []);
 
   const makeKey = React.useCallback(
     (itemId: string, shopName: string) => `${itemId}::${shopName}`,
@@ -129,7 +128,6 @@ const ForyouScreen: React.FC = () => {
   }, [items, makeKey, user]);
 
   const onRefresh = React.useCallback(() => {
-    setRefreshCounter((c) => c + 1);
     fetchRecommendations();
   }, [fetchRecommendations]);
 
