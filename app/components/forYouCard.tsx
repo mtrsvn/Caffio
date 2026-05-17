@@ -1,14 +1,12 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Coffee, MapPin, Star } from "lucide-react-native";
 import React from "react";
 import {
-    Image,
-    Platform,
-    StyleSheet,
-    Text,
-    TextStyle,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import colors from "./colors";
 
@@ -27,86 +25,45 @@ type Props = {
   onPress?: () => void;
 };
 
-export default function ForYouCard({
-  item,
-  shopName,
-  matchScore,
-  onPress,
-}: Props) {
-  const NAVBAR_BG = colors.navbarBg;
-  const BORDER = colors.navbarBorder;
-  const NAVBAR_TEXT = colors.gradientEnd;
-  const MUTED = colors.iconInactive;
-
+export default function ForYouCard({ item, shopName, matchScore, onPress }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.95}
       onPress={onPress}
-      style={styles.wrapper}
+      style={styles.card}
       accessibilityRole="button"
     >
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: NAVBAR_BG, borderColor: BORDER },
-        ]}
+      {/* Left circular gradient avatar */}
+      <LinearGradient
+        colors={[colors.tasteSelectedGradientStart, colors.tasteSelectedGradientEnd]}
+        start={[0, 0]}
+        end={[1, 1]}
+        style={styles.avatar}
       >
-        {/* left image */}
-        <View style={styles.imageContainer}>
-          {item.image_url ? (
-            <Image
-              source={{ uri: item.image_url }}
-              style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
-              resizeMode="cover"
-            />
-          ) : (
-            <View
-              style={[
-                styles.imagePlaceholder,
-                { backgroundColor: colors.gradientStart },
-              ]}
-            >
-              <Coffee size={36} color="#fff" fill="none" strokeWidth={2} />
+        <Coffee size={18} color="#fff" />
+      </LinearGradient>
+
+      {/* Body */}
+      <View style={styles.body}>
+        <Text style={styles.title} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <View style={styles.row}>
+          <MapPin size={11} color={colors.textMuted} />
+          <Text style={styles.rowText} numberOfLines={1}>
+            {shopName}
+          </Text>
+        </View>
+        <View style={styles.badgeRow}>
+          {typeof matchScore === "number" && (
+            <View style={styles.matchChip}>
+              <Star size={10} color={colors.accent} fill={colors.accent} strokeWidth={0} />
+              <Text style={styles.matchText}>{Math.round(matchScore)}% match</Text>
             </View>
           )}
-        </View>
-
-        {/* body */}
-        <View style={styles.body}>
-          <Text
-            style={[styles.title, { color: NAVBAR_TEXT }]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-
-          <View style={styles.row}>
-            <View style={styles.pinWrapper}>
-              <MapPin
-                size={12}
-                color={colors.gradientStart}
-                fill={colors.gradientStart}
-                strokeWidth={0}
-              />
-              <View style={[styles.pinHole, { backgroundColor: NAVBAR_BG }]} />
-            </View>
-            <Text style={[styles.rowText, { color: MUTED }]} numberOfLines={1}>
-              {shopName}
-            </Text>
-          </View>
-
-          {typeof matchScore === "number" && (
-            <View style={styles.row}>
-              <Star
-                size={13}
-                color={colors.gradientStart}
-                fill={colors.gradientStart}
-                strokeWidth={0}
-                style={{ marginRight: 2 }}
-              />
-              <Text style={[styles.rowText, { color: MUTED }]}>
-                {Math.round(matchScore)}% Match
-              </Text>
+          {item.category && (
+            <View style={styles.categoryChip}>
+              <Text style={styles.categoryText}>{item.category}</Text>
             </View>
           )}
         </View>
@@ -115,93 +72,92 @@ export default function ForYouCard({
   );
 }
 
-const IMAGE_SIZE = 80;
-
-const styles = StyleSheet.create<{
-  wrapper: ViewStyle;
-  card: ViewStyle;
-  imageContainer: ViewStyle;
-  imagePlaceholder: ViewStyle;
-  body: ViewStyle;
-  title: TextStyle;
-  row: ViewStyle;
-  rowText: TextStyle;
-  pinWrapper: ViewStyle;
-  pinHole: ViewStyle;
-}>({
-  wrapper: {
-    marginBottom: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      },
-      android: {
-        elevation: 3,
-      },
-      default: {},
-    }),
-  },
+const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 0.6,
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#EDE8E2",
+    borderRadius: 18,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
   },
-  imageContainer: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
-    margin: 12,
-    borderRadius: 10,
-    overflow: "hidden",
-    flexShrink: 0,
-  },
-  imagePlaceholder: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
-    backgroundColor: colors.navbarBorder,
+    marginRight: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#6D4C41",
+        shadowOffset: { width: 1, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+      },
+      android: { elevation: 2 },
+    }),
   },
   body: {
     flex: 1,
-    paddingVertical: 14,
-    paddingRight: 14,
     justifyContent: "center",
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
-    marginBottom: 5,
+    color: colors.textPrimary,
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
+    gap: 5,
+    marginBottom: 6,
   },
   rowText: {
-    marginLeft: 6,
-    fontSize: 13,
+    fontSize: 12,
+    color: colors.textMuted,
     flex: 1,
   },
-  pinWrapper: {
-    width: 12,
-    height: 12,
-    marginRight: 4,
+  badgeRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
+    gap: 6,
   },
-  pinHole: {
-    position: "absolute",
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    top: 3,
-    left: 4,
+  matchChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#E4DED7",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  matchText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.accent,
+  },
+  categoryChip: {
+    backgroundColor: "rgba(109,76,65,0.08)",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  categoryText: {
+    fontSize: 10,
+    color: "#5D4037",
+    fontWeight: "600",
   },
 });

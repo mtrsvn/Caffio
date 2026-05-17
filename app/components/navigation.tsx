@@ -158,22 +158,22 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
           tabBarLabel: ({ focused }) => (
             <Text
               style={{
-                color: colors.iconInactive,
-                fontSize: 12,
-                marginTop: 12,
-                fontWeight: focused ? "600" : "400",
+                color: focused ? colors.accent : colors.textMuted,
+                fontSize: 10,
+                marginTop: 2,
+                fontWeight: focused ? "700" : "400",
                 textAlign: "center",
+                letterSpacing: 0.3,
               }}
             >
               {LABEL_MAP[route.name]}
             </Text>
           ),
           tabBarStyle: {
-            backgroundColor: colors.navbarBg,
-            borderTopWidth: 1,
-            borderTopColor: colors.navbarBorder,
+            backgroundColor: "#EDE8E2",
+            borderTopWidth: 0,
             height: tabBarHeight,
-            paddingTop: 14,
+            paddingTop: 10,
             paddingBottom: insets.bottom
               ? insets.bottom * 0.6
               : Platform.OS === "ios"
@@ -183,11 +183,11 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
             right: 0,
             bottom: 0,
             position: "absolute",
-            elevation: 4,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.04,
-            shadowRadius: 4,
+            shadowColor: "#C8BEB4",
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            elevation: 8,
           },
           tabBarItemStyle: {
             alignItems: "center",

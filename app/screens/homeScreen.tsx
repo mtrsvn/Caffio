@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { LogIn, Sparkles } from "lucide-react-native";
 import React, { useContext } from "react";
 import {
@@ -24,11 +23,7 @@ import { GEMINI_BACKEND_URL } from "../config";
 import personalitiesData from "../data/personalities.json";
 import shops from "../data/shops.json";
 
-const PAGE_GRADIENT = [
-  colors.pageGradientTopLeft,
-  colors.pageGradientMid,
-  colors.pageGradientBottomRight,
-] as readonly string[];
+
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -234,12 +229,7 @@ const HomeScreen: React.FC = () => {
   }, [fetchLogs]);
 
   return (
-    <LinearGradient
-      colors={PAGE_GRADIENT as any}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.screenContainer}
-    >
+    <View style={styles.screenContainer}>
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <ScrollView
           refreshControl={
@@ -252,7 +242,7 @@ const HomeScreen: React.FC = () => {
           }
           contentContainerStyle={{
             flexGrow: 1,
-            paddingTop: Math.max(6, (insets.top ?? 0) * 0.05), // smaller gap above personality card
+            paddingTop: 4,
             paddingBottom:
               BASE_TABBAR_HEIGHT +
               (insets.bottom ?? (Platform.OS === "ios" ? 20 : 8)) +
@@ -397,43 +387,49 @@ const HomeScreen: React.FC = () => {
           />
         )}
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1 },
+  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
   foryouTitle: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#4E342E",
-    marginBottom: 6,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 10,
   },
   foryouSubtitle: {
-    fontSize: 14,
-    color: "#6D4C41",
-    marginBottom: 12,
+    fontSize: 12,
+    color: colors.accentLight,
+    marginBottom: 10,
   },
   logsTitle: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#4E342E",
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
     marginBottom: 6,
   },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
     backgroundColor: "transparent",
   },
   title: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#4E342E",
-    marginBottom: 6,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#6D4C41",
+    fontSize: 12,
+    color: colors.accentLight,
   },
   emptyCard: {
     alignItems: "center",
@@ -441,18 +437,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 4,
     marginBottom: 8,
-    borderRadius: 14,
-    backgroundColor: colors.navbarBg,
-    borderWidth: 1,
-    borderColor: colors.navbarBorder,
+    borderRadius: 20,
+    backgroundColor: "#EDE8E2",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+        shadowOffset: { width: 6, height: 6 },
       },
-      android: { elevation: 2 },
+      android: { elevation: 4 },
       default: {},
     }),
   },
@@ -460,39 +454,40 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
-    color: colors.gradientEnd,
+    color: colors.textPrimary,
     marginBottom: 4,
     textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 13,
-    color: colors.iconInactive,
+    color: colors.textMuted,
     textAlign: "center",
+    lineHeight: 18,
   },
   personalityEmptyCard: {
     margin: 16,
-    borderRadius: 16,
-    backgroundColor: colors.navbarBg,
-    borderWidth: 1.2,
-    borderColor: colors.navbarBorder,
+    borderRadius: 20,
+    backgroundColor: "#EDE8E2",
     padding: 20,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.55,
         shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
+        shadowOffset: { width: 6, height: 6 },
       },
       android: { elevation: 4 },
       default: {},
     }),
   },
   personalityHeader: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: "600",
-    color: colors.gradientEnd,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
     marginBottom: 12,
   },
   personalityBody: {
@@ -500,13 +495,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   personalityIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.gradientStart,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+      },
+      android: { elevation: 3 },
+    }),
   },
   personalityInfo: {
     flex: 1,

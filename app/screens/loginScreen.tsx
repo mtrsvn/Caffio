@@ -1,10 +1,8 @@
 import { useNavigation } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
   Image,
   Platform,
   SafeAreaView,
@@ -26,12 +24,9 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const scaleAnim = useState(new Animated.Value(1))[0];
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
@@ -47,27 +42,6 @@ const LoginScreen = () => {
       setGoogleLoading(false);
     }
   }, [response]);
-
-  const animatePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.82,
-        duration: 90,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 4,
-        tension: 80,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleRememberPress = () => {
-    animatePress();
-    setIsChecked((prev) => !prev);
-  };
 
   async function handleLogin() {
     setError(null);
@@ -107,203 +81,157 @@ const LoginScreen = () => {
   }
 
   return (
-    <LinearGradient
-      colors={[
-        colors.pageGradientTopLeft,
-        colors.pageGradientMid,
-        colors.pageGradientBottomRight,
-      ]}
-      start={{ x: 0.08, y: 0 }}
-      end={{ x: 0.92, y: 1 }}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Welcome back</Text>
-            <Text style={styles.subtitle}>
-              Login to continue your coffee journey
-            </Text>
+    <SafeAreaView style={styles.gradient}>
+      <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Welcome back</Text>
+          <Text style={styles.subtitle}>Continue your coffee journey</Text>
+        </View>
+
+        <View style={styles.form}>
+          {/* Email */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="your@email.com"
+              placeholderTextColor="rgba(78,52,46,0.5)"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+            />
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+          {/* Password */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputWrap}>
               <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
+                style={[styles.input, styles.inputWithIcon]}
+                placeholder="••••••••"
                 placeholderTextColor="rgba(78,52,46,0.5)"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={setEmail}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
               />
+              <TouchableOpacity
+                onPress={() => setShowPassword((v) => !v)}
+                style={styles.eyeButton}
+              >
+                {showPassword ? (
+                  <Eye size={18} color={colors.textMuted} />
+                ) : (
+                  <EyeOff size={18} color={colors.textMuted} />
+                )}
+              </TouchableOpacity>
             </View>
+          </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={[styles.input, styles.inputWithIcon]}
-                  placeholder="••••••••"
-                  placeholderTextColor="rgba(78,52,46,0.5)"
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
+          {/* Error */}
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error || " "}</Text>
+          </View>
+
+          {/* Login button */}
+          <TouchableOpacity
+            style={styles.primaryButton}
+            activeOpacity={0.85}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Login</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Google button */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={() => { setGoogleLoading(true); promptAsync(); }}
+            disabled={!request || googleLoading}
+            activeOpacity={0.85}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <View style={styles.googleContent}>
+                <Image
+                  source={require("../assets/google.png")}
+                  style={styles.googleIcon}
+                  resizeMode="contain"
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword((v) => !v)}
-                  style={styles.eyeButton}
-                >
-                  {showPassword ? (
-                    <Eye size={20} color={colors.gradientEnd} />
-                  ) : (
-                    <EyeOff size={20} color={colors.gradientEnd} />
-                  )}
-                </TouchableOpacity>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
               </View>
-            </View>
+            )}
+          </TouchableOpacity>
 
+          {/* Footer links */}
+          <View style={styles.footerRow}>
             <TouchableOpacity
-              style={styles.rememberMeRow}
-              activeOpacity={1}
-              onPress={handleRememberPress}
+              onPress={() => navigation.goBack()}
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Animated.View
-                style={[
-                  styles.checkboxWrapper,
-                  { transform: [{ scale: scaleAnim }] },
-                ]}
-              >
-                {isChecked ? (
-                  <LinearGradient
-                    colors={[colors.gradientStart, colors.gradientEnd]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.checkboxChecked}
-                  >
-                    <Text style={styles.checkmark}>✓</Text>
-                  </LinearGradient>
-                ) : (
-                  <View style={styles.checkboxUnchecked} />
-                )}
-              </Animated.View>
-
-              <Text style={styles.rememberMeText}>Remember me</Text>
+              <ArrowLeft size={16} color={colors.textMuted} />
+              <Text style={styles.linkText}>Back</Text>
             </TouchableOpacity>
-
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error || " "}</Text>
-            </View>
-
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.buttonGradient}
-            >
-              <TouchableOpacity
-                style={styles.buttonTouch}
-                activeOpacity={0.8}
-                onPress={handleLogin}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.navbarBg} />
-                ) : (
-                  <Text style={styles.buttonText}>Login</Text>
-                )}
-              </TouchableOpacity>
-            </LinearGradient>
-
-            <TouchableOpacity
-              style={[styles.buttonTouch, styles.googleButton]}
-              onPress={() => {
-                setGoogleLoading(true);
-                promptAsync();
-              }}
-              disabled={!request || googleLoading}
-            >
-              {googleLoading ? (
-                <ActivityIndicator color="#4285F4" />
-              ) : (
-                <View style={styles.googleContent}>
-                  <Image
-                    source={require("../assets/google.png")}
-                    style={styles.googleIcon}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.googleButtonText}>
-                    Log in with Google
-                  </Text>
-                </View>
-              )}
+            <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+              <Text style={styles.linkText}>Forgot password?</Text>
             </TouchableOpacity>
+          </View>
 
-            <View style={styles.footerRow}>
-              <TouchableOpacity
-                onPress={() => navigation.goBack()}
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-              >
-                <ArrowLeft size={18} color={colors.iconInactive} />
-                <Text style={styles.linkText}>Back</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => navigation.navigate("ForgotPassword")}
-              >
-                <Text style={styles.linkText}>Forgot password?</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.signupRow}>
-              <Text style={styles.helperText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                <Text style={[styles.linkText, styles.underline]}>Sign up</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.signupRow}>
+            <Text style={styles.helperText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+              <Text style={[styles.linkText, styles.underline]}>Sign up</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
-    </LinearGradient>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
-  safeArea: { flex: 1 },
+  gradient: { flex: 1, backgroundColor: "#EDE8E2" },
   content: {
     flex: 1,
     paddingHorizontal: 28,
     justifyContent: "center",
   },
-  header: {
-    marginBottom: 36,
-  },
+
+  // Header block
+  header: { marginBottom: 36 },
   title: {
     fontSize: 30,
     fontWeight: "700",
-    color: colors.gradientEnd,
+    color: colors.textPrimary,
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 15,
-    color: colors.iconInactive,
+    color: colors.textMuted,
     marginTop: 6,
   },
 
-  form: {
-    gap: 24,
-  },
-  field: {
-    gap: 8,
-  },
+  form: { gap: 16 },
+  field: { gap: 8 },
   label: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: colors.iconInactive,
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.textMuted,
+    letterSpacing: 1,
+    textTransform: "uppercase",
     marginLeft: 4,
+  },
+
+  // Input wrap (for password eye icon)
+  inputWrap: {
+    position: "relative",
   },
   input: {
     height: 52,
@@ -311,7 +239,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: colors.gradientEnd,
+    color: colors.textPrimary,
     borderWidth: 1,
     borderColor: "rgba(78,52,46,0.12)",
     ...Platform.select({
@@ -324,132 +252,103 @@ const styles = StyleSheet.create({
       android: { elevation: 3 },
     }),
   },
-
-  rememberMeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-    marginBottom: 12,
-  },
-  checkboxWrapper: {
-    marginRight: 12,
-  },
-  checkboxUnchecked: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: colors.iconInactive,
-    opacity: 0.5,
-  },
-  checkboxChecked: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
+  inputWithIcon: { paddingRight: 48 },
+  eyeButton: {
+    position: "absolute",
+    right: 14,
+    top: 0,
+    bottom: 0,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  checkmark: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  rememberMeText: {
-    fontSize: 15,
-    color: colors.iconInactive,
-    fontWeight: "500",
   },
 
   errorContainer: {
-    height: 22,
+    height: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 4,
   },
   errorText: {
     color: "#b00020",
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 13,
     textAlign: "center",
   },
 
-  buttonGradient: {
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  buttonTouch: {
+  // Raised primary button
+  primaryButton: {
     height: 54,
-    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: colors.accent,
     alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.65,
+        shadowRadius: 10,
+      },
+      android: { elevation: 6 },
+    }),
   },
-  buttonText: {
-    color: colors.navbarBg,
+  primaryButtonText: {
+    color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
-    letterSpacing: 0.2,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 
+  // Neumorphic Google button
   googleButton: {
-    backgroundColor: "#FFFFFF",
+    height: 54,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#DADCE0",
+    backgroundColor: "#EDE8E2",
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
   },
   googleContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
+    gap: 10,
   },
-  googleIcon: {
-    width: 24,
-    height: 24,
-  },
+  googleIcon: { width: 22, height: 22 },
   googleButtonText: {
-    color: "#1F1F1F",
-    fontSize: 16,
-    fontWeight: "500",
-    letterSpacing: 0.1,
-  },
-
-  inputRow: {
-    position: "relative",
-  },
-  inputWithIcon: {
-    paddingRight: 48,
-  },
-  eyeButton: {
-    position: "absolute",
-    right: 12,
-    top: 16,
-    height: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "600",
   },
 
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 8,
     paddingHorizontal: 4,
   },
-  linkText: {
-    fontSize: 14,
-    color: colors.iconInactive,
-  },
-
+  linkText: { fontSize: 13, color: colors.textMuted },
   signupRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 28,
+    marginTop: 8,
   },
-  helperText: {
-    fontSize: 15,
-    color: colors.iconInactive,
-  },
-  underline: {
-    textDecorationLine: "underline",
-  },
+  helperText: { fontSize: 14, color: colors.textMuted },
+  underline: { textDecorationLine: "underline" },
+
+  // unused legacy (kept to avoid errors if referenced)
+  safeArea: { flex: 1 },
+  header: { marginBottom: 36 },
+  form2: { gap: 24 },
+  inputRow: { position: "relative" },
+  buttonGradient: { borderRadius: 16, overflow: "hidden" },
+  buttonTouch: { height: 54, justifyContent: "center", alignItems: "center" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
 
 export default LoginScreen;

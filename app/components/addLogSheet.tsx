@@ -61,16 +61,7 @@ const COFFEE_TYPES = [
   "Cold Brew",
 ];
 
-const TASTE_PROFILE = [
-  "Bold",
-  "Smooth",
-  "Sweet",
-  "Bitter",
-  "Creamy",
-  "Fruity",
-  "Nutty",
-  "Chocolatey",
-];
+import TASTE_PROFILE from "../data/tastes.json";
 
 export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const insets = useSafeAreaInsets();

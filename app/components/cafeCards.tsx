@@ -1,115 +1,98 @@
 import { MapPin } from "lucide-react-native";
 import React from "react";
 import {
-  GestureResponderEvent,
   Platform,
   StyleSheet,
   Text,
-  TextStyle,
   TouchableOpacity,
   View,
-  ViewStyle,
 } from "react-native";
 import colors from "./colors";
 
 type Props = {
   name: string;
   address?: string | null;
-  onPress?: (e?: GestureResponderEvent) => void;
+  onPress?: () => void;
 };
 
 export default function CafeCard({ name, address, onPress }: Props) {
-  const NAVBAR_BG = colors.navbarBg;
-  const BORDER = colors.navbarBorder;
-  const NAVBAR_TEXT = colors.gradientEnd;
-  const MUTED = colors.iconInactive;
-
   return (
     <TouchableOpacity
-      activeOpacity={0.95}
+      activeOpacity={0.92}
       onPress={onPress}
-      style={[styles.wrapper]}
+      style={styles.card}
       accessibilityRole="button"
     >
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: NAVBAR_BG, borderColor: BORDER },
-        ]}
-      >
-        <View style={styles.body}>
-          <Text
-            style={[styles.title, { color: NAVBAR_TEXT }]}
-            numberOfLines={1}
-          >
-            {name}
-          </Text>
+      {/* Icon */}
+      <View style={styles.iconWrap}>
+        <MapPin size={20} color={colors.accent} strokeWidth={1.8} />
+      </View>
 
-          <View style={styles.addressRow}>
-            <MapPin size={14} color={MUTED} />
-            <Text
-              style={[styles.addressText, { color: MUTED }]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {address ?? "Address unknown"}
-            </Text>
-          </View>
-        </View>
+      {/* Text */}
+      <View style={styles.body}>
+        <Text style={styles.title} numberOfLines={1}>
+          {name}
+        </Text>
+        {address ? (
+          <Text style={styles.address} numberOfLines={1} ellipsizeMode="tail">
+            {address}
+          </Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
 }
 
-type Style = {
-  wrapper: ViewStyle;
-  card: ViewStyle;
-  body: ViewStyle;
-  title: TextStyle;
-  addressRow: ViewStyle;
-  addressText: TextStyle;
-};
-
-const styles = StyleSheet.create<Style>({
-  wrapper: {
-    marginBottom: 14,
-    // subtle cross-platform shadow (matches search box)
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      },
-      android: {
-        elevation: 3,
-      },
-      default: {},
-    }),
-  },
+const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    overflow: "hidden", // keep rounded corners for inner content
-    borderWidth: 0.6,
-    // backgroundColor and borderColor applied inline
-  },
-  body: {
-    paddingHorizontal: 14,
-    paddingVertical: 25,
-    backgroundColor: "transparent",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  addressRow: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#EDE8E2",
+    borderRadius: 18,
+    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
   },
-  addressText: {
-    marginLeft: 8,
-    fontSize: 13,
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#E4DED7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+    flexShrink: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  body: {
     flex: 1,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 3,
+    letterSpacing: -0.2,
+  },
+  address: {
+    fontSize: 12,
+    color: colors.textMuted,
   },
 });

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "first_sip",
+    "icon": "Coffee",
+    "label": "First Sip",
+    "hint": "Log your first coffee",
+    "metric": "coffees",
+    "value": 1
+  },
+  {
+    "id": "daily_roast",
+    "icon": "Coffee",
+    "label": "Daily Roast",
+    "hint": "Log 5 coffees total",
+    "metric": "coffees",
+    "value": 5
+  },
+  {
+    "id": "decaf_destroyer",
+    "icon": "Coffee",
+    "label": "Decaf Destroyer",
+    "hint": "Log 10 coffees total",
+    "metric": "coffees",
+    "value": 10
+  },
+  {
+    "id": "caffeine_fiend",
+    "icon": "Coffee",
+    "label": "Caffeine Fiend",
+    "hint": "Log 25 coffees total",
+    "metric": "coffees",
+    "value": 25
+  },
+  {
+    "id": "centurion_cup",
+    "icon": "Award",
+    "label": "Centurion Cup",
+    "hint": "Log 50 coffees total",
+    "metric": "coffees",
+    "value": 50
+  },
+  {
+    "id": "coffee_legend",
+    "icon": "Award",
+    "label": "Coffee Legend",
+    "hint": "Log 100 coffees total",
+    "metric": "coffees",
+    "value": 100
+  },
+  {
+    "id": "casual_visitor",
+    "icon": "MapPin",
+    "label": "Casual Visitor",
+    "hint": "Visit 2 different cafes",
+    "metric": "cafes",
+    "value": 2
+  },
+  {
+    "id": "local_explorer",
+    "icon": "MapPin",
+    "label": "Local Explorer",
+    "hint": "Visit 5 different cafes",
+    "metric": "cafes",
+    "value": 5
+  },
+  {
+    "id": "coffee_nomad",
+    "icon": "MapPin",
+    "label": "Coffee Nomad",
+    "hint": "Visit 10 different cafes",
+    "metric": "cafes",
+    "value": 10
+  },
+  {
+    "id": "globetrotter",
+    "icon": "MapPin",
+    "label": "Globetrotter",
+    "hint": "Visit 20 different cafes",
+    "metric": "cafes",
+    "value": 20
+  },
+  {
+    "id": "secret_admirer",
+    "icon": "Heart",
+    "label": "Secret Admirer",
+    "hint": "Favorite at least 1 coffee",
+    "metric": "favorites",
+    "value": 1
+  },
+  {
+    "id": "collector",
+    "icon": "Heart",
+    "label": "Collector",
+    "hint": "Favorite 5 coffees",
+    "metric": "favorites",
+    "value": 5
+  },
+  {
+    "id": "gold_vault",
+    "icon": "Heart",
+    "label": "Gold Vault",
+    "hint": "Favorite 10 coffees",
+    "metric": "favorites",
+    "value": 10
+  },
+  {
+    "id": "frequent_flyer",
+    "icon": "TrendingUp",
+    "label": "Frequent Flyer",
+    "hint": "Log 4 coffees in a month",
+    "metric": "thisMonth",
+    "value": 4
+  },
+  {
+    "id": "monthly_addict",
+    "icon": "TrendingUp",
+    "label": "Monthly Addict",
+    "hint": "Log 12 coffees in a month",
+    "metric": "thisMonth",
+    "value": 12
+  },
+  {
+    "id": "overachiever",
+    "icon": "TrendingUp",
+    "label": "Overachiever",
+    "hint": "Log 20 coffees in a month",
+    "metric": "thisMonth",
+    "value": 20
+  },
+  {
+    "id": "top_rater",
+    "icon": "Star",
+    "label": "Top Rater",
+    "hint": "Maintain a 4+ avg rating",
+    "metric": "avgRating",
+    "value": 4.0
+  },
+  {
+    "id": "elite_critic",
+    "icon": "Star",
+    "label": "Elite Critic",
+    "hint": "Maintain a 4.5+ avg rating",
+    "metric": "avgRating",
+    "value": 4.5
+  },
+  {
+    "id": "sweet_tooth",
+    "icon": "Tag",
+    "label": "Sweet Tooth",
+    "hint": "Try Sweet coffee flavor",
+    "metric": "taste_Sweet",
+    "value": 1
+  },
+  {
+    "id": "dark_knight",
+    "icon": "Tag",
+    "label": "Dark Knight",
+    "hint": "Try Bitter coffee flavor",
+    "metric": "taste_Bitter",
+    "value": 1
+  },
+  {
+    "id": "smooth_operator",
+    "icon": "Tag",
+    "label": "Smooth Operator",
+    "hint": "Try Smooth coffee flavor",
+    "metric": "taste_Smooth",
+    "value": 1
+  },
+  {
+    "id": "flavor_chaser",
+    "icon": "Tag",
+    "label": "Flavor Chaser",
+    "hint": "Try 5 unique taste profile tags",
+    "metric": "uniqueTastes",
+    "value": 5
+  }
+]

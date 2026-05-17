@@ -1,17 +1,38 @@
 import { useNavigation } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
 import {
+    Award,
     Coffee,
     Heart,
     LogOut,
+    Mail,
     MapPin,
+    Star,
     Store,
     Tag,
     TrendingUp,
-    User
+    User,
+    X
 } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
+import achievementsData from "../data/achievements.json";
+
+const ICON_MAP: Record<string, React.FC<any>> = {
+  Award,
+  Coffee,
+  Heart,
+  LogOut,
+  Mail,
+  MapPin,
+  Star,
+  Store,
+  Tag,
+  TrendingUp,
+  User,
+  X,
+};
 import {
+    Animated,
+    Modal,
     Platform,
     RefreshControl,
     ScrollView,
@@ -29,11 +50,7 @@ import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import { LogEntry } from "../components/logCard";
 
-const PAGE_GRADIENT = [
-  colors.pageGradientTopLeft,
-  colors.pageGradientMid,
-  colors.pageGradientBottomRight,
-] as readonly string[];
+
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -41,7 +58,7 @@ interface Props {
   refreshFlag?: number;
 }
 
-const ProfileHeader: React.FC = () => {
+const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[] }> = ({ tasteProfile }) => {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
   const [createPressed, setCreatePressed] = useState(false);
@@ -59,15 +76,10 @@ const ProfileHeader: React.FC = () => {
     : "Not logged in";
 
   return (
-    <LinearGradient
-      colors={[colors.gradientStart, colors.gradientEnd]}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.headerCard}
-    >
+    <View style={styles.headerCard}>
       <View style={styles.headerTop}>
         <View style={styles.avatarWrap}>
-          <User size={28} color={colors.gradientStart} />
+          <User size={24} color={colors.accent} />
         </View>
 
         <View style={styles.headerText}>
@@ -81,6 +93,34 @@ const ProfileHeader: React.FC = () => {
           </Text>
         </View>
       </View>
+
+      {/* Taste flavor chips inside the card */}
+      {user && tasteProfile.length > 0 && (
+        <>
+          <View style={styles.headerDivider} />
+          <Text style={styles.headerFlavorLabel}>Taste Profile</Text>
+          <View style={styles.headerFlavorRow}>
+            {tasteProfile.map(({ tag }, i) => (
+              <View
+                key={tag}
+                style={[
+                  styles.headerFlavorChip,
+                  i === 0 && styles.headerFlavorChipTop,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.headerFlavorChipText,
+                    i === 0 && styles.headerFlavorChipTextTop,
+                  ]}
+                >
+                  {tag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
 
       {!user ? (
         <>
@@ -132,7 +172,7 @@ const ProfileHeader: React.FC = () => {
           </View>
         </>
       ) : null}
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -144,32 +184,14 @@ type StatCardProps = {
 
 const StatCard: React.FC<StatCardProps> = ({ Icon, label, value = 0 }) => {
   return (
-    <View
-      style={[
-        styles.statCard,
-        {
-          backgroundColor: colors.navbarBg,
-          borderColor: colors.navbarBorder,
-        },
-      ]}
-    >
-      <LinearGradient
-        colors={[colors.gradientStart, colors.gradientEnd]}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={styles.statIconWrap}
-      >
-        <Icon size={18} color={colors.iconActive} />
-      </LinearGradient>
-
-      <Text style={[styles.statValue, { color: colors.iconInactive }]}>
-        {value}
-      </Text>
-      <Text
-        style={[styles.statLabel, { color: colors.coffeeTypeUnselectedText }]}
-      >
-        {label}
-      </Text>
+    <View style={styles.statCard}>
+      <View style={styles.statIconWrap}>
+        <Icon size={15} color="#fff" />
+      </View>
+      <View>
+        <Text style={styles.statValue}>{value}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
     </View>
   );
 };
@@ -186,39 +208,16 @@ const PrefCard: React.FC<PrefCardProps> = ({
   Icon,
 }) => {
   return (
-    <TouchableOpacity activeOpacity={0.95} style={styles.prefWrapper}>
-      <View
-        style={[
-          styles.prefCardInner,
-          {
-            backgroundColor: colors.navbarBg,
-            borderColor: colors.navbarBorder,
-          },
-        ]}
-      >
+    <TouchableOpacity activeOpacity={0.92} style={styles.prefWrapper}>
+      <View style={styles.prefCardInner}>
         <View style={styles.prefBody}>
           <View style={{ flex: 1 }}>
-            <Text
-              style={[
-                styles.prefLabel,
-                { color: colors.coffeeTypeUnselectedText },
-              ]}
-            >
-              {label}
-            </Text>
-            <Text style={[styles.prefValue, { color: colors.iconInactive }]}>
-              {value}
-            </Text>
+            <Text style={styles.prefLabel}>{label}</Text>
+            <Text style={styles.prefValue}>{value}</Text>
           </View>
-
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
-            start={[0, 0]}
-            end={[1, 1]}
-            style={styles.prefBadge}
-          >
-            <Icon size={22} color={colors.navbarBg} />
-          </LinearGradient>
+          <View style={styles.prefBadge}>
+            <Icon size={20} color="#fff" />
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -242,6 +241,12 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
     favoriteType: "None yet",
     topTaste: "None yet",
   });
+  const [tasteProfile, setTasteProfile] = useState<{ tag: string; count: number }[]>([]);
+  const [tasteCounts, setTasteCounts] = useState<Record<string, number>>({});
+  const [avgRating, setAvgRating] = useState<number>(0);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const sheetAnim = useRef(new Animated.Value(500)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<any>(null);
   const offsetRef = useRef<number>(0);
   const { user } = useContext(AuthContext);
@@ -250,11 +255,10 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   const loadStats = React.useCallback(async () => {
     if (!user) {
       setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
-      setPrefs({
-        favoriteCafe: "None yet",
-        favoriteType: "None yet",
-        topTaste: "None yet",
-      });
+      setPrefs({ favoriteCafe: "None yet", favoriteType: "None yet", topTaste: "None yet" });
+      setTasteProfile([]);
+      setTasteCounts({});
+      setAvgRating(0);
       return;
     }
     try {
@@ -292,6 +296,26 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       const topTaste = topBy(allTastes);
 
       setPrefs({ favoriteCafe, favoriteType, topTaste });
+
+      // top 6 taste tags with counts
+      const freq = new Map<string, number>();
+      allTastes.forEach((t: string) => { if (t) freq.set(t, (freq.get(t) ?? 0) + 1); });
+      const topTags = [...freq.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([tag, count]) => ({ tag, count }));
+      setTasteProfile(topTags);
+
+      const freqObj: Record<string, number> = {};
+      freq.forEach((v, k) => {
+        freqObj[k] = v;
+      });
+      setTasteCounts(freqObj);
+
+      // average rating
+      const rated = logs.filter((l: any) => typeof l.rating === "number");
+      const avg = rated.length ? rated.reduce((s: number, l: any) => s + l.rating, 0) / rated.length : 0;
+      setAvgRating(Math.round(avg * 10) / 10);
     } catch (e) {
       console.error("[ProfileScreen] loadStats failed", e);
     }
@@ -310,21 +334,14 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       loadStats();
     } else {
       setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
-      setPrefs({
-        favoriteCafe: "None yet",
-        favoriteType: "None yet",
-        topTaste: "None yet",
-      });
+      setPrefs({ favoriteCafe: "None yet", favoriteType: "None yet", topTaste: "None yet" });
+      setTasteProfile([]);
+      setAvgRating(0);
     }
   }, [user, loadStats]);
 
   return (
-    <LinearGradient
-      colors={PAGE_GRADIENT as any}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.screenContainer}
-    >
+    <View style={styles.screenContainer}>
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         <ScrollView
           ref={scrollRef}
@@ -346,7 +363,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
             />
           }
         >
-          <ProfileHeader />
+          <ProfileHeader tasteProfile={tasteProfile} />
 
           <View style={styles.statsGrid}>
             <StatCard
@@ -363,14 +380,122 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
             />
           </View>
 
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.coffeeTypeUnselectedText },
-            ]}
-          >
-            Your Preferences
-          </Text>
+          {/* ── Achievements ───────────────────────────────── */}
+          {user && (() => {
+            const ALL = achievementsData.map((ach) => {
+              const IconComponent = ICON_MAP[ach.icon] ?? Coffee;
+              let earned = false;
+              if (ach.metric === "coffees") earned = stats.coffees >= ach.value;
+              else if (ach.metric === "cafes") earned = stats.cafes >= ach.value;
+              else if (ach.metric === "favorites") earned = stats.favorites >= ach.value;
+              else if (ach.metric === "thisMonth") earned = stats.thisMonth >= ach.value;
+              else if (ach.metric === "avgRating") earned = avgRating >= ach.value;
+              else if (ach.metric.startsWith("taste_")) {
+                const tag = ach.metric.substring(6);
+                earned = (tasteCounts[tag] ?? 0) >= ach.value;
+              } else if (ach.metric === "uniqueTastes") {
+                earned = Object.keys(tasteCounts).length >= ach.value;
+              }
+
+              return {
+                icon: IconComponent,
+                label: ach.label,
+                hint: ach.hint,
+                earned,
+              };
+            });
+            const earned = ALL.filter(a => a.earned);
+
+            const openSheet = () => {
+              setShowAchievements(true);
+              sheetAnim.setValue(500);
+              backdropAnim.setValue(0);
+              Animated.parallel([
+                Animated.timing(backdropAnim, { toValue: 1, duration: 280, useNativeDriver: true }),
+                Animated.timing(sheetAnim,   { toValue: 0,   duration: 300, useNativeDriver: true }),
+              ]).start();
+            };
+
+            const closeSheet = () => {
+              Animated.parallel([
+                Animated.timing(backdropAnim, { toValue: 0, duration: 220, useNativeDriver: true }),
+                Animated.timing(sheetAnim,   { toValue: 500, duration: 240, useNativeDriver: true }),
+              ]).start(() => setShowAchievements(false));
+            };
+
+            return (
+              <>
+                <View style={styles.sectionRow}>
+                  <Text style={[styles.sectionTitle, { color: colors.coffeeTypeUnselectedText }]}>Achievements</Text>
+                  <TouchableOpacity onPress={openSheet} activeOpacity={0.8}>
+                    <Text style={styles.viewAllText}>View All</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {earned.length > 0 ? (
+                  <View style={styles.achievementsCard}>
+                    {earned.slice(0, 6).map(({ icon: Icon, label }) => (
+                      <View key={label} style={styles.badge}>
+                        <View style={styles.badgeIcon}>
+                          <Icon size={11} color="#fff" />
+                        </View>
+                        <Text style={styles.badgeLabel} numberOfLines={1} ellipsizeMode="tail">
+                          {label}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <View style={styles.achievementsCard}>
+                    <Text style={styles.noAchievText}>Start logging coffees to earn badges!</Text>
+                  </View>
+                )}
+
+                {/* ── All Achievements Modal ─────────────────── */}
+                <Modal visible={showAchievements} transparent animationType="none" onRequestClose={closeSheet}>
+                  <View style={{ flex: 1 }}>
+                    {/* backdrop */}
+                    <Animated.View
+                      style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.45)", opacity: backdropAnim }]}
+                    >
+                      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={closeSheet} />
+                    </Animated.View>
+
+                    {/* sheet */}
+                    <Animated.View style={[styles.achSheet, { transform: [{ translateY: sheetAnim }] }]}>
+                      <View style={styles.achSheetHandle} />
+                      <View style={styles.achSheetHeader}>
+                        <Text style={styles.achSheetTitle}>All Achievements</Text>
+                        <TouchableOpacity onPress={closeSheet} style={styles.achCloseBtn} activeOpacity={0.8}>
+                          <X size={17} color={colors.textMuted} strokeWidth={2.5} />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+                        {ALL.map(({ icon: Icon, label, hint, earned: e }) => (
+                          <View key={label} style={[styles.achRow, !e && styles.achRowDim]}>
+                            <View style={[styles.achRowIcon, !e && styles.achRowIconDim]}>
+                              <Icon size={16} color={e ? "#fff" : colors.textMuted} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                              <Text style={[styles.achRowLabel, !e && styles.achRowLabelDim]}>{label}</Text>
+                              <Text style={styles.achRowHint}>{e ? "✓ Earned" : hint}</Text>
+                            </View>
+                            {e && <View style={styles.achRowDot} />}
+                          </View>
+                        ))}
+                      </ScrollView>
+                    </Animated.View>
+                  </View>
+                </Modal>
+              </>
+            );
+          })()}
+
+          <View style={styles.sectionRow}>
+            <Text style={[styles.sectionTitle, { color: colors.coffeeTypeUnselectedText }]}>
+              Your Preferences
+            </Text>
+          </View>
 
           <PrefCard
             label="Favorite Cafe"
@@ -383,6 +508,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
             Icon={Coffee}
           />
           <PrefCard label="Top Taste" value={prefs.topTaste} Icon={Tag} />
+
 
           {user ? (
             <TouchableOpacity
@@ -417,193 +543,476 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
           <View style={{ height: 28 }} />
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1 },
+  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
   safe: { flex: 1 },
   container: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 8,
   },
 
+  // ── Profile header card ──────────────────────────────────────────
   headerCard: {
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 12,
-
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    backgroundColor: colors.accent,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
       },
-      android: { elevation: 3 },
+      android: { elevation: 6 },
     }),
   },
   headerTop: { flexDirection: "row", alignItems: "center" },
   avatarWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.navbarBg,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#EDE8E2",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
+    marginRight: 12,
   },
   headerText: { flex: 1 },
-  headerName: { fontSize: 18, fontWeight: "700" },
-  headerSubtitle: { fontSize: 13, marginTop: 2 },
+  headerName: { fontSize: 18, fontWeight: "700", letterSpacing: -0.3 },
+  headerSubtitle: { fontSize: 12, marginTop: 2, opacity: 0.75 },
 
   headerDivider: {
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    marginVertical: 8,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    marginVertical: 10,
   },
-
-  headerCenter: {
-    alignItems: "center",
-
-    paddingBottom: 4,
-  },
-
+  headerCenter: { alignItems: "center", paddingBottom: 4 },
   headerBody: {
     fontSize: 13,
     lineHeight: 18,
     textAlign: "center",
     marginHorizontal: 8,
-    marginBottom: 6,
+    marginBottom: 8,
+    opacity: 0.85,
   },
-
   headerAction: {
-    paddingTop: 1,
-    paddingBottom: 0,
     paddingHorizontal: 6,
     borderRadius: 8,
     backgroundColor: "transparent",
   },
-  headerActionText: {
-    fontWeight: "700",
-    fontSize: 14,
-  },
+  headerActionText: { fontWeight: "700", fontSize: 14 },
 
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginBottom: 18,
+    marginBottom: 14,
+    gap: 8,
   },
   statCard: {
     width: "48%",
-    minHeight: 112,
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    justifyContent: "flex-start",
-
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#EDE8E2",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
       },
-      android: { elevation: 3 },
+      android: { elevation: 4 },
     }),
-    marginBottom: 10,
   },
   statIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 8,
+    backgroundColor: colors.accent,
+    flexShrink: 0,
   },
   statValue: {
-    fontSize: 26,
+    fontSize: 18,
     fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
   },
   statLabel: {
-    fontSize: 12,
-    marginTop: 6,
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: "500",
+    marginTop: 1,
   },
 
+  // ── Pref cards ───────────────────────────────────────────────────
   prefWrapper: {
-    marginBottom: 14,
-
+    marginBottom: 10,
+  },
+  prefCardInner: {
+    borderRadius: 18,
+    backgroundColor: "#EDE8E2",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
       },
-      android: {
-        elevation: 3,
-      },
+      android: { elevation: 4 },
       default: {},
     }),
   },
-  prefCardInner: {
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 0.6,
-  },
   prefBody: {
-    paddingHorizontal: 14,
-    paddingVertical: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
     backgroundColor: "transparent",
     flexDirection: "row",
     alignItems: "center",
   },
-
-  prefLabel: { fontSize: 12 },
-  prefValue: { fontSize: 16, fontWeight: "700", marginTop: 6 },
-
+  prefLabel: { fontSize: 11, color: colors.textMuted, letterSpacing: 0.3, fontWeight: "500" },
+  prefValue: { fontSize: 16, fontWeight: "700", marginTop: 4, color: colors.textPrimary },
   prefBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 16,
+    backgroundColor: colors.accent,
+    flexShrink: 0,
   },
 
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 11,
     fontWeight: "700",
-    marginBottom: 10,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
   },
+
+  // ── Logout ───────────────────────────────────────────────────────
   logoutButton: {
     marginTop: 8,
-    borderRadius: 12,
-    height: 42,
+    borderRadius: 18,
+    height: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 14,
-    backgroundColor: colors.navbarBg,
-    borderWidth: 0.6,
-    borderColor: colors.navbarBorder,
+    backgroundColor: "#EDE8E2",
     marginBottom: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
   },
   logoutButtonText: {
-    color: colors.actionText,
+    color: colors.textSecondary,
     fontWeight: "700",
-    marginLeft: 0,
+    fontSize: 14,
   },
-  logoutIcon: {
-    marginRight: 10,
-  },
+  logoutIcon: { marginRight: 10 },
   logoutContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
+  },
+
+  // ── Achievements ─────────────────────────────────────────────────
+  achievementsCard: {
+    backgroundColor: "#EDE8E2",
+    borderRadius: 18,
+    padding: 12,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 8,
+    marginBottom: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.accent,
+    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    width: "31.8%",
+  },
+  badgeDim: {
+    backgroundColor: "#E4DED7",
+  },
+  badgeIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  badgeIconDim: {
+    backgroundColor: "#D8D0C8",
+  },
+  badgeLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#fff",
+    letterSpacing: 0.1,
+    flex: 1,
+  },
+  badgeLabelDim: {
+    color: colors.textMuted,
+  },
+
+  // ── Taste chips inside header card ──────────────────────────────
+  headerFlavorLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.5)",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  headerFlavorRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  headerFlavorChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  headerFlavorChipTop: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(255,255,255,0.35)",
+  },
+  headerFlavorChipText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.8)",
+    textTransform: "capitalize",
+  },
+  headerFlavorChipTextTop: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+  headerFlavorChipCount: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.5)",
+  },
+  headerFlavorChipCountTop: {
+    color: "rgba(255,255,255,0.75)",
+  },
+
+  // ── Account Info ──────────────────────────────────────────────────
+  accountCard: {
+    backgroundColor: "#EDE8E2",
+    borderRadius: 18,
+    marginBottom: 4,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 14,
+  },
+  accountIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  accountLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  accountValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  accountDivider: {
+    height: 1,
+    backgroundColor: "#DDD6CE",
+    marginHorizontal: 16,
+  },
+
+  // ── Section row (title + view all) ───────────────────────────────
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    marginTop: 14,
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.accent,
+    letterSpacing: 0.3,
+  },
+  noAchievText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontStyle: "italic",
+  },
+
+  // ── Achievement bottom sheet ──────────────────────────────────────
+  achSheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#EDE8E2",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    maxHeight: "75%",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+      },
+      android: { elevation: 24 },
+    }),
+  },
+  achSheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#C8BEB4",
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  achSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  achSheetTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+  achCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#E4DED7",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  achRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#EDE8E2",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 0.45,
+        shadowRadius: 8,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  achRowDim: {
+    opacity: 0.55,
+  },
+  achRowIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  achRowIconDim: {
+    backgroundColor: "#C8BEB4",
+  },
+  achRowLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  achRowLabelDim: {
+    color: colors.textMuted,
+  },
+  achRowHint: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "500",
+  },
+  achRowDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+    flexShrink: 0,
   },
 });
 

@@ -1,7 +1,10 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApps, initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  initializeAuth,
+  getReactNativePersistence,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
@@ -44,19 +47,19 @@ if (!getApps().length) {
   app = getApps()[0];
 }
 
+let _authInstance;
 try {
-  console.log("[firebaseconfig] initialized", {
-    projectId: firebaseConfig.projectId,
-    authDomain: firebaseConfig.authDomain,
-    apps: getApps().length,
+  _authInstance = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
   });
+  console.log("[firebaseconfig] auth initialized with AsyncStorage persistence");
+} catch (e) {
+  // initializeAuth throws if already initialized (e.g. hot reload)
+  _authInstance = getAuth(app);
+  console.log("[firebaseconfig] auth already initialized, reusing instance");
+}
 
-  const _auth = getAuth(app);
-
-  console.log("[firebaseconfig] auth initialized?", Boolean(_auth));
-} catch (e) {}
-
-export const auth = getAuth(app);
+export const auth = _authInstance;
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 

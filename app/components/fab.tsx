@@ -1,8 +1,8 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { Plus } from "lucide-react-native";
 import React from "react";
 import {
   GestureResponderEvent,
+  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -29,8 +29,6 @@ export default function FAB({
   testID,
 }: Props) {
   const insets = useSafeAreaInsets();
-
-  
   const defaultBottom = (insets.bottom ?? 12) + 16;
 
   return (
@@ -38,7 +36,7 @@ export default function FAB({
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      activeOpacity={0.92}
+      activeOpacity={0.85}
       onPress={onPress}
       style={[
         styles.wrapper,
@@ -46,32 +44,17 @@ export default function FAB({
           width: size,
           height: size,
           borderRadius: size / 2,
-          right: 16,
+          right: 20,
           bottom: defaultBottom,
         },
         style,
       ]}
     >
-      <LinearGradient
-        colors={[colors.gradientStart, colors.gradientEnd]}
-        start={[0, 0]}
-        end={[1, 1]}
-        style={[
-          styles.gradient,
-          {
-            borderRadius: size / 2,
-            width: size,
-            height: size,
-          },
-        ]}
-      >
-        {icon ? (
-          <View>{icon}</View>
-        ) : (
-          
-          <Plus size={28} color={colors.iconActive} strokeWidth={3} />
+      <View style={[styles.inner, { borderRadius: size / 2 }]}>
+        {icon ?? (
+          <Plus size={26} color="#fff" strokeWidth={2.5} />
         )}
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -81,22 +64,23 @@ const styles = StyleSheet.create({
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
-
-    
-    shadowColor: "#000",
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-
-    
-    elevation: 14,
-
-    
     zIndex: 2000,
+    backgroundColor: colors.accent,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.7,
+        shadowRadius: 12,
+      },
+      android: { elevation: 10 },
+    }),
   },
-  gradient: {
+  inner: {
+    flex: 1,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.accent,
   },
 });

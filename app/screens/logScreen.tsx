@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext, useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -16,11 +15,7 @@ import colors from "../components/colors";
 import EditLogSheet from "../components/editLogSheet";
 import LogCard, { LogEntry } from "../components/logCard";
 
-const PAGE_GRADIENT = [
-  colors.pageGradientTopLeft,
-  colors.pageGradientMid,
-  colors.pageGradientBottomRight,
-] as readonly string[];
+
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -71,13 +66,8 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   }, [user, refreshFlag]);
 
   return (
-    <LinearGradient
-      colors={PAGE_GRADIENT as any}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.screenContainer}
-    >
-      <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 18 }]}>
+    <View style={styles.screenContainer}>
+      <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
         <Text style={styles.title}>Your Coffee Logs</Text>
         <Text style={styles.subtitle}>
           Track and review your coffee experiences
@@ -160,26 +150,28 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
           }}
         />
       )}
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1 },
+  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
     backgroundColor: "transparent",
   },
   title: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#4E342E",
-    marginBottom: 6,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#6D4C41",
+    fontSize: 12,
+    color: colors.accentLight,
   },
   content: {
     flex: 1,
@@ -189,7 +181,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   emptyText: {
-    color: colors.iconInactive,
+    color: colors.textMuted,
     marginTop: 6,
   },
 });

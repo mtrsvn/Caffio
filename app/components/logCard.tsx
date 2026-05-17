@@ -1,22 +1,19 @@
 /**
  * app/components/logCard.tsx
- *
- * Card for a coffee log entry.
- * Layout: image on the LEFT, then title (coffee type), coffee shop, rating stars, and "X days ago".
- * Styled to match CafeCard (same shadow, border, background tokens).
+ * Neumorphic coffee log entry card.
  */
 
-import { Coffee, Plus, Star } from "lucide-react-native";
+import { File, Heart, Star } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    Easing,
-    Image,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Easing,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { updateCoffeeLog } from "../../firebaseconfig";
 import colors from "./colors";
@@ -28,7 +25,7 @@ export type LogEntry = {
   rating: number;
   tasteProfile: string[];
   photoUri?: string | null;
-  favorite?: boolean; // may be undefined for legacy entries
+  favorite?: boolean;
   createdAt: Date;
   uid: string;
 };
@@ -48,15 +45,15 @@ function daysAgo(date: Date): string {
   return `${diffDays} days ago`;
 }
 
-const IMAGE_SIZE = 80;
+const IMAGE_SIZE = 72;
 
 export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
   const stars = [1, 2, 3, 4, 5];
-  // animated scale for tap feedback
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const pressIn = () => {
     Animated.timing(scaleAnim, {
-      toValue: 0.94,
+      toValue: 0.97,
       duration: 80,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
@@ -71,221 +68,188 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
     }).start();
   };
 
-  const [plusActive, setPlusActive] = useState(entry.favorite ?? false);
-  // keep in sync if parent changes favorite flag
+  const [isFav, setIsFav] = useState(entry.favorite ?? false);
   React.useEffect(() => {
-    setPlusActive(entry.favorite ?? false);
+    setIsFav(entry.favorite ?? false);
   }, [entry.favorite]);
-  const plusScale = useRef(new Animated.Value(1)).current;
-  const onPlusPress = async () => {
+
+  const favScale = useRef(new Animated.Value(1)).current;
+  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+  const onFavPress = async () => {
     Animated.sequence([
-      Animated.timing(plusScale, {
-        toValue: 0.88,
-        duration: 80,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.spring(plusScale, {
-        toValue: 1,
-        useNativeDriver: true,
-        friction: 7,
-        tension: 160,
-      }),
+      Animated.timing(favScale, { toValue: 0.8, duration: 70, useNativeDriver: true }),
+      Animated.spring(favScale, { toValue: 1, useNativeDriver: true, friction: 5 }),
     ]).start();
-    const newVal = !plusActive;
-    setPlusActive(newVal);
+    const newVal = !isFav;
+    setIsFav(newVal);
     try {
-      // update backend
       await updateCoffeeLog(entry.uid, entry.id, { favorite: newVal });
-    } catch (err) {
-      // revert state on failure
-      setPlusActive(plusActive);
-      // eslint-disable-next-line no-console
-      console.error("[LogCard] failed to set favorite", err);
+    } catch {
+      setIsFav(isFav);
     }
     onToggleFavorite?.(newVal);
   };
 
-  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
   return (
     <AnimatedTouchable
-      activeOpacity={0.95}
+      activeOpacity={1}
       onPress={onPress}
       onPressIn={pressIn}
       onPressOut={pressOut}
-      style={[styles.wrapper, { transform: [{ scale: scaleAnim }] }]}
+      style={[styles.card, { transform: [{ scale: scaleAnim }] }]}
       accessibilityRole="button"
     >
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: colors.navbarBg,
-            borderColor: colors.navbarBorder,
-          },
-        ]}
-      >
-        {/* Left: photo thumbnail */}
-        <View style={styles.imageContainer}>
-          {entry.photoUri ? (
-            <Image
-              source={{ uri: entry.photoUri }}
-              style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
-              resizeMode="cover"
-            />
-          ) : (
-            <View
-              style={[
-                styles.imagePlaceholder,
-                { backgroundColor: colors.gradientStart },
-              ]}
-            >
-              <Coffee size={36} color="#fff" fill="none" strokeWidth={2} />
-            </View>
-          )}
-        </View>
-        {/* Right: info */}
-        <View style={styles.body}>
-          {/* Coffee type (title) */}
-          <Text
-            style={[styles.title, { color: colors.gradientEnd }]}
-            numberOfLines={1}
-          >
-            {entry.coffeeType}
-          </Text>
-
-          {/* Coffee shop */}
-          <Text
-            style={[styles.cafe, { color: colors.iconInactive }]}
-            numberOfLines={1}
-          >
-            {entry.cafe}
-          </Text>
-
-          {/* Stars */}
-          <View style={styles.starsRow}>
-            {stars.map((s) => (
-              <Star
-                key={s}
-                size={13}
-                color={colors.gradientStart}
-                fill={entry.rating >= s ? colors.gradientStart : "transparent"}
-                strokeWidth={entry.rating >= s ? 0 : 1.5}
-                style={{ marginRight: 2 }}
-              />
-            ))}
-          </View>
-
-          {/* Days ago */}
-          <Text style={[styles.daysAgo, { color: colors.iconInactive }]}>
-            {daysAgo(entry.createdAt)}
-          </Text>
-        </View>
-
-        {/* plus icon at right side */}
-        <AnimatedTouchable
-          onPress={onPlusPress}
-          activeOpacity={0.85}
-          style={[
-            styles.plusButton,
-            {
-              transform: [{ scale: plusScale }],
-              backgroundColor: plusActive
-                ? colors.gradientStart
-                : "transparent",
-              borderColor: plusActive ? "transparent" : colors.iconInactive,
-              borderWidth: plusActive ? 0 : 1.2,
-            },
-          ]}
-        >
-          <Plus
-            size={20}
-            color={plusActive ? colors.navbarBg : colors.iconInactive}
+      {/* Photo */}
+      <View style={styles.imageWrap}>
+        {entry.photoUri ? (
+          <Image
+            source={{ uri: entry.photoUri }}
+            style={styles.image}
+            resizeMode="cover"
           />
-        </AnimatedTouchable>
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <File size={26} color={colors.accent} fill="none" strokeWidth={1.5} />
+          </View>
+        )}
       </View>
+
+      {/* Info */}
+      <View style={styles.body}>
+        <Text style={styles.title} numberOfLines={1}>
+          {entry.coffeeType}
+        </Text>
+        <Text style={styles.cafe} numberOfLines={1}>
+          {entry.cafe}
+        </Text>
+        <View style={styles.starsRow}>
+          {stars.map((s) => (
+            <Star
+              key={s}
+              size={12}
+              color={colors.star}
+              fill={entry.rating >= s ? colors.star : "transparent"}
+              strokeWidth={entry.rating >= s ? 0 : 1.5}
+              style={{ marginRight: 2 }}
+            />
+          ))}
+        </View>
+        <Text style={styles.daysAgo}>{daysAgo(entry.createdAt)}</Text>
+      </View>
+
+      {/* Favourite button */}
+      <Animated.View style={{ transform: [{ scale: favScale }], marginRight: 14 }}>
+        <TouchableOpacity
+          onPress={onFavPress}
+          activeOpacity={0.8}
+          style={[styles.favBtn, isFav && styles.favBtnActive]}
+        >
+          <Heart
+            size={16}
+            color={isFav ? "#fff" : colors.accent}
+            fill={isFav ? "#fff" : "transparent"}
+            strokeWidth={isFav ? 0 : 1.5}
+          />
+        </TouchableOpacity>
+      </Animated.View>
     </AnimatedTouchable>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      },
-      android: { elevation: 3 },
-      default: {},
-    }),
-  },
   card: {
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 0.6,
     flexDirection: "row",
     alignItems: "center",
-    // paddingRight reserved for menu removed
+    backgroundColor: "#EDE8E2",
+    borderRadius: 18,
+    marginBottom: 12,
     paddingRight: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+      },
+      android: { elevation: 4 },
+    }),
   },
-  imageContainer: {
+  imageWrap: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
     margin: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     overflow: "hidden",
     flexShrink: 0,
+    backgroundColor: "#E4DED7",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  image: {
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
   },
   imagePlaceholder: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
-    backgroundColor: colors.navbarBorder,
-  },
-  placeholderEmoji: {
-    fontSize: 32,
+    backgroundColor: "#E4DED7",
   },
   body: {
     flex: 1,
     paddingVertical: 14,
-    paddingRight: 14,
+    paddingRight: 8,
     justifyContent: "center",
-  },
-  plusButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    // default border is transparent; color set inline
-    borderWidth: 1.2,
-    borderColor: "transparent",
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
-    marginBottom: 3,
+    color: colors.textPrimary,
+    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   cafe: {
-    fontSize: 13,
+    fontSize: 12,
+    color: colors.textMuted,
     marginBottom: 6,
   },
   starsRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 4,
   },
   daysAgo: {
-    fontSize: 12,
+    fontSize: 11,
+    color: colors.accentLight,
+    letterSpacing: 0.2,
   },
-  menuButton: {
-    padding: 12,
+  favBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E4DED7",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  favBtnActive: {
+    backgroundColor: colors.accent,
   },
 });

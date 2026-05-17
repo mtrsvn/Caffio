@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { Search } from "lucide-react-native";
@@ -18,11 +17,7 @@ import CafeCard from "../components/cafeCards";
 import colors from "../components/colors";
 import { fetchNearbyCafes, SimplePlace } from "../utils/places";
 
-const PAGE_GRADIENT = [
-  colors.pageGradientTopLeft,
-  colors.pageGradientMid,
-  colors.pageGradientBottomRight,
-] as readonly string[];
+
 
 const DEFAULT_RADIUS = 5000;
 const BASE_TABBAR_HEIGHT = 66;
@@ -135,7 +130,7 @@ export default function CafeScreen() {
   }, [load]);
 
   const Header = (
-    <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 18 }]}>
+    <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
       <Text style={styles.title}>Nearby Cafes</Text>
       <Text style={styles.subtitle}>Discover coffee shops around you</Text>
     </View>
@@ -174,12 +169,7 @@ export default function CafeScreen() {
   );
 
   return (
-    <LinearGradient
-      colors={PAGE_GRADIENT as any}
-      start={[0, 0]}
-      end={[1, 1]}
-      style={styles.screenContainer}
-    >
+    <View style={styles.screenContainer}>
       {Header}
       {}
       <View style={{ paddingHorizontal: 16 }}>{SearchBar}</View>
@@ -216,61 +206,59 @@ export default function CafeScreen() {
         contentInset={{ bottom: tabBarHeight }}
         ListFooterComponent={<View style={{ height: tabBarHeight }} />}
       />
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screenContainer: { flex: 1 },
+  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
   header: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
     backgroundColor: "transparent",
   },
   title: {
-    fontSize: 22,
+    fontSize: 13,
     fontWeight: "700",
-    color: "#4E342E",
-    marginBottom: 6,
+    color: colors.textMuted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#6D4C41",
+    fontSize: 12,
+    color: colors.accentLight,
   },
   centerContent: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyText: { color: "#666" },
+  emptyText: { color: colors.textMuted },
   errorText: { color: "#b71c1c" },
 
   searchContainerWrapper: {
-    marginBottom: 12,
-
-    backgroundColor: "transparent",
+    marginBottom: 10,
+    paddingHorizontal: 0,
   },
   searchInner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    height: 40,
+    backgroundColor: "#E4DED7",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 44,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.4,
         shadowRadius: 6,
-
-        shadowOffset: { width: 0, height: 0 },
+        shadowOffset: { width: 3, height: 3 },
       },
-      android: {
-        elevation: 3,
-      },
+      android: { elevation: 2 },
       default: {},
     }),
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 10,
     fontSize: 14,
-    color: colors.gradientEnd,
+    color: colors.textPrimary,
   },
 });

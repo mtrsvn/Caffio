@@ -1,7 +1,6 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { Book, Home, MapPin, Star, User } from "lucide-react-native";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import colors from "./colors";
 
 interface IconProps {
@@ -17,10 +16,10 @@ const ICON_MAP = {
   user: User,
 };
 
-const ICON_SIZE = 24;
-const ITEM_DIMENSION = 48; 
-const CIRCLE_DIMENSION = 44; 
-const BORDER_RADIUS = 15; 
+const ICON_SIZE = 22;
+const ITEM_DIMENSION = 48;
+const PILL_W = 48;
+const PILL_H = 38;
 
 const IconComponent: React.FC<IconProps> = ({ name, focused }) => {
   const LucideIcon = ICON_MAP[name] || Home;
@@ -28,25 +27,12 @@ const IconComponent: React.FC<IconProps> = ({ name, focused }) => {
   return (
     <View style={styles.itemContainer}>
       {focused ? (
-        <LinearGradient
-          colors={[colors.gradientStart, colors.gradientEnd]}
-          start={[0, 0]}
-          end={[1, 1]}
-          style={[styles.focusedBg, { borderRadius: BORDER_RADIUS }]}
-        >
-          <LucideIcon
-            size={ICON_SIZE}
-            color={colors.iconActive}
-            strokeWidth={2}
-          />
-        </LinearGradient>
+        <View style={styles.focusedPill}>
+          <LucideIcon size={ICON_SIZE} color={colors.accent} strokeWidth={2.2} />
+        </View>
       ) : (
         <View style={styles.inactiveBox}>
-          <LucideIcon
-            size={ICON_SIZE}
-            color={colors.iconInactive}
-            strokeWidth={2}
-          />
+          <LucideIcon size={ICON_SIZE} color={colors.textMuted} strokeWidth={1.8} />
         </View>
       )}
     </View>
@@ -60,16 +46,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  focusedBg: {
-    width: CIRCLE_DIMENSION,
-    height: CIRCLE_DIMENSION,
+  focusedPill: {
+    width: PILL_W,
+    height: PILL_H,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
+    backgroundColor: "#E4DED7",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.45,
+        shadowRadius: 6,
+      },
+      android: { elevation: 2 },
+    }),
   },
   inactiveBox: {
-    width: CIRCLE_DIMENSION,
-    height: CIRCLE_DIMENSION,
+    width: PILL_W,
+    height: PILL_H,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },

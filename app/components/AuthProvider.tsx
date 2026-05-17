@@ -20,6 +20,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<AppUser>(null);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(
@@ -27,6 +28,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       async (fbUser: FirebaseUser | null) => {
         if (!fbUser) {
           setUser(null);
+          setInitializing(false);
           return;
         }
 
@@ -63,6 +65,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             username,
             createdAt,
           });
+          setInitializing(false);
         } catch (e) {
           const username =
             fbUser.displayName ||
@@ -75,12 +78,15 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               ? new Date((fbUser as any).metadata.creationTime)
               : null,
           });
+          setInitializing(false);
         }
       },
     );
 
     return () => unsub();
   }, []);
+
+  if (initializing) return null;
 
   return (
     <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
