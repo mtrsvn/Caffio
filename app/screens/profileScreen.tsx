@@ -54,9 +54,9 @@ import { LogEntry } from "../components/logCard";
 
 const BASE_TABBAR_HEIGHT = 66;
 
-interface Props {
-  refreshFlag?: number;
-}
+import { GlobalContext } from "../components/navigation";
+
+interface Props {}
 
 const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[] }> = ({ tasteProfile }) => {
   const navigation = useNavigation<any>();
@@ -224,11 +224,12 @@ const PrefCard: React.FC<PrefCardProps> = ({
   );
 };
 
-const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
+const ProfileScreen: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
+  const { refreshLogsFlag } = useContext(GlobalContext);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
     coffees: 0,
@@ -338,7 +339,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
       setTasteProfile([]);
       setAvgRating(0);
     }
-  }, [user, loadStats]);
+  }, [user, loadStats, refreshLogsFlag]);
 
   return (
     <View style={styles.screenContainer}>

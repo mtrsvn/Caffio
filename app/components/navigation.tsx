@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, createContext } from "react";
 import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,9 +9,14 @@ import { AuthContext } from "./AuthProvider";
 import colors from "./colors";
 import FAB from "./fab";
 import IconComponent from "./iconComponent";
-import TransitionView, { withTransition } from "./transitionView";
 
 const FAB_EXTRA_OFFSET = 16;
+
+export const GlobalContext = createContext({
+  refreshLogsFlag: 0,
+  setSheetOpen: (open: boolean) => {},
+});
+
 
 import CafeScreen from "../screens/cafeScreen";
 import ForgotPasswordScreen from "../screens/forgotPasswordScreen";
@@ -109,13 +114,9 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
   );
 }
 
-interface TabNavigatorProps {
-  onFabPress: () => void;
-  refreshFlag: number;
-}
-
-function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
+function TabNavigator() {
   const { user } = useContext(AuthContext);
+  const { setSheetOpen } = useContext(GlobalContext);
   const insets = useSafeAreaInsets();
   const baseBarHeight = 66;
   const tabBarHeight =
@@ -130,6 +131,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: true,
+          animation: "shift",
 
           tabBarButton: (props) => <TabBarButton {...props} />,
           tabBarIcon: ({ focused }) => {
@@ -197,29 +199,17 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
           },
         })}
       >
-        <Tab.Screen name="Home" component={withTransition(HomeScreen)} />
-        <Tab.Screen name="Log">
-          {(props) => (
-            <TransitionView>
-              <LogScreen refreshFlag={refreshFlag} {...(props as any)} />
-            </TransitionView>
-          )}
-        </Tab.Screen>
-        <Tab.Screen name="ForYou" component={withTransition(ForyouScreen)} />
-        <Tab.Screen name="Cafes" component={withTransition(CafeScreen)} />
-        <Tab.Screen name="Profile">
-          {(props) => (
-            <TransitionView>
-              <ProfileScreen refreshFlag={refreshFlag} {...(props as any)} />
-            </TransitionView>
-          )}
-        </Tab.Screen>
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Log" component={LogScreen} />
+        <Tab.Screen name="ForYou" component={ForyouScreen} />
+        <Tab.Screen name="Cafes" component={CafeScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
 
       {}
       {user && (
         <FAB
-          onPress={onFabPress}
+          onPress={() => setSheetOpen(true)}
           style={{ bottom: fabBottom, right: 16 }}
           accessibilityLabel="Add"
           testID="global-fab"
@@ -243,7 +233,7 @@ export default function Navigation() {
   };
 
   return (
-    <>
+    <GlobalContext.Provider value={{ refreshLogsFlag, setSheetOpen }}>
       {}
       <Stack.Navigator
         screenOptions={{
@@ -252,14 +242,7 @@ export default function Navigation() {
           animationTypeForReplace: "push",
         }}
       >
-        <Stack.Screen name="Main">
-          {() => (
-            <TabNavigator
-              onFabPress={() => setSheetOpen(true)}
-              refreshFlag={refreshLogsFlag}
-            />
-          )}
-        </Stack.Screen>
+        <Stack.Screen name="Main" component={TabNavigator} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -271,7 +254,7 @@ export default function Navigation() {
         uid={user?.uid ?? ""}
         onSaved={handleSaved}
       />
-    </>
+    </GlobalContext.Provider>
   );
 }
 

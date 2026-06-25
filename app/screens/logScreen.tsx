@@ -19,13 +19,14 @@ import LogCard, { LogEntry } from "../components/logCard";
 
 const BASE_TABBAR_HEIGHT = 66;
 
-interface Props {
-  refreshFlag?: number;
-}
+import { GlobalContext } from "../components/navigation";
 
-const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
+interface Props {}
+
+const LogScreen: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
+  const { refreshLogsFlag } = useContext(GlobalContext);
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
@@ -63,7 +64,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag = 0 }) => {
   useEffect(() => {
     // initial load without showing loader
     fetchLogs(false);
-  }, [user, refreshFlag]);
+  }, [user, refreshLogsFlag]);
 
   return (
     <View style={styles.screenContainer}>
