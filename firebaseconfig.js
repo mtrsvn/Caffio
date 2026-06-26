@@ -23,6 +23,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import {
+  deleteObject,
   getDownloadURL,
   getStorage,
   ref as storageRef,
@@ -239,6 +240,50 @@ export async function getCoffeeLogs(uid) {
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
     };
   });
+}
+
+export async function uploadUserAvatar(uid, localUri) {
+  console.log("[firebaseconfig] uploadUserAvatar called with", localUri);
+  const blob = await localUriToBlob(localUri);
+  const photoRef = storageRef(storage, `userAvatars/${uid}/avatar.jpg`);
+
+  try {
+    await uploadBytes(photoRef, blob);
+    const photoUrl = await getDownloadURL(photoRef);
+    
+    const docRef = doc(db, "users", uid);
+    await setDoc(docRef, { photoUrl, updatedAt: serverTimestamp() }, { merge: true });
+    
+    return photoUrl;
+  } catch (err) {
+    console.error("[firebaseconfig] uploadUserAvatar error", err);
+    throw err;
+  }
+}
+
+export async function removeUserAvatar(uid) {
+  try {
+    const photoRef = storageRef(storage, `userAvatars/${uid}/avatar.jpg`);
+    await deleteObject(photoRef).catch(() => console.log("No file to delete in storage"));
+
+    const docRef = doc(db, "users", uid);
+    await setDoc(docRef, { photoUrl: null, updatedAt: serverTimestamp() }, { merge: true });
+    return true;
+  } catch (err) {
+    console.error("[firebaseconfig] removeUserAvatar error", err);
+    throw err;
+  }
+}
+
+export async function updateUserProfile(uid, data) {
+  try {
+    const docRef = doc(db, "users", uid);
+    await setDoc(docRef, { ...data, updatedAt: serverTimestamp() }, { merge: true });
+    return true;
+  } catch (err) {
+    console.error("[firebaseconfig] updateUserProfile error", err);
+    throw err;
+  }
 }
 
 export default app;

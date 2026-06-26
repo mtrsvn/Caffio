@@ -11,9 +11,11 @@ import {
     Tag,
     TrendingUp,
     User,
-    X
+    X,
+    Edit2
 } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import achievementsData from "../data/achievements.json";
 
 const ICON_MAP: Record<string, React.FC<any>> = {
@@ -40,15 +42,19 @@ import {
     Text,
     TouchableOpacity,
     View,
+    Image,
+    Alert,
+    ActivityIndicator
 } from "react-native";
 import {
     SafeAreaView,
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { getCoffeeLogs, logout } from "../../firebaseconfig";
+import { getCoffeeLogs, logout, uploadUserAvatar, removeUserAvatar } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import { LogEntry } from "../components/logCard";
+import EditProfileSheet from "../components/editProfileSheet";
 
 
 
@@ -58,11 +64,60 @@ interface Props {
   refreshFlag?: number;
 }
 
-const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[] }> = ({ tasteProfile }) => {
+const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], onEditProfilePress: () => void }> = ({ tasteProfile, onEditProfilePress }) => {
   const navigation = useNavigation<any>();
-  const { user } = useContext(AuthContext);
+  const { user, refreshUser } = useContext(AuthContext);
   const [createPressed, setCreatePressed] = useState(false);
   const [loginPressed, setLoginPressed] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarPress = () => {
+    if (!user) return;
+    const options: any = [
+      { text: "Cancel", style: "cancel" },
+      { text: "Upload/Change Photo", onPress: handleUploadPhoto },
+    ];
+    if (user.photoUrl) {
+      options.splice(1, 0, { text: "Remove Photo", style: "destructive", onPress: handleRemovePhoto });
+    }
+    Alert.alert("Profile Photo", "Choose an action", options, { cancelable: true });
+  };
+
+  const handleUploadPhoto = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploadingAvatar(true);
+        const localUri = result.assets[0].uri;
+        await uploadUserAvatar(user!.uid, localUri);
+        await refreshUser();
+      }
+    } catch (e) {
+      console.error("Failed to upload avatar", e);
+      Alert.alert("Upload Failed", "Something went wrong uploading your photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      setUploadingAvatar(true);
+      await removeUserAvatar(user!.uid);
+      await refreshUser();
+    } catch (e) {
+      console.error("Failed to remove avatar", e);
+      Alert.alert("Remove Failed", "Something went wrong removing your photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const displayName =
     user?.username || (user?.email ? user.email.split("@")[0] : "Guest");
@@ -78,12 +133,20 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[] }
   return (
     <View style={styles.headerCard}>
       <View style={styles.headerTop}>
-        <View style={styles.avatarWrap}>
-          <User size={24} color={colors.accent} />
-        </View>
+        <TouchableOpacity activeOpacity={0.8} onPress={handleAvatarPress} disabled={!user}>
+          <View style={[styles.avatarWrap, { overflow: "hidden" }]}>
+            {uploadingAvatar ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : user?.photoUrl ? (
+              <Image source={{ uri: user.photoUrl }} style={{ width: 48, height: 48, borderRadius: 24 }} />
+            ) : (
+              <User size={24} color={colors.accent} />
+            )}
+          </View>
+        </TouchableOpacity>
 
-        <View style={styles.headerText}>
-          <Text style={[styles.headerName, { color: colors.pillUnselectedBg }]}>
+        <View style={[styles.headerText, { flex: 1 }]}>
+          <Text style={[styles.headerName, { color: colors.pillUnselectedBg }]} numberOfLines={1}>
             {displayName}
           </Text>
           <Text
@@ -92,6 +155,17 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[] }
             {subtitle}
           </Text>
         </View>
+
+        {user && (
+          <TouchableOpacity 
+            style={styles.editProfileBtn} 
+            onPress={onEditProfilePress}
+            activeOpacity={0.85}
+          >
+            <Edit2 size={13} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={styles.editProfileBtnText}>Edit</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Taste flavor chips inside the card */}
@@ -245,6 +319,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
   const [tasteCounts, setTasteCounts] = useState<Record<string, number>>({});
   const [avgRating, setAvgRating] = useState<number>(0);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [editProfileVisible, setEditProfileVisible] = useState(false);
   const sheetAnim = useRef(new Animated.Value(500)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<any>(null);
@@ -363,7 +438,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
             />
           }
         >
-          <ProfileHeader tasteProfile={tasteProfile} />
+          <ProfileHeader tasteProfile={tasteProfile} onEditProfilePress={() => setEditProfileVisible(true)} />
 
           <View style={styles.statsGrid}>
             <StatCard
@@ -470,7 +545,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
                           <X size={17} color={colors.textMuted} strokeWidth={2.5} />
                         </TouchableOpacity>
                       </View>
-                      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+                      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.achievementSheetList}>
                         {ALL.map(({ icon: Icon, label, hint, earned: e }) => (
                           <View key={label} style={[styles.achRow, !e && styles.achRowDim]}>
                             <View style={[styles.achRowIcon, !e && styles.achRowIconDim]}>
@@ -542,6 +617,10 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
 
           <View style={{ height: 28 }} />
         </ScrollView>
+        <EditProfileSheet 
+          visible={editProfileVisible}
+          onClose={() => setEditProfileVisible(false)}
+        />
       </SafeAreaView>
     </View>
   );
@@ -814,6 +893,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
+  },
+  editProfileBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+    marginLeft: 10,
+  },
+  editProfileBtnText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   headerFlavorChipTop: {
     backgroundColor: "rgba(255,255,255,0.22)",

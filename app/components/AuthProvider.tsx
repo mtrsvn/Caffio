@@ -7,14 +7,16 @@ type AppUser = {
   uid: string;
   email: string;
   username: string;
+  photoUrl?: string | null;
   createdAt?: Date | null;
 } | null;
 
 type AuthContextValue = {
   user: AppUser;
+  refreshUser: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextValue>({ user: null });
+export const AuthContext = createContext<AuthContextValue>({ user: null, refreshUser: async () => {} });
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -63,6 +65,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             uid: fbUser.uid,
             email: fbUser.email || "",
             username,
+            photoUrl: data?.photoUrl || null,
             createdAt,
           });
           setInitializing(false);
@@ -86,10 +89,24 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => unsub();
   }, []);
 
+  const refreshUser = async () => {
+    if (!user?.uid) return;
+    try {
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setUser((prev) => prev ? { ...prev, photoUrl: data?.photoUrl || null } : null);
+      }
+    } catch (e) {
+      console.error("[AuthProvider] failed to refresh user", e);
+    }
+  };
+
   if (initializing) return null;
 
   return (
-    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, refreshUser }}>{children}</AuthContext.Provider>
   );
 };
 
