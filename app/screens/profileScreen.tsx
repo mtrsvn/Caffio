@@ -828,8 +828,9 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     rowGap: 8,
+    columnGap: "2.3%",
     marginBottom: 10,
     ...Platform.select({
       ios: {

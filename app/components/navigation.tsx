@@ -126,9 +126,9 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
   return (
     <>
       <Tab.Navigator
-        sceneContainerStyle={{ backgroundColor: "#EDE8E2" }}
         detachInactiveScreens={false}
         screenOptions={({ route }) => ({
+          sceneStyle: { backgroundColor: "#EDE8E2" },
           headerShown: false,
           tabBarShowLabel: true,
           animation: "shift",

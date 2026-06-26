@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react-native";
+import { MapPin, Star } from "lucide-react-native";
 import React from "react";
 import {
   Platform,
@@ -7,15 +7,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import colors from "./colors";
+import { SimplePlace } from "../utils/places";
 
 type Props = {
-  name: string;
-  address?: string | null;
+  place: SimplePlace;
   onPress?: () => void;
 };
 
-export default function CafeCard({ name, address, onPress }: Props) {
+export default function CafeCard({ place, onPress }: Props) {
+  const { name, address, photoUrl, rating, totalRatings, openNow } = place;
+  const displayName = name && name.length > 20 ? name.substring(0, 20) + "..." : name;
   return (
     <TouchableOpacity
       activeOpacity={0.92}
@@ -23,21 +26,46 @@ export default function CafeCard({ name, address, onPress }: Props) {
       style={styles.card}
       accessibilityRole="button"
     >
-      {/* Icon */}
-      <View style={styles.iconWrap}>
-        <MapPin size={20} color={colors.accent} strokeWidth={1.8} />
-      </View>
+      {/* Icon or Image */}
+      {photoUrl ? (
+        <Image
+          source={{ uri: photoUrl }}
+          style={styles.imageThumbnail}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={[styles.iconWrap, { backgroundColor: colors.gradientStart }]}>
+          <MapPin size={20} color="#FFF" strokeWidth={1.8} />
+        </View>
+      )}
 
       {/* Text */}
       <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={1}>
-          {name}
-        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={[styles.title, { flexShrink: 1 }]} numberOfLines={1}>
+            {displayName}
+          </Text>
+          {rating ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Star size={12} color={colors.star} fill={colors.star} />
+              <Text style={{ fontSize: 12, color: colors.star, fontWeight: "600", marginLeft: 4 }}>
+                {rating}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
         {address ? (
           <Text style={styles.address} numberOfLines={1} ellipsizeMode="tail">
             {address}
           </Text>
         ) : null}
+        
+        {openNow !== undefined && (
+          <Text style={[styles.statusText, { color: openNow ? "#388E3C" : "#D32F2F" }]}>
+            {openNow ? "Open Now" : "Closed"}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -63,9 +91,9 @@ const styles = StyleSheet.create({
     }),
   },
   iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "#E4DED7",
     alignItems: "center",
     justifyContent: "center",
@@ -81,6 +109,13 @@ const styles = StyleSheet.create({
       android: { elevation: 2 },
     }),
   },
+  imageThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 14,
+    backgroundColor: "#E4DED7",
+  },
   body: {
     flex: 1,
   },
@@ -94,5 +129,11 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 12,
     color: colors.textMuted,
+    marginTop: 2,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 4,
   },
 });

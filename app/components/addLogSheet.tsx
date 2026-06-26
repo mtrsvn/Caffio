@@ -279,17 +279,17 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   
   
   const renderCustomCafePill = () => {
-    if (!selectedCafe || CAFES.includes(selectedCafe)) return null;
-    const c = selectedCafe;
+    if (!selectedType || COFFEE_TYPES.includes(selectedType)) return null;
+    const c = selectedType;
     const scale = getScale("cafe", c);
     return (
       <AnimatedTouchable
         key="__custom_cafe_selected"
         onPress={() => {
           
-          setCustomCafeText(c);
-          setCustomCafeMode(true);
-          setSelectedCafe(null);
+          setCustomTypeText(c);
+          setCustomTypeMode(true);
+          setSelectedType(null);
           pressIn(scale);
           pressOutTo(scale, 1);
         }}
@@ -314,26 +314,26 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   };
 
   const renderCafePill = (c: string) => {
-    const selected = selectedCafe === c;
+    const selected = selectedType === c;
     const isCustom = c === "Custom Cafe";
     const scale = getScale("cafe", c);
 
     if (isCustom) {
-      if (customCafeMode) {
+      if (customTypeMode) {
         return (
           <View key="custom-cafe-input" style={{ marginBottom: 7 }}>
             <Text style={styles.fieldLabel}>Cafe</Text>
             <TextInput
-              ref={customCafeRef}
-              value={customCafeText}
-              onChangeText={setCustomCafeText}
+              ref={customTypeRef}
+              value={customTypeText}
+              onChangeText={setCustomTypeText}
               placeholder="Enter cafe name"
               placeholderTextColor="rgba(78,52,46,0.45)"
               style={styles.fullInput}
               returnKeyType="done"
               onSubmitEditing={() => {
-                const text = customCafeText.trim();
-                if (text.length) setSelectedCafe(text);
+                const text = customTypeText.trim();
+                if (text.length) setSelectedType(text);
                 
                 Keyboard.dismiss();
               }}
@@ -341,7 +341,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
             <TouchableOpacity
               onPress={() => {
                 
-                setCustomCafeText("");
+                setCustomTypeText("");
               }}
               activeOpacity={0.8}
               style={{ marginTop: 7 }}
@@ -358,9 +358,9 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         <AnimatedTouchable
           key={c}
           onPress={() => {
-            setCustomCafeText("");
-            setCustomCafeMode(true);
-            setSelectedCafe(null);
+            setCustomTypeText("");
+            setCustomTypeMode(true);
+            setSelectedType(null);
             pressIn(scale);
             pressOutTo(scale, 1);
           }}
@@ -378,7 +378,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       return (
         <AnimatedTouchable
           key={c}
-          onPress={() => selectCafe(c)}
+          onPress={() => selectType(c)}
           onPressIn={() => pressIn(scale)}
           onPressOut={() => pressOutTo(scale, 1.03)}
           activeOpacity={0.85}
@@ -402,7 +402,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     return (
       <AnimatedTouchable
         key={c}
-        onPress={() => selectCafe(c)}
+        onPress={() => selectType(c)}
         onPressIn={() => pressIn(scale)}
         onPressOut={() => pressOutTo(scale, 1)}
         activeOpacity={0.85}

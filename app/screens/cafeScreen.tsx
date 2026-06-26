@@ -15,21 +15,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CafeCard from "../components/cafeCards";
+import CafeDetailsSheet from "../components/cafeDetailsSheet";
 import colors from "../components/colors";
-import { fetchNearbyCafes, SimplePlace } from "../utils/places";
+import { fetchNearbyCafes, SimplePlace, fetchPlaceDetails, PlaceDetails } from "../utils/places";
+import { PlaceUI } from "../components/cafeDetailsSheet";
 
-const DEFAULT_RADIUS = 5000;
+const DEFAULT_RADIUS = 10000;
 const BASE_TABBAR_HEIGHT = 66;
 
-type PlaceUI = SimplePlace & {
-  id: string;
-  distanceKm: number;
-  lat: number;
-  lng: number;
-  rating?: number;
-  totalRatings?: number;
-  openNow?: boolean;
-};
+
 
 export default function CafeScreen() {
   const insets = useSafeAreaInsets();
@@ -37,6 +31,23 @@ export default function CafeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCafe, setSelectedCafe] = useState<PlaceUI | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [selectedCafeDetails, setSelectedCafeDetails] = useState<PlaceDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedCafe) {
+      setDetailsLoading(true);
+      fetchPlaceDetails(selectedCafe.id).then((details) => {
+        setSelectedCafeDetails(details);
+        setDetailsLoading(false);
+      });
+    } else {
+      setSelectedCafeDetails(null);
+      setDetailsLoading(false);
+    }
+  }, [selectedCafe]);
 
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
@@ -177,11 +188,10 @@ export default function CafeScreen() {
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }: ListRenderItemInfo<PlaceUI>) => (
           <CafeCard
-            key={String(item.id)}
-            name={item.name}
-            address={item.address}
+            place={item}
             onPress={() => {
-              console.log("pressed", item.name, item.lat, item.lng);
+              setSelectedCafe(item);
+              setSheetVisible(true);
             }}
           />
         )}
@@ -211,6 +221,15 @@ export default function CafeScreen() {
         }}
         contentInset={{ bottom: tabBarHeight }}
         ListFooterComponent={<View style={{ height: tabBarHeight }} />}
+      />
+
+      <CafeDetailsSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        onExited={() => setSelectedCafe(null)}
+        selectedCafe={selectedCafe}
+        selectedCafeDetails={selectedCafeDetails}
+        detailsLoading={detailsLoading}
       />
     </View>
   );

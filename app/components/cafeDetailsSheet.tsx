@@ -1,0 +1,454 @@
+import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
+import { Clock, Globe, MapPin, Navigation, Phone, Star, X } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  Linking,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SyncLoader } from "./SyncLoader";
+import colors from "./colors";
+import { PlaceDetails, SimplePlace } from "../utils/places";
+
+export type PlaceUI = SimplePlace & {
+  id: string;
+  distanceKm: number;
+  lat: number;
+  lng: number;
+  rating?: number;
+  totalRatings?: number;
+  openNow?: boolean;
+};
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  selectedCafe: PlaceUI | null;
+  selectedCafeDetails: PlaceDetails | null;
+  detailsLoading: boolean;
+  onExited?: () => void;
+};
+
+export default function CafeDetailsSheet({
+  visible,
+  onClose,
+  selectedCafe,
+  selectedCafeDetails,
+  detailsLoading,
+  onExited,
+}: Props) {
+  const insets = useSafeAreaInsets();
+  const [mounted, setMounted] = useState(false);
+
+  const [sheetHeight, setSheetHeight] = useState(0);
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const sheetAnim = useRef(new Animated.Value(800)).current;
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      const start = sheetHeight > 0 ? sheetHeight : 800;
+      sheetAnim.setValue(start);
+      backdropAnim.setValue(0);
+
+      Animated.parallel([
+        Animated.timing(backdropAnim, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          bounciness: 6,
+          speed: 14,
+        }),
+      ]).start();
+    } else if (mounted) {
+      const to = sheetHeight > 0 ? sheetHeight : 800;
+      Animated.parallel([
+        Animated.timing(backdropAnim, {
+          toValue: 0,
+          duration: 220,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetAnim, {
+          toValue: to,
+          duration: 240,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setMounted(false);
+        if (onExited) onExited();
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const onSheetLayout = (e: any) => {
+    setSheetHeight(e.nativeEvent.layout.height);
+  };
+
+  if (!mounted || !selectedCafe) return null;
+
+  const backdropStyle = { opacity: backdropAnim };
+  const tintOpacity = backdropAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.22],
+  });
+
+  return (
+    <Modal visible={mounted} animationType="none" transparent onRequestClose={onClose}>
+      <View style={styles.container}>
+        <Animated.View style={[styles.backdrop, backdropStyle]}>
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: "rgba(0,0,0,0.3)", opacity: tintOpacity },
+            ]}
+          />
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        </Animated.View>
+
+        <Animated.View
+          onLayout={onSheetLayout}
+          style={[
+            styles.sheet,
+            {
+              paddingBottom: (insets.bottom ?? 12) + 12,
+              transform: [{ translateY: sheetAnim }],
+            },
+          ]}
+        >
+          <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>
+            {selectedCafe.photoUrl ? (
+              <Image
+                source={{ uri: selectedCafe.photoUrl }}
+                style={styles.modalHeroImage}
+                contentFit="cover"
+              />
+            ) : (
+              <View style={[styles.modalHeroImage, { alignItems: "center", justifyContent: "center", backgroundColor: colors.gradientStart }]}>
+                <MapPin size={48} color="#FFF" />
+              </View>
+            )}
+
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={onClose}
+              activeOpacity={0.8}
+            >
+              <X size={20} color="#FFF" strokeWidth={2.5} />
+            </TouchableOpacity>
+
+            <View style={styles.modalBodyContent}>
+              <View style={styles.modalHeaderRowContent}>
+                <Text style={styles.modalTitle}>{selectedCafe.name}</Text>
+                {selectedCafe.rating ? (
+                  <View style={styles.modalRatingBadge}>
+                    <Star size={14} color="#FFF" fill="#FFF" />
+                    <Text style={styles.modalRatingText}>{selectedCafe.rating}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {selectedCafe.address ? (
+                <View style={styles.modalAddressRow}>
+                  <MapPin size={16} color={colors.textMuted} style={{ marginTop: 2 }} />
+                  <Text style={styles.modalAddress}>{selectedCafe.address}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.modalStatsRow}>
+                {selectedCafe.openNow !== undefined && (
+                  <View style={[styles.modalStatPill, { backgroundColor: selectedCafe.openNow ? "#E8F5E9" : "#FFEBEE" }]}>
+                    <Text style={[styles.modalStatText, { color: selectedCafe.openNow ? "#2E7D32" : "#C62828" }]}>
+                      {selectedCafe.openNow ? "Open Now" : "Closed"}
+                    </Text>
+                  </View>
+                )}
+                {selectedCafe.totalRatings ? (
+                  <View style={styles.modalStatPill}>
+                    <Text style={styles.modalStatText}>
+                      {selectedCafe.totalRatings} Reviews
+                    </Text>
+                  </View>
+                ) : null}
+                {selectedCafe.distanceKm ? (
+                  <View style={styles.modalStatPill}>
+                    <Text style={styles.modalStatText}>
+                      {selectedCafe.distanceKm < 1
+                        ? `${Math.round(selectedCafe.distanceKm * 1000)}m away`
+                        : `${selectedCafe.distanceKm.toFixed(1)}km away`}
+                    </Text>
+                  </View>
+                ) : null}
+                {selectedCafeDetails?.priceLevel !== undefined && (
+                  <View style={styles.modalStatPill}>
+                    <Text style={[styles.modalStatText, { color: colors.gradientStart }]}>
+                      {Array(selectedCafeDetails.priceLevel).fill("$").join("")}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {detailsLoading ? (
+                <View style={{ alignItems: "center", paddingVertical: 20 }}>
+                  <SyncLoader color={colors.gradientStart} size={8} speedMultiplier={0.8} />
+                </View>
+              ) : (
+                <View style={styles.modalDetailsSection}>
+                  {selectedCafeDetails?.editorialSummary ? (
+                    <Text style={styles.modalSummaryText}>
+                      {selectedCafeDetails.editorialSummary}
+                    </Text>
+                  ) : null}
+
+                  {selectedCafeDetails?.phoneNumber ? (
+                    <TouchableOpacity
+                      style={styles.modalDetailRow}
+                      onPress={() => Linking.openURL(`tel:${selectedCafeDetails.phoneNumber}`)}
+                    >
+                      <View style={styles.modalDetailIcon}>
+                        <Phone size={18} color={colors.accent} />
+                      </View>
+                      <Text style={styles.modalDetailText}>{selectedCafeDetails.phoneNumber}</Text>
+                    </TouchableOpacity>
+                  ) : null}
+
+                  {selectedCafeDetails?.website ? (
+                    <TouchableOpacity
+                      style={styles.modalDetailRow}
+                      onPress={() => Linking.openURL(selectedCafeDetails.website!)}
+                    >
+                      <View style={styles.modalDetailIcon}>
+                        <Globe size={18} color={colors.accent} />
+                      </View>
+                      <Text style={styles.modalDetailText} numberOfLines={1}>
+                        {selectedCafeDetails.website.replace(/^https?:\/\//, "")}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
+
+                  {selectedCafeDetails?.weekdayText && selectedCafeDetails.weekdayText.length > 0 ? (
+                    <View style={styles.modalDetailRow}>
+                      <View style={styles.modalDetailIcon}>
+                        <Clock size={18} color={colors.accent} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.modalDetailText, { marginBottom: 4 }]}>Opening Hours</Text>
+                        {selectedCafeDetails.weekdayText.map((day, idx) => (
+                          <Text key={idx} style={styles.modalScheduleText}>
+                            {day}
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.modalDirectionsBtn}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (selectedCafe) {
+                    const url = Platform.select({
+                      ios: `maps:0,0?q=${selectedCafe.name}@${selectedCafe.lat},${selectedCafe.lng}`,
+                      android: `geo:0,0?q=${selectedCafe.lat},${selectedCafe.lng}(${selectedCafe.name})`,
+                    });
+                    if (url) Linking.openURL(url);
+                  }
+                }}
+              >
+                <Navigation size={18} color="#FFF" />
+                <Text style={styles.modalDirectionsText}>Get Directions</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: "flex-end" },
+  backdrop: { ...StyleSheet.absoluteFillObject, zIndex: 5 },
+  sheet: {
+    backgroundColor: colors.navbarBg,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    overflow: "hidden",
+    maxHeight: "92%",
+    zIndex: 10,
+    ...Platform.select({
+      android: { elevation: 6 },
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: -2 },
+      },
+    }),
+  },
+  sheetBody: { paddingBottom: 24 },
+
+  modalHeroImage: {
+    width: "100%",
+    height: 280,
+    backgroundColor: "#E4DED7",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  modalCloseButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 20,
+  },
+  modalBodyContent: {
+    padding: 24,
+    backgroundColor: colors.navbarBg,
+  },
+  modalHeaderRowContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  modalTitle: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: "800",
+    color: colors.textPrimary,
+    marginRight: 16,
+    letterSpacing: -0.5,
+  },
+  modalRatingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.star,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  modalRatingText: {
+    color: "#FFF",
+    fontWeight: "700",
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  modalAddressRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 20,
+    paddingRight: 20,
+  },
+  modalAddress: {
+    fontSize: 15,
+    color: colors.textMuted,
+    lineHeight: 22,
+    marginLeft: 8,
+  },
+  modalStatsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 24,
+  },
+  modalStatPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: "#E4DED7",
+    borderRadius: 16,
+  },
+  modalStatText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  modalDetailsSection: {
+    marginBottom: 24,
+  },
+  modalSummaryText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 22,
+    fontStyle: "italic",
+    marginBottom: 16,
+    backgroundColor: "#F0EBE5",
+    padding: 12,
+    borderRadius: 12,
+  },
+  modalDetailRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
+  modalDetailIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E4DED7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  modalDetailText: {
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontWeight: "500",
+    marginTop: 8,
+  },
+  modalScheduleText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 20,
+  },
+  modalDirectionsBtn: {
+    backgroundColor: colors.gradientStart,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.gradientStart,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  modalDirectionsText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "700",
+    marginLeft: 8,
+  },
+});

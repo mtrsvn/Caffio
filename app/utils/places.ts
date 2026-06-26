@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GEOAPIFY_API_KEY } from "../config";
+import { GOOGLE_PLACES_API_KEY } from "../config";
 
 export type SimplePlace = {
   id: string;
@@ -14,14 +14,12 @@ export type SimplePlace = {
   openNow?: boolean;
 };
 
-const GEOAPIFY_PLACES = "https://api.geoapify.com/v2/places";
-const WIKIMEDIA_API = "https://commons.wikimedia.org/w/api.php";
-const UNSPLASH_SOURCE = (w = 800, h = 600) =>
-  `https://source.unsplash.com/random/${w}x${h}`;
+const GOOGLE_PLACES_API = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+const GOOGLE_PLACE_DETAILS_API = "https://maps.googleapis.com/maps/api/place/details/json";
+const GOOGLE_PHOTO_API = "https://maps.googleapis.com/maps/api/place/photo";
 
 const CACHE_TTL = 1000 * 60 * 5;
-const MAX_RADIUS = 5000;
-const MAX_RESULTS = 200;
+const MAX_RADIUS = 50000;
 
 function cacheKey(lat: number, lng: number, radius: number) {
   const roundedLat = Math.round(lat * 10000) / 10000;
@@ -51,22 +49,14 @@ async function setCachedPlaces(key: string, value: SimplePlace[]) {
   } catch {}
 }
 
-function buildGeoapifyUrl(
-  lat: number,
-  lng: number,
-  radius: number,
-  limit = 50,
-) {
+function buildGooglePlacesUrl(lat: number, lng: number, radius: number) {
   const params = new URLSearchParams({
-    apiKey: GEOAPIFY_API_KEY,
-    categories: "catering.cafe",
-    limit: String(limit),
-
-    filter: `circle:${lng},${lat},${radius}`,
-
-    bias: `proximity:${lng},${lat}`,
+    location: `${lat},${lng}`,
+    radius: String(radius),
+    type: "cafe",
+    key: GOOGLE_PLACES_API_KEY || "",
   });
-  return `${GEOAPIFY_PLACES}?${params.toString()}`;
+  return `${GOOGLE_PLACES_API}?${params.toString()}`;
 }
 
 async function fetchWithTimeout(
@@ -96,68 +86,92 @@ export async function fetchNearbyCafes(
   lng: number,
   radius = 2000,
 ): Promise<SimplePlace[]> {
-  if (!GEOAPIFY_API_KEY || GEOAPIFY_API_KEY.length === 0) {
+  if (!GOOGLE_PLACES_API_KEY) {
     throw new Error(
-      "Geoapify API key not set. Put it in app/config.ts as GEOAPIFY_API_KEY.",
+      "Google Places API key not set. Put it in your .env as EXPO_PUBLIC_GOOGLE_PLACES_API_KEY.",
     );
   }
 
   if (!radius || radius <= 0) radius = 2000;
-  if (radius > MAX_RADIUS) {
-    console.warn(
-      `[places-geo] requested radius ${radius} > ${MAX_RADIUS}, capping to ${MAX_RADIUS}`,
-    );
-    radius = MAX_RADIUS;
-  }
+  if (radius > MAX_RADIUS) radius = MAX_RADIUS;
 
   const key = cacheKey(lat, lng, radius);
   const cached = await getCachedPlaces(key);
   if (cached) return cached;
 
-  const url = buildGeoapifyUrl(lat, lng, radius, 50);
+  const url = buildGooglePlacesUrl(lat, lng, radius);
   const res = await fetchWithTimeout(url, {}, 15000);
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
-    throw new Error(`Geoapify Places request failed: ${res.status} ${txt}`);
+    throw new Error(`Google Places request failed: ${res.status} ${txt}`);
   }
   const data = await res.json();
 
-  const features = Array.isArray(data.features) ? data.features : [];
+  if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+    throw new Error(`Google Places Error: ${data.status} ${data.error_message || ""}`);
+  }
 
-  const places: SimplePlace[] = features
-    .map((f: any) => {
-      const props = f.properties ?? {};
-      const loc = f.geometry?.coordinates ?? [0, 0];
-      const latF = loc[1];
-      const lngF = loc[0];
-      const photo = props.image_url ?? props.photo?.url ?? undefined;
-      const addressParts = [
-        props.housenumber,
-        props.street,
-        props.city,
-        props.state,
-      ].filter(Boolean);
-      const address = addressParts.length
-        ? addressParts.join(" ")
-        : (props.formatted ?? undefined);
+  const results = Array.isArray(data.results) ? data.results : [];
 
-      return {
-        id: `geo:${props.place_id ?? props.xid ?? props.fsq_id ?? f.id}`,
-        name: props.name ?? "Cafe",
-        address,
-        lat: latF,
-        lng: lngF,
-        photoUrl: photo,
-        raw: f,
-        rating: props.rating ?? undefined,
-        totalRatings: props.user_ratings_total ?? undefined,
-        openNow: props.hours?.is_open ?? undefined,
-      } as SimplePlace;
-    })
-    .slice(0, MAX_RESULTS);
+  const places: SimplePlace[] = results.map((p: any) => {
+    let photoUrl;
+    if (p.photos && p.photos.length > 0) {
+      const ref = p.photos[0].photo_reference;
+      photoUrl = `${GOOGLE_PHOTO_API}?maxwidth=800&photo_reference=${ref}&key=${GOOGLE_PLACES_API_KEY}`;
+    }
+
+    return {
+      id: `google:${p.place_id}`,
+      name: p.name ?? "Cafe",
+      address: p.vicinity,
+      lat: p.geometry?.location?.lat ?? 0,
+      lng: p.geometry?.location?.lng ?? 0,
+      photoUrl,
+      raw: p,
+      rating: p.rating,
+      totalRatings: p.user_ratings_total,
+      openNow: p.opening_hours?.open_now,
+    } as SimplePlace;
+  });
 
   await setCachedPlaces(key, places);
   return places;
+}
+
+export type PlaceDetails = {
+  phoneNumber?: string;
+  website?: string;
+  weekdayText?: string[];
+  priceLevel?: number;
+  editorialSummary?: string;
+};
+
+export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
+  if (!GOOGLE_PLACES_API_KEY) return null;
+  const realId = placeId.replace("google:", "");
+  
+  const params = new URLSearchParams({
+    place_id: realId,
+    fields: "formatted_phone_number,website,opening_hours,price_level,editorial_summary",
+    key: GOOGLE_PLACES_API_KEY,
+  });
+
+  try {
+    const res = await fetch(`${GOOGLE_PLACE_DETAILS_API}?${params.toString()}`);
+    const data = await res.json();
+    if (data.status !== "OK") return null;
+    
+    const result = data.result;
+    return {
+      phoneNumber: result.formatted_phone_number,
+      website: result.website,
+      weekdayText: result.opening_hours?.weekday_text,
+      priceLevel: result.price_level,
+      editorialSummary: result.editorial_summary?.overview,
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 async function getImageCache(key: string): Promise<string | null> {
@@ -190,62 +204,12 @@ export async function getImageForPlace(
   const cached = await getImageCache(cacheK);
   if (cached) return cached;
 
-  if (place.photoUrl && /^https?:\/\//.test(place.photoUrl)) {
+  if (place.photoUrl) {
     await setImageCache(cacheK, place.photoUrl);
     return place.photoUrl;
   }
 
-  const maybe =
-    place.raw?.properties?.image_url ?? place.raw?.properties?.photo?.url;
-  if (maybe && /^https?:\/\//.test(maybe)) {
-    await setImageCache(cacheK, maybe);
-    return maybe;
-  }
-
-  const commons = await searchWikimediaCommonsImage(place.name, width);
-  if (commons) {
-    await setImageCache(cacheK, commons);
-    return commons;
-  }
-
-  const fallback = UNSPLASH_SOURCE(width, Math.round((width * 3) / 4));
+  const fallback = `https://source.unsplash.com/random/${width}x${Math.round((width * 3) / 4)}?cafe`;
   await setImageCache(cacheK, fallback);
   return fallback;
-}
-
-export async function searchWikimediaCommonsImage(
-  query: string,
-  width = 800,
-): Promise<string | null> {
-  try {
-    const params = new URLSearchParams({
-      action: "query",
-      generator: "search",
-      gsrlimit: "5",
-      gsrsearch: query,
-      gsrnamespace: "6",
-      prop: "imageinfo",
-      iiprop: "url",
-      iiurlwidth: String(width),
-      format: "json",
-      origin: "*",
-    });
-
-    const url = `${WIKIMEDIA_API}?${params.toString()}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.query || !data.query.pages) return null;
-    const pages = Object.values<any>(data.query.pages);
-    for (const p of pages) {
-      if (p.imageinfo && p.imageinfo.length) {
-        const ii = p.imageinfo[0];
-        if (ii.thumburl) return ii.thumburl;
-        if (ii.url) return ii.url;
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
 }

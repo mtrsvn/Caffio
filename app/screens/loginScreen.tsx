@@ -343,7 +343,6 @@ const styles = StyleSheet.create({
 
   // unused legacy (kept to avoid errors if referenced)
   safeArea: { flex: 1 },
-  header: { marginBottom: 36 },
   form2: { gap: 24 },
   inputRow: { position: "relative" },
   buttonGradient: { borderRadius: 16, overflow: "hidden" },

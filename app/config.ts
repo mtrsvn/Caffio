@@ -1,4 +1,4 @@
-export const GEOAPIFY_API_KEY = "4b643ca1e1ec40f58f83331d56a79296";
+export const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
