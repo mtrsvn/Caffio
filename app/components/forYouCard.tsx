@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Coffee, MapPin, Star } from "lucide-react-native";
+import { Coffee, Sparkles, Star } from "lucide-react-native";
 import React from "react";
 import {
   Platform,
@@ -10,22 +10,21 @@ import {
 } from "react-native";
 import colors from "./colors";
 
-export type MenuItem = {
-  item_id: string;
+export type PalateRecommendation = {
+  id: string;
   name: string;
-  description?: string;
-  image_url?: string;
-  category?: string;
+  description: string;
+  reason: string;
+  tags: string[];
+  match_score: number;
 };
 
 type Props = {
-  item: MenuItem;
-  shopName: string;
-  matchScore?: number;
+  item: PalateRecommendation;
   onPress?: () => void;
 };
 
-export default function ForYouCard({ item, shopName, matchScore, onPress }: Props) {
+export default function ForYouCard({ item, onPress }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.95}
@@ -40,7 +39,7 @@ export default function ForYouCard({ item, shopName, matchScore, onPress }: Prop
         end={[1, 1]}
         style={styles.avatar}
       >
-        <Coffee size={18} color="#fff" />
+        <Sparkles size={18} color="#fff" />
       </LinearGradient>
 
       {/* Body */}
@@ -48,24 +47,28 @@ export default function ForYouCard({ item, shopName, matchScore, onPress }: Prop
         <Text style={styles.title} numberOfLines={1}>
           {item.name}
         </Text>
-        <View style={styles.row}>
-          <MapPin size={11} color={colors.textMuted} />
-          <Text style={styles.rowText} numberOfLines={1}>
-            {shopName}
-          </Text>
-        </View>
+        
+        <Text style={styles.description} numberOfLines={2}>
+          {item.description}
+        </Text>
+        
+        <Text style={styles.reason} numberOfLines={2}>
+          <Text style={{fontWeight: 'bold', color: colors.accentLight}}>Why: </Text>
+          {item.reason}
+        </Text>
+
         <View style={styles.badgeRow}>
-          {typeof matchScore === "number" && (
+          {typeof item.match_score === "number" && (
             <View style={styles.matchChip}>
               <Star size={10} color={colors.accent} fill={colors.accent} strokeWidth={0} />
-              <Text style={styles.matchText}>{Math.round(matchScore)}% match</Text>
+              <Text style={styles.matchText}>{Math.round(item.match_score)}% match</Text>
             </View>
           )}
-          {item.category && (
-            <View style={styles.categoryChip}>
-              <Text style={styles.categoryText}>{item.category}</Text>
+          {item.tags?.slice(0, 2).map((tag, idx) => (
+            <View key={idx} style={styles.categoryChip}>
+              <Text style={styles.categoryText}>{tag}</Text>
             </View>
-          )}
+          ))}
         </View>
       </View>
     </TouchableOpacity>
@@ -75,12 +78,12 @@ export default function ForYouCard({ item, shopName, matchScore, onPress }: Prop
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     backgroundColor: "#EDE8E2",
     borderRadius: 18,
     marginBottom: 10,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 14,
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
@@ -98,6 +101,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
+    marginTop: 2,
     ...Platform.select({
       ios: {
         shadowColor: "#6D4C41",
@@ -119,20 +123,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: -0.2,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginBottom: 6,
-  },
-  rowText: {
+  description: {
     fontSize: 12,
     color: colors.textMuted,
-    flex: 1,
+    marginBottom: 6,
+    lineHeight: 16,
+  },
+  reason: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginBottom: 8,
+    fontStyle: 'italic',
+    lineHeight: 15,
   },
   badgeRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 6,
   },
   matchChip: {

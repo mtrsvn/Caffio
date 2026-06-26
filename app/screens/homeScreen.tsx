@@ -16,13 +16,11 @@ import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import EditLogSheet from "../components/editLogSheet";
-import ForYouCard from "../components/forYouCard";
+import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import { GEMINI_BACKEND_URL } from "../config";
 import personalitiesData from "../data/personalities.json";
-import shops from "../data/shops.json";
-
 
 
 const BASE_TABBAR_HEIGHT = 66;
@@ -124,21 +122,7 @@ const HomeScreen: React.FC = () => {
     const matched = matchPersonality(logs, list);
     return matched ?? list[0];
   }, [logs]);
-  // AI recommendations (top 3)
-  const [topRecs, setTopRecs] = React.useState<
-    Array<{ item: any; shopName: string; score: number }>
-  >([]);
-
-  const allItems = React.useMemo(() => {
-    type Shop = { shop_id: string; name: string; menu: any[] };
-    const shopsData: Shop[] = shops as any;
-    return shopsData.flatMap((shop) => {
-      const flatMenu = Array.isArray(shop.menu)
-        ? (shop.menu as any[]).flat(Infinity)
-        : [];
-      return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
-    });
-  }, []);
+  const [topRecs, setTopRecs] = React.useState<PalateRecommendation[]>([]);
 
   const fetchRecommendations = React.useCallback(
     async (userLogs: LogEntry[]) => {
@@ -158,13 +142,6 @@ const HomeScreen: React.FC = () => {
         const payload = {
           userId: user.uid,
           userLogs: normalizedLogs,
-          items: allItems.map((it) => ({
-            item_id: it.item_id,
-            name: it.name,
-            shopName: it.shopName,
-            tasteProfile: it.tasteProfile ?? [],
-            coffeeType: it.coffeeType ?? it.category ?? "",
-          })),
         };
 
         const response = await fetch(
@@ -179,25 +156,14 @@ const HomeScreen: React.FC = () => {
         if (!response.ok) return;
 
         const data = await response.json();
-        const top3 = (data.recommendations || [])
-          .slice(0, 3)
-          .map((rec: any) => {
-            const itemData = allItems.find(
-              (it) =>
-                it.item_id === rec.item_id && it.shopName === rec.shopName,
-            );
-            return itemData
-              ? { item: itemData, shopName: rec.shopName, score: rec.score }
-              : null;
-          })
-          .filter(Boolean);
+        const top2 = (data.recommendations || []).slice(0, 2);
 
-        setTopRecs(top3);
+        setTopRecs(top2);
       } catch (err) {
         console.error("[HomeScreen] recommendation fetch failed", err);
       }
     },
-    [user, allItems],
+    [user],
   );
 
   const fetchLogs = React.useCallback(
@@ -272,8 +238,30 @@ const HomeScreen: React.FC = () => {
             </View>
           )}
 
+          {/* Coffee Stats */}
+          {user && logs.length > 0 && (
+            <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
+              <View style={styles.statsContainer}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>{logs.length}</Text>
+                  <Text style={styles.statLabel}>Coffees Logged</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>{logs.filter(l => l.favorite).length}</Text>
+                  <Text style={styles.statLabel}>Favorites</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>{personality.name}</Text>
+                  <Text style={styles.statLabel}>Palate Profile</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* sample logs */}
-          <View style={{ marginTop: 12 }}>
+          <View style={{ marginTop: 24 }}>
             <View style={styles.header}>
               <Text style={styles.title}>Your Coffee Logs</Text>
               <Text style={styles.subtitle}>
@@ -326,18 +314,16 @@ const HomeScreen: React.FC = () => {
           </View>
 
           {/* For You recommendations */}
-          <View style={[{ marginTop: 12, paddingHorizontal: 16 }]}>
-            <Text style={styles.foryouTitle}>Curated For You</Text>
+          <View style={[{ marginTop: 16, paddingHorizontal: 16 }]}>
+            <Text style={styles.foryouTitle}>Palate Expansion</Text>
             <Text style={styles.foryouSubtitle}>
-              Based on your taste preferences
+              Styles of coffee you might love
             </Text>
             {topRecs.length > 0 ? (
               topRecs.map((rec) => (
                 <ForYouCard
-                  key={rec.item.item_id + "-" + rec.shopName}
-                  item={rec.item}
-                  shopName={rec.shopName}
-                  matchScore={rec.score}
+                  key={rec.id}
+                  item={rec}
                 />
               ))
             ) : !firstRun && !user ? (
@@ -517,6 +503,45 @@ const styles = StyleSheet.create({
   personalityInfo: {
     flex: 1,
     alignItems: "flex-start",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    backgroundColor: "#EDE8E2",
+    borderRadius: 20,
+    paddingVertical: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+        shadowOffset: { width: 6, height: 6 },
+      },
+      android: { elevation: 4 },
+      default: {},
+    }),
+  },
+  statBox: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: "#D6CFC8",
+    marginVertical: 4,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  statLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });
 

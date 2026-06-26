@@ -11,11 +11,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
-import ForYouCard from "../components/forYouCard";
+import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import { GEMINI_BACKEND_URL } from "../config";
-import shops from "../data/shops.json";
-
-
+import { Coffee } from "lucide-react-native";
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -24,32 +22,12 @@ const ForyouScreen: React.FC = () => {
   const { user } = React.useContext(AuthContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
-  const [recommendations, setRecommendations] = React.useState<
-    Record<string, { score: number }>
-  >({});
+  const [recommendations, setRecommendations] = React.useState<PalateRecommendation[]>([]);
   const [recError, setRecError] = React.useState<string | null>(null);
-
-  // flatten menu items from all shops (menu arrays might be nested)
-  const items = React.useMemo(() => {
-    type Shop = { shop_id: string; name: string; menu: any[] };
-    const shopsData: Shop[] = shops as any;
-    return shopsData.flatMap((shop) => {
-      // ensure we have a flat list of menu objects
-      const flatMenu = Array.isArray(shop.menu)
-        ? (shop.menu as any[]).flat(Infinity)
-        : [];
-      return flatMenu.map((it) => ({ ...it, shopName: shop.name }));
-    });
-  }, []);
-
-  const makeKey = React.useCallback(
-    (itemId: string, shopName: string) => `${itemId}::${shopName}`,
-    [],
-  );
 
   const fetchRecommendations = React.useCallback(async () => {
     if (!user) {
-      setRecommendations({});
+      setRecommendations([]);
       setRecError("Log in to see personalized matches.");
       setRefreshing(false);
       return;
@@ -69,7 +47,7 @@ const ForyouScreen: React.FC = () => {
       }));
 
       if (normalizedLogs.length === 0) {
-        setRecommendations({});
+        setRecommendations([]);
         setRecError("Add a coffee log to get personalized matches.");
         setRefreshing(false);
         return;
@@ -78,13 +56,6 @@ const ForyouScreen: React.FC = () => {
       const payload = {
         userId: user.uid,
         userLogs: normalizedLogs,
-        items: items.map((it) => ({
-          item_id: it.item_id,
-          name: it.name,
-          shopName: it.shopName,
-          tasteProfile: it.tasteProfile ?? [],
-          coffeeType: it.coffeeType ?? it.category ?? "",
-        })),
       };
 
       const response = await fetch(
@@ -102,14 +73,7 @@ const ForyouScreen: React.FC = () => {
       }
 
       const data = await response.json();
-      const map: Record<string, { score: number }> = {};
-      (data.recommendations || []).forEach((rec: any) => {
-        const key = makeKey(rec.item_id, rec.shopName);
-        map[key] = {
-          score: typeof rec.score === "number" ? rec.score : 0,
-        };
-      });
-      setRecommendations(map);
+      setRecommendations(data.recommendations || []);
     } catch (err: any) {
       console.error("[ForyouScreen] recommendation fetch failed", err);
       setRecError(
@@ -120,29 +84,11 @@ const ForyouScreen: React.FC = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [items, makeKey, user]);
+  }, [user]);
 
   const onRefresh = React.useCallback(() => {
     fetchRecommendations();
   }, [fetchRecommendations]);
-
-  const recommendedItems = React.useMemo(() => {
-    const scored = items
-      .map((it) => {
-        const rec = recommendations[makeKey(it.item_id, it.shopName)];
-        return rec ? { item: it, score: rec.score } : null;
-      })
-      .filter(Boolean) as { item: any; score: number }[];
-
-    if (scored.length === 0) {
-      return [];
-    }
-
-    return scored
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-      .slice(0, 30) // show more recommendations
-      .map((s) => ({ ...s.item, _score: s.score }));
-  }, [items, recommendations, makeKey]);
 
   React.useEffect(() => {
     fetchRecommendations();
@@ -155,8 +101,8 @@ const ForyouScreen: React.FC = () => {
   return (
     <View style={styles.screenContainer}>
       <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
-        <Text style={styles.title}>Curated For You</Text>
-        <Text style={styles.subtitle}>Based on your taste preferences</Text>
+        <Text style={styles.title}>Palate Expansion</Text>
+        <Text style={styles.subtitle}>Discover new styles of coffee based on your taste</Text>
       </View>
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
@@ -174,19 +120,17 @@ const ForyouScreen: React.FC = () => {
             />
           }
         >
-          {recommendedItems.length === 0 ? (
-            <Text style={{ color: colors.iconInactive, marginTop: 6 }}>
-              {recError || "No recommendations yet."}
-            </Text>
+          {recommendations.length === 0 && !refreshing ? (
+            <View style={styles.emptyCard}>
+               <Coffee size={32} color={colors.gradientStart} style={styles.emptyIcon} />
+               <Text style={styles.emptyTitle}>{recError || "No recommendations yet."}</Text>
+               <Text style={styles.emptySubtitle}>Log some coffees and check back later.</Text>
+            </View>
           ) : (
-            recommendedItems.map((it) => (
+            recommendations.map((it) => (
               <ForYouCard
-                key={it.item_id + "-" + it.shopName}
+                key={it.id}
                 item={it}
-                shopName={it.shopName}
-                matchScore={
-                  typeof it._score === "number" ? it._score : undefined
-                }
               />
             ))
           )}
@@ -221,6 +165,41 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: 16,
     paddingVertical: 10,
+  },
+  emptyCard: {
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    marginTop: 4,
+    marginBottom: 8,
+    borderRadius: 20,
+    backgroundColor: "#EDE8E2",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+        shadowOffset: { width: 6, height: 6 },
+      },
+      android: { elevation: 4 },
+      default: {},
+    }),
+  },
+  emptyIcon: {
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    textAlign: "center",
+    lineHeight: 18,
   },
 });
 
