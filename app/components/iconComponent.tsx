@@ -1,8 +1,8 @@
 import { Book, Home, MapPin, Star, User } from "lucide-react-native";
 import React from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import colors from "./colors";
-
+//dont adjust ts
 interface IconProps {
   name: "home" | "book" | "star" | "map-pin" | "user";
   focused: boolean;
@@ -32,7 +32,11 @@ const IconComponent: React.FC<IconProps> = ({ name, focused }) => {
         </View>
       ) : (
         <View style={styles.inactiveBox}>
-          <LucideIcon size={ICON_SIZE} color={colors.textMuted} strokeWidth={1.8} />
+          <LucideIcon
+            size={ICON_SIZE}
+            color={colors.textMuted}
+            strokeWidth={1.8}
+          />
         </View>
       )}
     </View>
