@@ -55,6 +55,7 @@ import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import { LogEntry } from "../components/logCard";
 import EditProfileSheet from "../components/editProfileSheet";
+import { SyncLoader } from "../components/SyncLoader";
 
 
 
@@ -433,11 +434,18 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#000"
-              colors={["#000"]}
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+              progressViewOffset={-1000}
             />
           }
         >
+          {refreshing && (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+            </View>
+          )}
           <ProfileHeader tasteProfile={tasteProfile} onEditProfilePress={() => setEditProfileVisible(true)} />
 
           <View style={styles.statsGrid}>
@@ -1014,7 +1022,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#EDE8E2",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 20,
     paddingTop: 12,
     maxHeight: "75%",
     ...Platform.select({
@@ -1040,6 +1047,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  achievementSheetList: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
   achSheetTitle: {
     fontSize: 17,
@@ -1063,15 +1076,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    marginBottom: 8,
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
-        shadowOffset: { width: 4, height: 4 },
-        shadowOpacity: 0.45,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 10,
       },
-      android: { elevation: 3 },
+      android: { elevation: 4 },
     }),
   },
   achRowDim: {

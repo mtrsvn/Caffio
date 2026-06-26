@@ -1,5 +1,6 @@
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
+import { SyncLoader } from "../components/SyncLoader";
 import { Search } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -16,8 +17,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CafeCard from "../components/cafeCards";
 import colors from "../components/colors";
 import { fetchNearbyCafes, SimplePlace } from "../utils/places";
-
-
 
 const DEFAULT_RADIUS = 5000;
 const BASE_TABBAR_HEIGHT = 66;
@@ -171,10 +170,8 @@ export default function CafeScreen() {
   return (
     <View style={styles.screenContainer}>
       {Header}
-      {}
       <View style={{ paddingHorizontal: 16 }}>{SearchBar}</View>
 
-      {}
       <FlatList
         data={filteredPlaces}
         keyExtractor={(item) => String(item.id)}
@@ -188,14 +185,23 @@ export default function CafeScreen() {
             }}
           />
         )}
+        ListHeaderComponent={
+          refreshing ? (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#000"
-            colors={["#000"]}
+            tintColor="transparent"
+            colors={["transparent"]}
+            progressBackgroundColor="transparent"
+            progressViewOffset={-1000}
           />
         }
         contentContainerStyle={{

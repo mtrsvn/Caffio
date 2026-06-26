@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
     FlatList,
     Platform,
     RefreshControl,
@@ -9,6 +8,7 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SyncLoader } from "../components/SyncLoader";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
@@ -97,9 +97,18 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchLogs(true)}
-              tintColor={colors.gradientStart}
-              colors={[colors.gradientStart]}
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+              progressViewOffset={-1000}
             />
+          }
+          ListHeaderComponent={
+            refreshing ? (
+              <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+              </View>
+            ) : null
           }
           ListEmptyComponent={() => {
             if (firstRun) {
@@ -107,17 +116,13 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
               return null;
             }
             return (
-              <View style={styles.emptyState}>
-                {refreshing ? (
-                  <ActivityIndicator
-                    size="large"
-                    color={colors.gradientStart}
-                  />
-                ) : (
-                  <Text style={styles.emptyText}>
-                    {user ? "No logs yet" : "Log in to view your entries"}
-                  </Text>
-                )}
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyTitle}>
+                  {user ? "No logs yet" : "Log in to view your entries"}
+                </Text>
+                <Text style={styles.emptySubtitle}>
+                  {user ? "Tap the + button to log your first coffee!" : "Sign in to track your coffee journey"}
+                </Text>
               </View>
             );
           }}
@@ -177,13 +182,36 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  emptyState: {
-    alignSelf: "flex-start",
+  emptyCard: {
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 20,
     marginTop: 12,
+    borderRadius: 20,
+    backgroundColor: "#EDE8E2",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+        shadowOffset: { width: 6, height: 6 },
+      },
+      android: { elevation: 4 },
+      default: {},
+    }),
   },
-  emptyText: {
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 13,
     color: colors.textMuted,
-    marginTop: 6,
+    textAlign: "center",
+    lineHeight: 18,
   },
 });
 

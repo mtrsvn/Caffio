@@ -18,6 +18,7 @@ import colors from "../components/colors";
 import EditLogSheet from "../components/editLogSheet";
 import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
+import { SyncLoader } from "../components/SyncLoader";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import { GEMINI_BACKEND_URL } from "../config";
 import personalitiesData from "../data/personalities.json";
@@ -202,8 +203,10 @@ const HomeScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchLogs(true)}
-              tintColor={colors.gradientStart}
-              colors={[colors.gradientStart]}
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+              progressViewOffset={-1000}
             />
           }
           contentContainerStyle={{
@@ -215,6 +218,11 @@ const HomeScreen: React.FC = () => {
               12,
           }}
         >
+          {refreshing && (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+            </View>
+          )}
           {user ? (
             <PersonalityCard personality={personality} />
           ) : (
@@ -233,28 +241,6 @@ const HomeScreen: React.FC = () => {
                   <Text style={styles.emptySubtitle}>
                     Sign in so we can show your coffee match
                   </Text>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {/* Coffee Stats */}
-          {user && logs.length > 0 && (
-            <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-              <View style={styles.statsContainer}>
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{logs.length}</Text>
-                  <Text style={styles.statLabel}>Coffees Logged</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{logs.filter(l => l.favorite).length}</Text>
-                  <Text style={styles.statLabel}>Favorites</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{personality.name}</Text>
-                  <Text style={styles.statLabel}>Palate Profile</Text>
                 </View>
               </View>
             </View>
@@ -288,11 +274,6 @@ const HomeScreen: React.FC = () => {
               ))}
               {!firstRun && !user && (
                 <View style={styles.emptyCard}>
-                  <LogIn
-                    size={32}
-                    color={colors.gradientStart}
-                    style={styles.emptyIcon}
-                  />
                   <Text style={styles.emptyTitle}>
                     Log in to view your entries
                   </Text>
@@ -303,7 +284,6 @@ const HomeScreen: React.FC = () => {
               )}
               {!firstRun && user && logs.length === 0 && (
                 <View style={styles.emptyCard}>
-                  <Text style={styles.emptyIcon}>📝</Text>
                   <Text style={styles.emptyTitle}>No logs yet</Text>
                   <Text style={styles.emptySubtitle}>
                     Tap the + button to log your first coffee!
@@ -328,11 +308,6 @@ const HomeScreen: React.FC = () => {
               ))
             ) : !firstRun && !user ? (
               <View style={styles.emptyCard}>
-                <Sparkles
-                  size={32}
-                  color={colors.gradientStart}
-                  style={styles.emptyIcon}
-                />
                 <Text style={styles.emptyTitle}>
                   Log in for personalised picks
                 </Text>
@@ -342,7 +317,6 @@ const HomeScreen: React.FC = () => {
               </View>
             ) : !firstRun && user && logs.length === 0 ? (
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyIcon}>🎯</Text>
                 <Text style={styles.emptyTitle}>Log a coffee first</Text>
                 <Text style={styles.emptySubtitle}>
                   We'll curate picks based on what you enjoy

@@ -13,7 +13,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -54,12 +54,53 @@ app.post("/api/recommendations", async (req, res) => {
     console.log("[backend] Gemini success, generated", parsed.length, "recommendations");
     return res.json({ recommendations: parsed, scored_by: "gemini" });
   } catch (err) {
-    console.error("[backend] Gemini failed", err);
-    return res.status(500).json({
-      error: "Failed to generate recommendations",
-      details: err.message,
-      scored_by: "none",
-    });
+    console.error("[backend] Gemini failed, using fallback", err.message);
+    
+    // Fallback static list of diverse coffee styles if Gemini is down
+    const fallbackRecs = [
+      {
+        id: "fb-1",
+        name: "Classic Cortado",
+        description: "Equal parts espresso and warm milk to reduce acidity while retaining the bold coffee flavor.",
+        reason: "A perfectly balanced drink to try when you want strong coffee without the bitterness.",
+        tags: ["bold", "creamy", "smooth"],
+        match_score: 85
+      },
+      {
+        id: "fb-2",
+        name: "Honey Processed Pour-over",
+        description: "Coffee beans dried with the sweet fruit mucilage still attached, resulting in a naturally sweet cup.",
+        reason: "Since you are exploring coffee, this offers a naturally sweeter and fruitier taste profile.",
+        tags: ["sweet", "fruity", "black"],
+        match_score: 80
+      },
+      {
+        id: "fb-3",
+        name: "Nitro Cold Brew",
+        description: "Cold brew infused with nitrogen gas for a sweet flavor and a rich, creamy head of foam.",
+        reason: "A great alternative for an iced coffee lover looking for a smooth, creamy texture without added dairy.",
+        tags: ["iced", "smooth", "creamy"],
+        match_score: 82
+      },
+      {
+        id: "fb-4",
+        name: "Spanish Latte",
+        description: "Espresso mixed with normal milk and sweetened condensed milk.",
+        reason: "A decadent, sweeter alternative to a standard latte.",
+        tags: ["sweet", "creamy", "milky"],
+        match_score: 88
+      },
+      {
+        id: "fb-5",
+        name: "Matcha Espresso Fusion",
+        description: "Earthy matcha green tea layered with milk and a shot of bold espresso.",
+        reason: "A beautiful, earthy, and highly caffeinated drink to expand your palate.",
+        tags: ["earthy", "matcha", "layered"],
+        match_score: 75
+      }
+    ];
+
+    return res.json({ recommendations: fallbackRecs, scored_by: "local_fallback" });
   }
 });
 
@@ -131,13 +172,13 @@ function clampScore(val) {
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const server = app.listen(PORT, () => {
-  console.log(\`✅  Caffio Gemini backend running on port \${PORT}\`);
+  console.log(`✅  Caffio Gemini backend running on port ${PORT}`);
 });
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.error(
-      \`[backend] Port \${PORT} is busy. Run: PORT=4001 node server.js\`,
+      `[backend] Port ${PORT} is busy. Run: PORT=4001 node server.js`,
     );
     process.exit(1);
   }

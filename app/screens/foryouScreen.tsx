@@ -14,6 +14,7 @@ import colors from "../components/colors";
 import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import { GEMINI_BACKEND_URL } from "../config";
 import { Coffee } from "lucide-react-native";
+import { SyncLoader } from "../components/SyncLoader";
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -115,16 +116,22 @@ const ForyouScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[colors.pageGradientMid]}
-              tintColor="#6D4C41"
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+              progressViewOffset={-1000}
             />
           }
         >
+          {refreshing && (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+            </View>
+          )}
           {recommendations.length === 0 && !refreshing ? (
             <View style={styles.emptyCard}>
-               <Coffee size={32} color={colors.gradientStart} style={styles.emptyIcon} />
-               <Text style={styles.emptyTitle}>{recError || "No recommendations yet."}</Text>
-               <Text style={styles.emptySubtitle}>Log some coffees and check back later.</Text>
+               <Text style={styles.emptyTitle}>{recError || "Log a coffee first"}</Text>
+               <Text style={styles.emptySubtitle}>We'll curate picks based on what you enjoy</Text>
             </View>
           ) : (
             recommendations.map((it) => (

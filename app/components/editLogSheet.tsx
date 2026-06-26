@@ -41,14 +41,7 @@ type Props = {
   onExited?: () => void;
 };
 
-const CAFES = [
-  "Starbucks",
-  "Krispy Kreme",
-  "Dunkin'",
-  "Tim Hortons",
-  "The Coffee Bean & Tea Leaf",
-  "Custom Cafe",
-];
+
 
 const COFFEE_TYPES = [
   "Espresso",
@@ -78,19 +71,27 @@ export default function EditLogSheet({
   const [photoUri, setPhotoUri] = useState<string | null>(
     entry.photoUri || null,
   );
+  
+  const [cafeText, setCafeText] = useState(entry.cafe || "");
+  const [selectedType, setSelectedType] = useState<string | null>(
+    entry.coffeeType,
+  );
+  const [selectedTaste, setSelectedTaste] = useState<string[]>(
+    entry.tasteProfile,
+  );
+  const [rating, setRating] = useState<number>(entry.rating);
 
-  
-  
-  
+  const [customTypeMode, setCustomTypeMode] = useState(false);
+  const [customTypeText, setCustomTypeText] = useState("");
+  const customTypeRef = useRef<TextInput | null>(null);
+
   useEffect(() => {
     setPhotoUri(entry.photoUri || null);
-    setSelectedCafe(entry.cafe);
+    setCafeText(entry.cafe || "");
     setSelectedType(entry.coffeeType);
     setSelectedTaste(entry.tasteProfile);
     setRating(entry.rating);
-    setCustomCafeMode(false);
     setCustomTypeMode(false);
-    setCustomCafeText("");
     setCustomTypeText("");
   }, [entry]);
 
@@ -110,26 +111,6 @@ export default function EditLogSheet({
     }
   };
 
-  
-  const [selectedCafe, setSelectedCafe] = useState<string | null>(entry.cafe);
-  const [selectedType, setSelectedType] = useState<string | null>(
-    entry.coffeeType,
-  );
-  const [selectedTaste, setSelectedTaste] = useState<string[]>(
-    entry.tasteProfile,
-  );
-  const [rating, setRating] = useState<number>(entry.rating);
-
-  
-  const [customCafeMode, setCustomCafeMode] = useState(false);
-  const [customCafeText, setCustomCafeText] = useState("");
-  const customCafeRef = useRef<TextInput | null>(null);
-
-  const [customTypeMode, setCustomTypeMode] = useState(false);
-  const [customTypeText, setCustomTypeText] = useState("");
-  const customTypeRef = useRef<TextInput | null>(null);
-
-  
   const sheetAnim = useRef(new Animated.Value(0)).current; 
   const backdropAnim = useRef(new Animated.Value(0)).current; 
   const [sheetHeight, setSheetHeight] = useState(0);
@@ -189,7 +170,6 @@ export default function EditLogSheet({
           speed: 14,
         }),
       ]).start(() => {
-        if (customCafeMode) customCafeRef.current?.focus();
         if (customTypeMode) customTypeRef.current?.focus();
       });
     } else if (mounted) {
@@ -209,7 +189,7 @@ export default function EditLogSheet({
         }),
       ]).start(() => {
         setMounted(false);
-        setCustomCafeMode(false);
+        
         setCustomTypeMode(false);
         if (onExited) onExited();
       });
@@ -219,12 +199,6 @@ export default function EditLogSheet({
   }, [visible]);
 
   useEffect(() => {
-    if (customCafeMode) {
-      const t = setTimeout(() => customCafeRef.current?.focus(), 50);
-      return () => clearTimeout(t);
-    }
-  }, [customCafeMode]);
-  useEffect(() => {
     if (customTypeMode) {
       const t = setTimeout(() => customTypeRef.current?.focus(), 50);
       return () => clearTimeout(t);
@@ -233,15 +207,7 @@ export default function EditLogSheet({
 
   
   useEffect(() => {
-    CAFES.forEach((c) => {
-      const scale = getScale("cafe", c);
-      const isSelected = selectedCafe === c;
-      animateTo(scale, isSelected ? 1.03 : 1);
-    });
-    if (selectedCafe && !CAFES.includes(selectedCafe)) {
-      const scale = getScale("cafe", selectedCafe);
-      animateTo(scale, 1.03);
-    }
+    
 
     COFFEE_TYPES.forEach((t) => {
       const scale = getScale("type", t);
@@ -259,7 +225,7 @@ export default function EditLogSheet({
       animateTo(scale, isSelected ? 1.03 : 1);
     });
     
-  }, [selectedCafe, selectedType, selectedTaste]);
+  }, [selectedType, selectedTaste]);
 
   const toggleTaste = (t: string) => {
     const isSelected = selectedTaste.includes(t);
@@ -284,26 +250,7 @@ export default function EditLogSheet({
     setCustomTypeMode(false);
     setSelectedType((prev) => (prev === t ? null : t));
   };
-  const selectCafe = (c: string) => {
-    const prevSelected = selectedCafe;
-    const nextSelected = prevSelected === c ? null : c;
-    const tappedScale = getScale("cafe", c);
-    pressIn(tappedScale);
-    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
-    if (prevSelected && prevSelected !== c) {
-      const prevScale = getScale("cafe", prevSelected);
-      animateTo(prevScale, 1);
-    }
-    setCustomCafeMode(false);
-    setSelectedCafe((prev) => (prev === c ? null : c));
-  };
-
   useEffect(() => {
-    CAFES.forEach((c) => {
-      const scale = getScale("cafe", c);
-      const isSelected = selectedCafe === c;
-      animateTo(scale, isSelected ? 1.03 : 1);
-    });
     COFFEE_TYPES.forEach((t) => {
       const scale = getScale("type", t);
       const isSelected = selectedType === t;
@@ -315,7 +262,7 @@ export default function EditLogSheet({
       animateTo(scale, isSelected ? 1.03 : 1);
     });
     
-  }, [selectedCafe, selectedType, selectedTaste]);
+  }, [selectedType, selectedTaste]);
 
   const onSheetLayout = (e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height;
@@ -331,9 +278,7 @@ export default function EditLogSheet({
     });
   }, [rating]);
 
-  const finalCafeValue =
-    selectedCafe ??
-    (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+  const finalCafeValue = cafeText.trim();
   const finalTypeValue =
     selectedType ??
     (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
@@ -343,21 +288,17 @@ export default function EditLogSheet({
     if (!canSubmit) return;
 
     
-    if (customCafeMode && customCafeText.trim()) {
-      setSelectedCafe(customCafeText.trim());
-    }
+    
     if (customTypeMode && customTypeText.trim()) {
       setSelectedType(customTypeText.trim());
     }
 
-    const cafe =
-      selectedCafe ??
-      (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+    
     const coffeeType =
       selectedType ??
       (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
 
-    if (!cafe || !coffeeType) return;
+    if (!finalCafeValue || !coffeeType) return;
 
     setSaving(true);
     try {
@@ -367,7 +308,7 @@ export default function EditLogSheet({
         photoUrl = await uploadCoffeePhoto(entry.uid, photoUri);
       }
       await updateCoffeeLog(entry.uid, entry.id, {
-        cafe,
+        cafe: finalCafeValue,
         coffeeType,
         rating,
         tasteProfile: selectedTaste,
@@ -376,7 +317,7 @@ export default function EditLogSheet({
 
       const updated: LogEntry = {
         ...entry,
-        cafe,
+        cafe: finalCafeValue,
         coffeeType,
         rating,
         tasteProfile: selectedTaste,
@@ -418,142 +359,6 @@ export default function EditLogSheet({
   };
 
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-  const renderCustomCafePill = () => {
-    if (!selectedCafe || CAFES.includes(selectedCafe)) return null;
-    const c = selectedCafe;
-    const scale = getScale("cafe", c);
-    return (
-      <AnimatedTouchable
-        key="__custom_cafe_selected"
-        onPress={() => {
-          setCustomCafeText(c);
-          setCustomCafeMode(true);
-          setSelectedCafe(null);
-          pressIn(scale);
-          pressOutTo(scale, 1);
-        }}
-        onPressIn={() => pressIn(scale)}
-        onPressOut={() => pressOutTo(scale, 1)}
-        activeOpacity={0.85}
-        style={{ margin: 5, transform: [{ scale }] } as any}
-      >
-        <LinearGradient
-          colors={[
-            colors.tasteSelectedGradientStart,
-            colors.tasteSelectedGradientEnd,
-          ]}
-          start={[0, 0]}
-          end={[1, 1]}
-          style={styles.pillSelected}
-        >
-          <Text style={styles.pillSelectedText}>{c}</Text>
-        </LinearGradient>
-      </AnimatedTouchable>
-    );
-  };
-
-  const renderCafePill = (c: string) => {
-    const selected = selectedCafe === c;
-    const isCustom = c === "Custom Cafe";
-    const scale = getScale("cafe", c);
-
-    if (isCustom) {
-      if (customCafeMode) {
-        return (
-          <View key="__custom_cafe_input" style={{ marginBottom: 7 }}>
-            <TextInput
-              ref={customCafeRef}
-              value={customCafeText}
-              onChangeText={setCustomCafeText}
-              placeholder="Enter cafe name"
-              placeholderTextColor="rgba(78,52,46,0.45)"
-              style={styles.fullInput}
-              returnKeyType="done"
-              onSubmitEditing={() => {
-                const text = customCafeText.trim();
-                if (text.length) setSelectedCafe(text);
-                setCustomCafeMode(false);
-                Keyboard.dismiss();
-              }}
-            />
-            <TouchableOpacity
-              onPress={() => {
-                setCustomCafeMode(false);
-                setCustomCafeText("");
-              }}
-              activeOpacity={0.8}
-              style={{ marginTop: 7 }}
-            >
-              <Text style={styles.chooseFromList}>
-                Choose from list instead
-              </Text>
-            </TouchableOpacity>
-          </View>
-        );
-      }
-
-      return (
-        <AnimatedTouchable
-          key={c}
-          onPress={() => {
-            setCustomCafeText("");
-            setCustomCafeMode(true);
-            setSelectedCafe(null);
-            pressIn(scale);
-            pressOutTo(scale, 1);
-          }}
-          onPressIn={() => pressIn(scale)}
-          onPressOut={() => pressOutTo(scale, 1)}
-          activeOpacity={0.85}
-          style={[styles.pillAdd, { margin: 5, transform: [{ scale }] } as any]}
-        >
-          <Text style={styles.pillAddText}>+</Text>
-        </AnimatedTouchable>
-      );
-    }
-
-    if (selected) {
-      return (
-        <AnimatedTouchable
-          key={c}
-          onPress={() => selectCafe(c)}
-          onPressIn={() => pressIn(scale)}
-          onPressOut={() => pressOutTo(scale, 1.03)}
-          activeOpacity={0.85}
-          style={{ margin: 5, transform: [{ scale }] } as any}
-        >
-          <LinearGradient
-            colors={[
-              colors.tasteSelectedGradientStart,
-              colors.tasteSelectedGradientEnd,
-            ]}
-            start={[0, 0]}
-            end={[1, 1]}
-            style={styles.pillSelected}
-          >
-            <Text style={styles.pillSelectedText}>{c}</Text>
-          </LinearGradient>
-        </AnimatedTouchable>
-      );
-    }
-
-    return (
-      <AnimatedTouchable
-        key={c}
-        onPress={() => selectCafe(c)}
-        onPressIn={() => pressIn(scale)}
-        onPressOut={() => pressOutTo(scale, 1)}
-        activeOpacity={0.85}
-        style={[
-          styles.pillUnselectedCoffee,
-          { margin: 5, transform: [{ scale }] } as any,
-        ]}
-      >
-        <Text style={styles.pillUnselectedCoffeeText}>{c}</Text>
-      </AnimatedTouchable>
-    );
-  };
 
   const renderCustomTypePill = () => {
     if (!selectedType || COFFEE_TYPES.includes(selectedType)) return null;
@@ -806,19 +611,16 @@ export default function EditLogSheet({
             keyboardShouldPersistTaps="handled"
           >
             {}
-            <View style={{ marginBottom: customCafeMode ? 6 : 0 }}>
-              {!customCafeMode && (
-                <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
-                  Cafe
-                </Text>
-              )}
-              {!customCafeMode && (
-                <View style={styles.pillRow}>
-                  {renderCustomCafePill()}
-                  {CAFES.map((c) => renderCafePill(c))}
-                </View>
-              )}
-              {customCafeMode && renderCafePill("Custom Cafe")}
+            <View style={{ marginBottom: 6 }}>
+              <Text style={[styles.sectionTitle, { marginTop: 12 }]}>Cafe</Text>
+              <TextInput
+                value={cafeText}
+                onChangeText={setCafeText}
+                placeholder="Enter cafe name"
+                placeholderTextColor="rgba(78,52,46,0.45)"
+                style={styles.fullInput}
+                returnKeyType="done"
+              />
             </View>
 
             {}

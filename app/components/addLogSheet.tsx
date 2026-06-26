@@ -41,14 +41,7 @@ type Props = {
   }) => void;
 };
 
-const CAFES = [
-  "Starbucks",
-  "Krispy Kreme",
-  "Dunkin'",
-  "Tim Hortons",
-  "The Coffee Bean & Tea Leaf",
-  "Custom Cafe",
-];
+
 
 const COFFEE_TYPES = [
   "Espresso",
@@ -88,15 +81,10 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   };
 
   
-  const [selectedCafe, setSelectedCafe] = useState<string | null>(null);
+  const [cafeText, setCafeText] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTaste, setSelectedTaste] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(0);
-
-  
-  const [customCafeMode, setCustomCafeMode] = useState(false);
-  const [customCafeText, setCustomCafeText] = useState("");
-  const customCafeRef = useRef<TextInput | null>(null);
 
   const [customTypeMode, setCustomTypeMode] = useState(false);
   const [customTypeText, setCustomTypeText] = useState("");
@@ -172,7 +160,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
           speed: 14,
         }),
       ]).start(() => {
-        if (customCafeMode) customCafeRef.current?.focus();
+        
         if (customTypeMode) customTypeRef.current?.focus();
       });
     } else if (mounted) {
@@ -193,7 +181,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       ]).start(() => {
         setMounted(false);
         
-        setCustomCafeMode(false);
+        
         setCustomTypeMode(false);
       });
     }
@@ -202,12 +190,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   }, [visible]);
 
   
-  useEffect(() => {
-    if (customCafeMode) {
-      const t = setTimeout(() => customCafeRef.current?.focus(), 50);
-      return () => clearTimeout(t);
-    }
-  }, [customCafeMode]);
+
 
   useEffect(() => {
     if (customTypeMode) {
@@ -247,36 +230,11 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     setSelectedType((prev) => (prev === t ? null : t));
   };
 
-  const selectCafe = (c: string) => {
-    const prevSelected = selectedCafe;
-    const nextSelected = prevSelected === c ? null : c;
 
-    const tappedScale = getScale("cafe", c);
-    pressIn(tappedScale);
-    pressOutTo(tappedScale, nextSelected ? 1.03 : 1);
-
-    if (prevSelected && prevSelected !== c) {
-      const prevScale = getScale("cafe", prevSelected);
-      animateTo(prevScale, 1);
-    }
-
-    setCustomCafeMode(false);
-    setSelectedCafe((prev) => (prev === c ? null : c));
-  };
 
   
   useEffect(() => {
-    CAFES.forEach((c) => {
-      const scale = getScale("cafe", c);
-      const isSelected = selectedCafe === c;
-      animateTo(scale, isSelected ? 1.03 : 1);
-    });
 
-    
-    if (selectedCafe && !CAFES.includes(selectedCafe)) {
-      const scale = getScale("cafe", selectedCafe);
-      animateTo(scale, 1.03);
-    }
 
     COFFEE_TYPES.forEach((t) => {
       const scale = getScale("type", t);
@@ -295,7 +253,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       animateTo(scale, isSelected ? 1.03 : 1);
     });
     
-  }, [selectedCafe, selectedType, selectedTaste]);
+  }, [selectedType, selectedTaste]);
 
   
   const onSheetLayout = (e: LayoutChangeEvent) => {
@@ -376,13 +334,13 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               onSubmitEditing={() => {
                 const text = customCafeText.trim();
                 if (text.length) setSelectedCafe(text);
-                setCustomCafeMode(false);
+                
                 Keyboard.dismiss();
               }}
             />
             <TouchableOpacity
               onPress={() => {
-                setCustomCafeMode(false);
+                
                 setCustomCafeText("");
               }}
               activeOpacity={0.8}
@@ -643,9 +601,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const stars = useMemo(() => [1, 2, 3, 4, 5], []);
 
   
-  const finalCafeValue =
-    selectedCafe ??
-    (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
+  const finalCafeValue = cafeText.trim();
   const finalTypeValue =
     selectedType ??
     (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
@@ -661,23 +617,15 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     }
     if (!canSubmit) return;
 
-    
-    if (customCafeMode && customCafeText.trim()) {
-      setSelectedCafe(customCafeText.trim());
-    }
     if (customTypeMode && customTypeText.trim()) {
       setSelectedType(customTypeText.trim());
     }
 
-    
-    const finalCafe =
-      selectedCafe ??
-      (customCafeMode && customCafeText.trim() ? customCafeText.trim() : null);
     const finalType =
       selectedType ??
       (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
 
-    if (!finalCafe || !finalType) {
+    if (!finalCafeValue || !finalType) {
       
       return;
     }
@@ -690,7 +638,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
 
       const docId = await addCoffeeLog(uid, {
         coffeeType: finalType,
-        cafe: finalCafe,
+        cafe: finalCafeValue,
         rating,
         tasteProfile: selectedTaste,
         photoLocalUri: photoUri ?? undefined,
@@ -700,7 +648,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       const entry = {
         id: docId,
         coffeeType: finalType,
-        cafe: finalCafe,
+        cafe: finalCafeValue,
         rating,
         tasteProfile: selectedTaste,
         photoUri: photoUri ?? null,
@@ -712,7 +660,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
 
       
       onClose();
-      setCustomCafeMode(false);
+      
       setCustomTypeMode(false);
     } catch (err: any) {
       
@@ -797,19 +745,18 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
             keyboardShouldPersistTaps="handled"
           >
             {}
-            <View style={{ marginBottom: customCafeMode ? 6 : 0 }}>
-              {!customCafeMode && (
-                <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
-                  Cafe
-                </Text>
-              )}
-              {!customCafeMode && (
-                <View style={styles.pillRow}>
-                  {renderCustomCafePill()}
-                  {CAFES.map((c) => renderCafePill(c))}
-                </View>
-              )}
-              {customCafeMode && renderCafePill("Custom Cafe")}
+            <View style={{ marginBottom: 6 }}>
+              <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
+                Cafe
+              </Text>
+              <TextInput
+                value={cafeText}
+                onChangeText={setCafeText}
+                placeholder="Enter cafe name"
+                placeholderTextColor="rgba(78,52,46,0.45)"
+                style={styles.fullInput}
+                returnKeyType="done"
+              />
             </View>
 
             {}
