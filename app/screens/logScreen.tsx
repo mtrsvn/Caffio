@@ -134,6 +134,8 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
           visible={editVisible}
           onClose={() => {
             setEditVisible(false);
+          }}
+          onExited={() => {
             setEditingEntry(null);
           }}
           entry={editingEntry}

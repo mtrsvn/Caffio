@@ -165,11 +165,11 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(sheetAnim, {
+        Animated.spring(sheetAnim, {
           toValue: 0,
-          duration: 320,
-          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
+          bounciness: 6,
+          speed: 14,
         }),
       ]).start(() => {
         if (customCafeMode) customCafeRef.current?.focus();
@@ -187,7 +187,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         Animated.timing(sheetAnim, {
           toValue: to,
           duration: 240,
-          easing: Easing.in(Easing.quad),
+          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -198,7 +198,8 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
       });
     }
     
-  }, [visible, sheetHeight]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   
   useEffect(() => {

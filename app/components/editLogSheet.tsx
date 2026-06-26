@@ -38,6 +38,7 @@ type Props = {
   entry: LogEntry;
   onSaved?: (entry: LogEntry) => void;
   onDeleted?: () => void;
+  onExited?: () => void;
 };
 
 const CAFES = [
@@ -68,6 +69,7 @@ export default function EditLogSheet({
   entry,
   onSaved,
   onDeleted,
+  onExited,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
@@ -180,11 +182,11 @@ export default function EditLogSheet({
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(sheetAnim, {
+        Animated.spring(sheetAnim, {
           toValue: 0,
-          duration: 320,
-          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
+          bounciness: 6,
+          speed: 14,
         }),
       ]).start(() => {
         if (customCafeMode) customCafeRef.current?.focus();
@@ -202,17 +204,19 @@ export default function EditLogSheet({
         Animated.timing(sheetAnim, {
           toValue: to,
           duration: 240,
-          easing: Easing.in(Easing.quad),
+          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start(() => {
         setMounted(false);
         setCustomCafeMode(false);
         setCustomTypeMode(false);
+        if (onExited) onExited();
       });
     }
     
-  }, [visible, sheetHeight]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   useEffect(() => {
     if (customCafeMode) {

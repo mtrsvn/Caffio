@@ -371,6 +371,8 @@ const HomeScreen: React.FC = () => {
             visible={editVisible}
             onClose={() => {
               setEditVisible(false);
+            }}
+            onExited={() => {
               setEditingEntry(null);
             }}
             entry={editingEntry}
