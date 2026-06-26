@@ -28,7 +28,7 @@ const IconComponent: React.FC<IconProps> = ({ name, focused }) => {
     <View style={styles.itemContainer}>
       {focused ? (
         <View style={styles.focusedPill}>
-          <LucideIcon size={ICON_SIZE} color={colors.accent} strokeWidth={2.2} />
+          <LucideIcon size={ICON_SIZE} color={colors.bg} strokeWidth={2.2} />
         </View>
       ) : (
         <View style={styles.inactiveBox}>
@@ -52,16 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#E4DED7",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.45,
-        shadowRadius: 6,
-      },
-      android: { elevation: 2 },
-    }),
+    backgroundColor: colors.accent,
   },
   inactiveBox: {
     width: PILL_W,

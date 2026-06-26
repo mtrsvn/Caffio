@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useContext, useEffect, useRef, useState, createContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,12 +11,6 @@ import FAB from "./fab";
 import IconComponent from "./iconComponent";
 
 const FAB_EXTRA_OFFSET = 16;
-
-export const GlobalContext = createContext({
-  refreshLogsFlag: 0,
-  setSheetOpen: (open: boolean) => {},
-});
-
 
 import CafeScreen from "../screens/cafeScreen";
 import ForgotPasswordScreen from "../screens/forgotPasswordScreen";
@@ -114,9 +108,13 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
   );
 }
 
-function TabNavigator() {
+interface TabNavigatorProps {
+  onFabPress: () => void;
+  refreshFlag: number;
+}
+
+function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
   const { user } = useContext(AuthContext);
-  const { setSheetOpen } = useContext(GlobalContext);
   const insets = useSafeAreaInsets();
   const baseBarHeight = 66;
   const tabBarHeight =
@@ -128,10 +126,13 @@ function TabNavigator() {
   return (
     <>
       <Tab.Navigator
+        sceneContainerStyle={{ backgroundColor: "#EDE8E2" }}
+        detachInactiveScreens={false}
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: true,
           animation: "shift",
+          lazy: false,
 
           tabBarButton: (props) => <TabBarButton {...props} />,
           tabBarIcon: ({ focused }) => {
@@ -160,22 +161,22 @@ function TabNavigator() {
           tabBarLabel: ({ focused }) => (
             <Text
               style={{
-                color: focused ? colors.accent : colors.textMuted,
-                fontSize: 10,
-                marginTop: 2,
-                fontWeight: focused ? "700" : "400",
+                color: colors.iconInactive,
+                fontSize: 12,
+                marginTop: 12,
+                fontWeight: focused ? "600" : "400",
                 textAlign: "center",
-                letterSpacing: 0.3,
               }}
             >
               {LABEL_MAP[route.name]}
             </Text>
           ),
           tabBarStyle: {
-            backgroundColor: "#EDE8E2",
-            borderTopWidth: 0,
+            backgroundColor: colors.navbarBg,
+            borderTopWidth: 1,
+            borderTopColor: colors.navbarBorder,
             height: tabBarHeight,
-            paddingTop: 10,
+            paddingTop: 14,
             paddingBottom: insets.bottom
               ? insets.bottom * 0.6
               : Platform.OS === "ios"
@@ -185,11 +186,11 @@ function TabNavigator() {
             right: 0,
             bottom: 0,
             position: "absolute",
-            shadowColor: "#C8BEB4",
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.4,
-            shadowRadius: 8,
-            elevation: 8,
+            elevation: 4,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.04,
+            shadowRadius: 4,
           },
           tabBarItemStyle: {
             alignItems: "center",
@@ -200,16 +201,20 @@ function TabNavigator() {
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Log" component={LogScreen} />
+        <Tab.Screen name="Log">
+          {() => <LogScreen refreshFlag={refreshFlag} />}
+        </Tab.Screen>
         <Tab.Screen name="ForYou" component={ForyouScreen} />
         <Tab.Screen name="Cafes" component={CafeScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Profile">
+          {() => <ProfileScreen refreshFlag={refreshFlag} />}
+        </Tab.Screen>
       </Tab.Navigator>
 
       {}
       {user && (
         <FAB
-          onPress={() => setSheetOpen(true)}
+          onPress={onFabPress}
           style={{ bottom: fabBottom, right: 16 }}
           accessibilityLabel="Add"
           testID="global-fab"
@@ -233,7 +238,7 @@ export default function Navigation() {
   };
 
   return (
-    <GlobalContext.Provider value={{ refreshLogsFlag, setSheetOpen }}>
+    <>
       {}
       <Stack.Navigator
         screenOptions={{
@@ -242,7 +247,14 @@ export default function Navigation() {
           animationTypeForReplace: "push",
         }}
       >
-        <Stack.Screen name="Main" component={TabNavigator} />
+        <Stack.Screen name="Main">
+          {() => (
+            <TabNavigator
+              onFabPress={() => setSheetOpen(true)}
+              refreshFlag={refreshLogsFlag}
+            />
+          )}
+        </Stack.Screen>
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -254,7 +266,7 @@ export default function Navigation() {
         uid={user?.uid ?? ""}
         onSaved={handleSaved}
       />
-    </GlobalContext.Provider>
+    </>
   );
 }
 

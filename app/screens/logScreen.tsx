@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
@@ -19,14 +19,13 @@ import LogCard, { LogEntry } from "../components/logCard";
 
 const BASE_TABBAR_HEIGHT = 66;
 
-import { GlobalContext } from "../components/navigation";
+interface Props {
+  refreshFlag?: number;
+}
 
-interface Props {}
-
-const LogScreen: React.FC<Props> = () => {
+const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
-  const { refreshLogsFlag } = useContext(GlobalContext);
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
     (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
@@ -37,8 +36,7 @@ const LogScreen: React.FC<Props> = () => {
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [editVisible, setEditVisible] = useState(false);
 
-  // showSpinner: whether to toggle the refreshing indicator (only for manual pull-to-refresh)
-  const fetchLogs = async (showSpinner = true) => {
+  const fetchLogs = useCallback(async (showSpinner = true) => {
     if (!user) {
       setLogs([]);
       if (showSpinner) setRefreshing(false);
@@ -59,12 +57,12 @@ const LogScreen: React.FC<Props> = () => {
       if (showSpinner) setRefreshing(false);
       setFirstRun(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     // initial load without showing loader
     fetchLogs(false);
-  }, [user, refreshLogsFlag]);
+  }, [fetchLogs, refreshFlag]);
 
   return (
     <View style={styles.screenContainer}>
