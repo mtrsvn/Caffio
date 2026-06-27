@@ -38,7 +38,13 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Caffio to access your location to find nearby cafes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

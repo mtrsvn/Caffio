@@ -28,7 +28,7 @@ const LABEL_MAP: Record<string, string> = {
   Home: "Home",
   Log: "Log",
   ForYou: "For You",
-  Cafes: "Cafes",
+  Cafes: "Discover",
   Profile: "Profile",
 };
 

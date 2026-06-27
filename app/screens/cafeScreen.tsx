@@ -1,29 +1,171 @@
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { SyncLoader } from "../components/SyncLoader";
-import { Search } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Search, MapIcon, List, Navigation } from "lucide-react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+    Animated,
     FlatList,
     ListRenderItemInfo,
     Platform,
+    PanResponder,
     RefreshControl,
     StyleSheet,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MapView, { Marker, Callout, PROVIDER_GOOGLE } from "react-native-maps";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
 import colors from "../components/colors";
 import { fetchNearbyCafes, SimplePlace, fetchPlaceDetails, PlaceDetails } from "../utils/places";
 import { PlaceUI } from "../components/cafeDetailsSheet";
 
-const DEFAULT_RADIUS = 10000;
+const DEFAULT_RADIUS = 2000;
+const MIN_RADIUS = 500;
+const MAX_RADIUS = 15000;
 const BASE_TABBAR_HEIGHT = 66;
 
+type ViewMode = "list" | "map";
 
+// Custom Slider Component (no external dependency needed)
+function DistanceSlider({
+  value,
+  min,
+  max,
+  onValueChange,
+  onSlidingComplete,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onValueChange: (val: number) => void;
+  onSlidingComplete: (val: number) => void;
+}) {
+  const trackWidth = useRef(0);
+  const currentValue = useRef(value);
+
+  const THUMB = 22; // thumb diameter
+
+  const steps = [500, 1000, 2000, 3000, 5000, 7000, 10000, 15000];
+
+  const snap = (raw: number) =>
+    steps.reduce((prev, curr) =>
+      Math.abs(curr - raw) < Math.abs(prev - raw) ? curr : prev
+    );
+
+  // x is relative to the TRACK view (no padding to subtract)
+  const xToValue = (x: number) => {
+    const w = trackWidth.current;
+    if (w <= 0) return value;
+    const percent = Math.max(0, Math.min(1, x / w));
+    return snap(min + percent * (max - min));
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        const v = xToValue(evt.nativeEvent.locationX);
+        currentValue.current = v;
+        onValueChange(v);
+      },
+      onPanResponderMove: (evt) => {
+        const v = xToValue(evt.nativeEvent.locationX);
+        if (v !== currentValue.current) {
+          currentValue.current = v;
+          onValueChange(v);
+        }
+      },
+      onPanResponderRelease: () => {
+        onSlidingComplete(currentValue.current);
+      },
+      onPanResponderTerminate: () => {
+        onSlidingComplete(currentValue.current);
+      },
+    })
+  ).current;
+
+  // Keep ref in sync so the PanResponder closures always see latest value
+  currentValue.current = value;
+
+  const fillRatio = (value - min) / (max - min);
+  // Thumb left: centre the thumb on the fill ratio point
+  const thumbLeft = trackWidth.current > 0
+    ? fillRatio * trackWidth.current - THUMB / 2
+    : 0;
+
+  return (
+    // Outer view is just for vertical hit-area padding — no horizontal padding
+    <View style={sliderStyles.container}>
+      {/* The TRACK is what we measure; panHandlers go here so locationX = 0 at track start */}
+      <View
+        style={sliderStyles.track}
+        onLayout={(e) => {
+          trackWidth.current = e.nativeEvent.layout.width;
+        }}
+        {...panResponder.panHandlers}
+      >
+        <View style={[sliderStyles.fill, { width: `${fillRatio * 100}%` }]} />
+        {/* Thumb lives inside the track view so left=0 aligns with track start */}
+        <View
+          style={[
+            sliderStyles.thumb,
+            {
+              left: thumbLeft,
+            },
+          ]}
+        />
+      </View>
+    </View>
+  );
+}
+
+const sliderStyles = StyleSheet.create({
+  container: {
+    // Tall enough for comfortable touch, track centred vertically
+    height: 36,
+    justifyContent: "center",
+  },
+  track: {
+    height: 4,
+    backgroundColor: "#D9D1CA",
+    borderRadius: 2,
+    // overflow visible so thumb (which extends above/below) is not clipped
+    overflow: "visible",
+  },
+  fill: {
+    height: "100%",
+    backgroundColor: colors.gradientStart,
+    borderRadius: 2,
+  },
+  thumb: {
+    position: "absolute",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.gradientStart,
+    top: -9,           // (22 - 4) / 2 = 9 — centres thumb on the 4px track
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.22,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: { elevation: 4 },
+    }),
+  },
+});
+
+function formatRadius(r: number): string {
+  if (r >= 1000) return `${(r / 1000).toFixed(1)} km`;
+  return `${r} m`;
+}
 
 export default function CafeScreen() {
   const insets = useSafeAreaInsets();
@@ -35,6 +177,12 @@ export default function CafeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedCafeDetails, setSelectedCafeDetails] = useState<PlaceDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [radius, setRadius] = useState(DEFAULT_RADIUS);
+  const [sliderRadius, setSliderRadius] = useState(DEFAULT_RADIUS);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     if (selectedCafe) {
@@ -60,8 +208,9 @@ export default function CafeScreen() {
     return places.filter((p) => p.name.toLowerCase().includes(q));
   }, [places, searchQuery]);
 
-  const load = useCallback(async (radius = DEFAULT_RADIUS) => {
+  const load = useCallback(async (r = DEFAULT_RADIUS) => {
     setError(null);
+    setLoading(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -75,8 +224,9 @@ export default function CafeScreen() {
       });
       const lat = loc.coords.latitude;
       const lng = loc.coords.longitude;
+      setUserLocation({ lat, lng });
 
-      const results: SimplePlace[] = await fetchNearbyCafes(lat, lng, radius);
+      const results: SimplePlace[] = await fetchNearbyCafes(lat, lng, r);
 
       const mapped: PlaceUI[] = results.map((p: SimplePlace, idx: number) => {
         const placeLat = p.lat;
@@ -123,28 +273,46 @@ export default function CafeScreen() {
       const msg = e?.message ?? String(e);
       setError(msg.includes("Geoapify") ? `Server error: ${msg}` : msg);
       setPlaces([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    load();
+    load(radius);
   }, [load]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load();
+      await load(radius);
     } finally {
       setRefreshing(false);
     }
-  }, [load]);
+  }, [load, radius]);
 
-  const Header = (
-    <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
-      <Text style={styles.title}>Nearby Cafes</Text>
-      <Text style={styles.subtitle}>Discover coffee shops around you</Text>
-    </View>
+  const handleRadiusChange = useCallback((val: number) => {
+    setSliderRadius(val);
+  }, []);
+
+  const handleRadiusCommit = useCallback(
+    async (val: number) => {
+      setRadius(val);
+      await load(val);
+    },
+    [load]
   );
+
+  const centerOnUser = useCallback(() => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: userLocation.lat,
+        longitude: userLocation.lng,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      });
+    }
+  }, [userLocation]);
 
   const renderEmpty = () => {
     if (error) {
@@ -154,6 +322,7 @@ export default function CafeScreen() {
         </View>
       );
     }
+    if (loading) return null;
     return (
       <View style={styles.centerContent}>
         <Text style={styles.emptyText}>No cafes found nearby</Text>
@@ -161,67 +330,206 @@ export default function CafeScreen() {
     );
   };
 
-  const SearchBar = (
-    <View style={styles.searchContainerWrapper}>
-      <View style={styles.searchInner}>
-        <Search size={16} color={colors.gradientEnd} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search cafes..."
-          placeholderTextColor="rgba(78,52,46,0.5)"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          clearButtonMode="while-editing"
-          selectionColor={colors.gradientEnd}
-        />
-      </View>
-    </View>
-  );
-
   return (
     <View style={styles.screenContainer}>
-      {Header}
-      <View style={{ paddingHorizontal: 16 }}>{SearchBar}</View>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
+        <Text style={styles.titleLabel}>DISCOVER</Text>
+        <Text style={styles.subtitle}>Coffee shops around you</Text>
+      </View>
 
-      <FlatList
-        data={filteredPlaces}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }: ListRenderItemInfo<PlaceUI>) => (
-          <CafeCard
-            place={item}
-            onPress={() => {
-              setSelectedCafe(item);
-              setSheetVisible(true);
-            }}
+      {/* Search + View Toggle row */}
+      <View style={styles.controlsRow}>
+        <View style={styles.searchInner}>
+          <Search size={16} color={colors.gradientEnd} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search cafes..."
+            placeholderTextColor="rgba(78,52,46,0.5)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            clearButtonMode="while-editing"
+            selectionColor={colors.gradientEnd}
           />
-        )}
-        ListHeaderComponent={
-          refreshing ? (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+        </View>
+
+        {/* Map / List Toggle */}
+        <View style={styles.toggleRow}>
+          <TouchableOpacity
+            style={[
+              styles.toggleBtn,
+              viewMode === "list" && styles.toggleBtnActive,
+            ]}
+            onPress={() => setViewMode("list")}
+            activeOpacity={0.8}
+          >
+            <List
+              size={18}
+              color={
+                viewMode === "list" ? "#FFF" : colors.gradientStart
+              }
+              strokeWidth={2}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.toggleBtn,
+              viewMode === "map" && styles.toggleBtnActive,
+            ]}
+            onPress={() => setViewMode("map")}
+            activeOpacity={0.8}
+          >
+            <MapIcon
+              size={18}
+              color={viewMode === "map" ? "#FFF" : colors.gradientStart}
+              strokeWidth={2}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Distance Slider */}
+      <View style={styles.sliderSection}>
+        <View style={styles.sliderLabelRow}>
+          <Text style={styles.sliderLabel}>Distance</Text>
+          <Text style={styles.sliderValue}>{formatRadius(sliderRadius)}</Text>
+        </View>
+        <DistanceSlider
+          value={sliderRadius}
+          min={MIN_RADIUS}
+          max={MAX_RADIUS}
+          onValueChange={handleRadiusChange}
+          onSlidingComplete={handleRadiusCommit}
+        />
+        <View style={styles.sliderTickRow}>
+          <Text style={styles.sliderTick}>500m</Text>
+          <Text style={styles.sliderTick}>5 km</Text>
+          <Text style={styles.sliderTick}>15 km</Text>
+        </View>
+      </View>
+
+      {/* Loading indicator */}
+      {loading && !refreshing && (
+        <View style={styles.loadingRow}>
+          <SyncLoader color={colors.gradientStart} size={8} speedMultiplier={0.8} />
+        </View>
+      )}
+
+      {/* MAP VIEW */}
+      {viewMode === "map" && (
+        <View style={[styles.mapContainer, { marginBottom: tabBarHeight }]}>
+          {userLocation ? (
+            <MapView
+              ref={mapRef}
+              style={StyleSheet.absoluteFillObject}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={{
+                latitude: userLocation.lat,
+                longitude: userLocation.lng,
+                latitudeDelta: 0.04,
+                longitudeDelta: 0.04,
+              }}
+              showsUserLocation
+              showsMyLocationButton={false}
+            >
+              {filteredPlaces.map((place) => (
+                <Marker
+                  key={place.id}
+                  coordinate={{ latitude: place.lat, longitude: place.lng }}
+                  pinColor={colors.gradientStart}
+                  onPress={() => {
+                    setSelectedCafe(place);
+                    setSheetVisible(true);
+                  }}
+                >
+                  <View style={styles.markerDot}>
+                    <View style={styles.markerInner} />
+                  </View>
+                  <Callout tooltip={false}>
+                    <View style={styles.calloutContainer}>
+                      <Text style={styles.calloutTitle} numberOfLines={1}>
+                        {place.name}
+                      </Text>
+                      {place.rating ? (
+                        <Text style={styles.calloutSub}>
+                          ⭐ {place.rating} · {formatRadius(Math.round(place.distanceKm * 1000))}
+                        </Text>
+                      ) : (
+                        <Text style={styles.calloutSub}>
+                          {formatRadius(Math.round(place.distanceKm * 1000))}
+                        </Text>
+                      )}
+                    </View>
+                  </Callout>
+                </Marker>
+              ))}
+            </MapView>
+          ) : (
+            <View style={styles.centerContent}>
+              <Text style={styles.emptyText}>Getting your location…</Text>
             </View>
-          ) : null
-        }
-        ListEmptyComponent={renderEmpty}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="transparent"
-            colors={["transparent"]}
-            progressBackgroundColor="transparent"
-            progressViewOffset={-1000}
-          />
-        }
-        contentContainerStyle={{
-          paddingBottom: footerSpacing,
-          paddingHorizontal: 16,
-          paddingTop: 8,
-        }}
-        contentInset={{ bottom: tabBarHeight }}
-        ListFooterComponent={<View style={{ height: tabBarHeight }} />}
-      />
+          )}
+
+          {/* Re-center button */}
+          {userLocation && (
+            <TouchableOpacity
+              style={styles.recenterBtn}
+              onPress={centerOnUser}
+              activeOpacity={0.85}
+            >
+              <Navigation size={18} color={colors.gradientStart} strokeWidth={2} />
+            </TouchableOpacity>
+          )}
+
+          {/* Cafe count badge */}
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{filteredPlaces.length} cafes</Text>
+          </View>
+        </View>
+      )}
+
+      {/* LIST VIEW */}
+      {viewMode === "list" && (
+        <FlatList
+          data={filteredPlaces}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item }: ListRenderItemInfo<PlaceUI>) => (
+            <CafeCard
+              place={item}
+              onPress={() => {
+                setSelectedCafe(item);
+                setSheetVisible(true);
+              }}
+            />
+          )}
+          ListHeaderComponent={
+            refreshing ? (
+              <View style={{ alignItems: "center", paddingVertical: 20 }}>
+                <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={renderEmpty}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="transparent"
+              colors={["transparent"]}
+              progressBackgroundColor="transparent"
+              progressViewOffset={-1000}
+            />
+          }
+          contentContainerStyle={{
+            paddingBottom: footerSpacing,
+            paddingHorizontal: 16,
+            paddingTop: 8,
+          }}
+          contentInset={{ bottom: tabBarHeight }}
+          ListFooterComponent={<View style={{ height: tabBarHeight }} />}
+        />
+      )}
 
       <CafeDetailsSheet
         visible={sheetVisible}
@@ -242,7 +550,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: "transparent",
   },
-  title: {
+  titleLabel: {
     fontSize: 13,
     fontWeight: "700",
     color: colors.textMuted,
@@ -254,15 +562,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.accentLight,
   },
-  centerContent: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyText: { color: colors.textMuted },
-  errorText: { color: "#b71c1c" },
 
-  searchContainerWrapper: {
+  // Controls row
+  controlsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
     marginBottom: 10,
-    paddingHorizontal: 0,
+    gap: 10,
   },
   searchInner: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#E4DED7",
@@ -286,4 +596,190 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textPrimary,
   },
+  toggleRow: {
+    flexDirection: "row",
+    backgroundColor: "#E4DED7",
+    borderRadius: 14,
+    padding: 4,
+    gap: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        shadowOffset: { width: 3, height: 3 },
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  toggleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  toggleBtnActive: {
+    backgroundColor: colors.gradientStart,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.gradientStart,
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      },
+      android: { elevation: 3 },
+    }),
+  },
+
+  // Slider
+  sliderSection: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: "#E4DED7",
+    borderRadius: 16,
+    marginHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        shadowOffset: { width: 3, height: 3 },
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  sliderLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  sliderLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    letterSpacing: 0.5,
+  },
+  sliderValue: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.gradientStart,
+  },
+  sliderTickRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+    marginTop: 2,
+  },
+  sliderTick: {
+    fontSize: 10,
+    color: colors.textMuted,
+  },
+  loadingRow: {
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+
+  // Map
+  mapContainer: {
+    flex: 1,
+    marginHorizontal: 0,
+    marginTop: 8,
+    borderRadius: 0,
+    overflow: "hidden",
+    position: "relative",
+  },
+  markerDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.gradientStart,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFF",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  markerInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#FFF",
+  },
+  calloutContainer: {
+    backgroundColor: "#FFF",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minWidth: 140,
+    maxWidth: 200,
+  },
+  calloutTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  calloutSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  recenterBtn: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#EDE8E2",
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.18,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: { elevation: 6 },
+    }),
+  },
+  countBadge: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    backgroundColor: "#EDE8E2",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.12,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.gradientStart,
+  },
+
+  // Common
+  centerContent: { flex: 1, alignItems: "center", justifyContent: "center" },
+  emptyText: { color: colors.textMuted },
+  errorText: { color: "#b71c1c" },
 });
