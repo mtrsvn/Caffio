@@ -3,6 +3,7 @@ import { Image } from "expo-image";
 import { Clock, Globe, MapPin, Navigation, Phone, Star, X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   Easing,
@@ -12,13 +13,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+  View
+, TouchableOpacity} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SyncLoader } from "./SyncLoader";
 import colors from "./colors";
 import { PlaceDetails, SimplePlace } from "../utils/places";
+import HapticTouchable from "./_HapticTouchable";
 
 export type PlaceUI = SimplePlace & {
   id: string;
@@ -135,9 +135,9 @@ export default function CafeDetailsSheet({
         >
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Cafe Details</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
-              <X size={20} color="#4E342E" strokeWidth={2.5} />
-            </TouchableOpacity>
+            <HapticTouchable style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
+              <X size={20} color="#795548" strokeWidth={2.5} />
+            </HapticTouchable>
           </View>
           <View style={styles.sheetDivider} />
 
@@ -207,7 +207,7 @@ export default function CafeDetailsSheet({
 
               {detailsLoading ? (
                 <View style={{ alignItems: "center", paddingVertical: 20 }}>
-                  <SyncLoader color={colors.gradientStart} size={8} speedMultiplier={0.8} />
+                  <ActivityIndicator size="small" color={colors.gradientStart} />
                 </View>
               ) : (
                 <View style={styles.modalDetailsSection}>
@@ -218,7 +218,7 @@ export default function CafeDetailsSheet({
                   ) : null}
 
                   {selectedCafeDetails?.phoneNumber ? (
-                    <TouchableOpacity
+                    <HapticTouchable
                       style={styles.modalDetailRow}
                       onPress={() => Linking.openURL(`tel:${selectedCafeDetails.phoneNumber}`)}
                     >
@@ -226,11 +226,11 @@ export default function CafeDetailsSheet({
                         <Phone size={18} color={colors.accent} />
                       </View>
                       <Text style={styles.modalDetailText}>{selectedCafeDetails.phoneNumber}</Text>
-                    </TouchableOpacity>
+                    </HapticTouchable>
                   ) : null}
 
                   {selectedCafeDetails?.website ? (
-                    <TouchableOpacity
+                    <HapticTouchable
                       style={styles.modalDetailRow}
                       onPress={() => Linking.openURL(selectedCafeDetails.website!)}
                     >
@@ -240,7 +240,7 @@ export default function CafeDetailsSheet({
                       <Text style={styles.modalDetailText} numberOfLines={1}>
                         {selectedCafeDetails.website.replace(/^https?:\/\//, "")}
                       </Text>
-                    </TouchableOpacity>
+                    </HapticTouchable>
                   ) : null}
 
                   {selectedCafeDetails?.weekdayText && selectedCafeDetails.weekdayText.length > 0 ? (
@@ -261,7 +261,7 @@ export default function CafeDetailsSheet({
                 </View>
               )}
 
-              <TouchableOpacity
+              <HapticTouchable
                 style={styles.modalDirectionsBtn}
                 activeOpacity={0.8}
                 onPress={() => {
@@ -276,7 +276,7 @@ export default function CafeDetailsSheet({
               >
                 <Navigation size={18} color="#FFF" />
                 <Text style={styles.modalDirectionsText}>Get Directions</Text>
-              </TouchableOpacity>
+              </HapticTouchable>
             </View>
           </ScrollView>
         </Animated.View>
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
   },
-  headerTitle: { fontSize: 16, color: "#4E342E", fontWeight: "700" },
+  headerTitle: { fontSize: 16, color: "#795548", fontWeight: "700" },
   closeButton: { padding: 6 },
   sheetDivider: { height: 1, backgroundColor: colors.navbarBorder, marginBottom: 12 },
 

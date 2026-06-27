@@ -55,6 +55,7 @@ const COFFEE_TYPES = [
 ];
 
 import TASTE_PROFILE from "../data/tastes.json";
+import HapticTouchable from "./_HapticTouchable";
 
 export default function EditLogSheet({
   visible,
@@ -461,7 +462,7 @@ export default function EditLogSheet({
               Keyboard.dismiss();
             }}
           />
-          <TouchableOpacity
+          <HapticTouchable
             onPress={() => {
               setCustomTypeMode(false);
               setCustomTypeText("");
@@ -470,7 +471,7 @@ export default function EditLogSheet({
             style={{ marginTop: 7 }}
           >
             <Text style={styles.chooseFromList}>Choose from list instead</Text>
-          </TouchableOpacity>
+          </HapticTouchable>
         </View>
       );
     }
@@ -593,14 +594,14 @@ export default function EditLogSheet({
           {}
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Edit Coffee Log</Text>
-            <TouchableOpacity
+            <HapticTouchable
               onPress={onClose}
               style={styles.closeButton}
               accessibilityRole="button"
               activeOpacity={0.85}
             >
               <X size={17} color={colors.gradientStart} strokeWidth={3} />
-            </TouchableOpacity>
+            </HapticTouchable>
           </View>
 
           <View style={styles.sheetDivider} />
@@ -707,7 +708,7 @@ export default function EditLogSheet({
                       borderRadius: 12,
                     }}
                   />
-                  <TouchableOpacity
+                  <HapticTouchable
                     style={{
                       position: "absolute",
                       top: 8,
@@ -720,10 +721,10 @@ export default function EditLogSheet({
                     onPress={() => setPhotoUri(null)}
                   >
                     <X size={20} color="#fff" />
-                  </TouchableOpacity>
+                  </HapticTouchable>
                 </>
               ) : (
-                <TouchableOpacity
+                <HapticTouchable
                   style={[
                     styles.photoInner,
                     { height: 120, justifyContent: "center" },
@@ -733,11 +734,11 @@ export default function EditLogSheet({
                 >
                   <Camera size={36} color={colors.gradientStart} />
                   <Text style={styles.photoText}>Add Photo</Text>
-                </TouchableOpacity>
+                </HapticTouchable>
               )}
             </View>
             {photoUri && (
-              <TouchableOpacity
+              <HapticTouchable
                 style={{
                   marginTop: 10,
                   borderRadius: 16,
@@ -771,12 +772,12 @@ export default function EditLogSheet({
                     Change Photo
                   </Text>
                 </View>
-              </TouchableOpacity>
+              </HapticTouchable>
             )}
 
             {}
             <View style={{ height: 12 }} />
-            <TouchableOpacity
+            <HapticTouchable
               style={[
                 styles.actionButton,
                 (!canSubmit || saving) && styles.actionButtonDisabled,
@@ -804,9 +805,9 @@ export default function EditLogSheet({
                   </Text>
                 )}
               </LinearGradient>
-            </TouchableOpacity>
+            </HapticTouchable>
 
-            <TouchableOpacity
+            <HapticTouchable
               style={[
                 styles.actionButton,
                 { marginTop: 8, backgroundColor: "#E53935" },
@@ -830,7 +831,7 @@ export default function EditLogSheet({
                   </Text>
                 )}
               </View>
-            </TouchableOpacity>
+            </HapticTouchable>
           </ScrollView>
         </Animated.View>
       </View>
@@ -850,7 +851,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     maxHeight: "85%",
     paddingTop: 10,
-    paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: colors.navbarBorder,
     zIndex: 10,
@@ -871,15 +871,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 8,
+    paddingHorizontal: 16,
   },
-  headerTitle: { fontSize: 16, color: "#4E342E", fontWeight: "700" },
+  headerTitle: { fontSize: 16, color: "#795548", fontWeight: "700" },
   closeButton: { padding: 6 },
 
   sheetDivider: { height: 1, backgroundColor: colors.navbarBorder },
 
-  sheetBody: {},
+  sheetBody: { paddingHorizontal: 16 },
 
-  sectionTitle: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
+  sectionTitle: { color: "#795548", fontWeight: "700", marginBottom: 8 },
 
   pillRow: { flexDirection: "row", flexWrap: "wrap" },
 
@@ -902,7 +903,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 5,
   },
-  pillUnselectedText: { color: "#4E342E", fontWeight: "600" },
+  pillUnselectedText: { color: "#795548", fontWeight: "600" },
 
   
   pillUnselectedCoffee: {
@@ -939,17 +940,27 @@ const styles = StyleSheet.create({
   },
 
   
-  fieldLabel: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
+  fieldLabel: { color: "#795548", fontWeight: "700", marginBottom: 8 },
   fullInput: {
     width: "100%",
     paddingHorizontal: 13,
     paddingVertical: Platform.OS === "ios" ? 13 : 9,
-    borderRadius: 12,
-    backgroundColor: colors.coffeeTypeUnselectedBg,
+    borderRadius: 14,
+    backgroundColor: "#E4DED7",
     borderWidth: 1,
-    borderColor: colors.coffeeTypeUnselectedBorder,
+    borderColor: "rgba(109,76,65,0.15)",
     color: colors.coffeeTypeUnselectedText,
     fontWeight: "600",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#C8BEB4",
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        shadowOffset: { width: 3, height: 3 },
+      },
+      android: { elevation: 2 },
+      default: {},
+    }),
   },
   chooseFromList: {
     color: colors.gradientStart,
@@ -959,7 +970,7 @@ const styles = StyleSheet.create({
   },
 
   helperText: {
-    color: "#7a6059",
+    color: "#A1887F",
     fontSize: 13,
     marginTop: 10,
     textAlign: "center",

@@ -285,5 +285,54 @@ export async function updateUserProfile(uid, data) {
     throw err;
   }
 }
+export async function saveUserRecommendations(uid, recommendations) {
+  try {
+    const docRef = doc(db, "users", uid, "recommendations", "latest");
+    await setDoc(docRef, { recommendations, updatedAt: serverTimestamp() });
+    return true;
+  } catch (err) {
+    console.error("[firebaseconfig] saveUserRecommendations error", err);
+    throw err;
+  }
+}
+
+export async function getUserRecommendations(uid) {
+  try {
+    const docRef = doc(db, "users", uid, "recommendations", "latest");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data().recommendations || [];
+    }
+    return [];
+  } catch (err) {
+    console.error("[firebaseconfig] getUserRecommendations error", err);
+    throw err;
+  }
+}
+
+export async function saveUserPersonality(uid, personality, logCount) {
+  try {
+    const docRef = doc(db, "users", uid, "personality", "latest");
+    await setDoc(docRef, { personality, logCount, updatedAt: serverTimestamp() });
+    return true;
+  } catch (err) {
+    console.error("[firebaseconfig] saveUserPersonality error", err);
+    throw err;
+  }
+}
+
+export async function getUserPersonality(uid) {
+  try {
+    const docRef = doc(db, "users", uid, "personality", "latest");
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data() || null;
+    }
+    return null;
+  } catch (err) {
+    console.error("[firebaseconfig] getUserPersonality error", err);
+    throw err;
+  }
+}
 
 export default app;

@@ -104,6 +104,50 @@ app.post("/api/recommendations", async (req, res) => {
   }
 });
 
+// ─── Personality ──────────────────────────────────────────────────────────────
+app.post("/api/personality", async (req, res) => {
+  const { userLogs } = req.body || {};
+
+  const logs = Array.isArray(userLogs) ? userLogs : [];
+  if (logs.length === 0) {
+    return res.json({
+      personality: {
+        name: "Mystery Drinker",
+        description: "You haven't logged enough coffees for us to figure out your vibe yet.",
+        tags: []
+      }
+    });
+  }
+
+  try {
+    console.log("[backend] Requesting Personality from Gemini...", logs.length);
+    const prompt = buildPersonalityPrompt(logs);
+    const geminiResult = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.9,
+      },
+    });
+    
+    const text = geminiResult.response.text();
+    const parsed = parseGeminiPersonalityJson(text);
+    
+    console.log("[backend] Gemini success, generated personality:", parsed.name);
+    return res.json({ personality: parsed });
+  } catch (err) {
+    console.error("[backend] Gemini failed (personality), using fallback", err.message);
+    
+    return res.json({ 
+      personality: {
+        name: "Classic Coffee Lover",
+        description: "You enjoy the simple, timeless coffee experiences.",
+        tags: ["classic", "simple", "timeless"]
+      } 
+    });
+  }
+});
+
 // ─── Prompt builder ───────────────────────────────────────────────────────────
 function buildPrompt(logs) {
   const logSummary = logs.length
@@ -168,6 +212,57 @@ function clampScore(val) {
   const n = Number(val);
   if (Number.isFinite(n)) return Math.max(0, Math.min(100, Math.round(n)));
   return 80;
+}
+
+function buildPersonalityPrompt(logs) {
+  const logSummary = logs.map((l) => ({
+    coffeeType: l.coffeeType,
+    tasteProfile: l.tasteProfile,
+    rating: l.rating,
+    favorite: l.favorite,
+  }));
+
+  return `You are a coffee expert AI for a cafe app called Caffio. Based on the user's past coffee logs, determine their "Coffee Personality".
+  
+The user's logs:
+${JSON.stringify(logSummary, null, 2)}
+
+Create a fun, descriptive coffee personality for them.
+Rules:
+1. "name" should be a catchy title (e.g., "The Sweet Tooth", "Bold & Black", "Trendsetter").
+2. "description" should be 1-2 sentences explaining why they got this personality based on their logs.
+3. "tags" should be exactly 3 adjectives summarizing their taste (e.g., ["sweet", "creamy", "adventurous"]).
+4. Return ONLY a JSON object.
+
+Format exactly like this:
+{
+  "name": "Personality Name",
+  "description": "Why they got this.",
+  "tags": ["tag1", "tag2", "tag3"]
+}
+
+JSON object now:`;
+}
+
+function parseGeminiPersonalityJson(text) {
+  try {
+    const cleaned = text.replace(/```json|```/gi, "").trim();
+    const parsed = JSON.parse(cleaned);
+    if (parsed && parsed.name) {
+      return {
+        name: parsed.name,
+        description: parsed.description || "",
+        tags: Array.isArray(parsed.tags) ? parsed.tags : []
+      };
+    }
+  } catch (e) {
+    console.error("Failed to parse Gemini Personality JSON:", text, e);
+  }
+  return {
+    name: "Coffee Explorer",
+    description: "You're exploring the wide world of coffee.",
+    tags: ["exploring"]
+  };
 }
 
 // ─── Start ────────────────────────────────────────────────────────────────────

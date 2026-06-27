@@ -505,6 +505,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 44,
+    borderWidth: 1,
+    borderColor: "rgba(109,76,65,0.15)",
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
@@ -524,18 +526,18 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     flexDirection: "row",
-    backgroundColor: "#E4DED7",
+    backgroundColor: "#EDE8E2",
     borderRadius: 14,
     padding: 4,
     gap: 4,
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        shadowOffset: { width: 3, height: 3 },
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
       },
-      android: { elevation: 2 },
+      android: { elevation: 4 },
     }),
   },
   toggleBtn: {
@@ -562,7 +564,7 @@ const styles = StyleSheet.create({
   sliderSection: {
     paddingHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: "#E4DED7",
+    backgroundColor: "#EDE8E2",
     borderRadius: 16,
     marginHorizontal: 16,
     paddingTop: 10,
@@ -570,11 +572,11 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        shadowOffset: { width: 3, height: 3 },
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
       },
-      android: { elevation: 2 },
+      android: { elevation: 4 },
     }),
   },
   sliderLabelRow: {

@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useContext, useEffect, useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
 import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -51,6 +52,7 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
   }, [selected, focusAnim]);
 
   const handlePressIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Animated.parallel([
       Animated.spring(pressAnim, {
         toValue: 0.92,
@@ -186,7 +188,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
             right: 0,
             bottom: 0,
             position: "absolute",
-            elevation: 4,
+            
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.04,

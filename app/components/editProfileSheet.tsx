@@ -12,15 +12,15 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
-  Modal,
-} from "react-native";
+  Modal
+, TouchableOpacity} from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { removeUserAvatar, uploadUserAvatar, updateUserProfile } from "../../firebaseconfig";
 import { AuthContext } from "./AuthProvider";
 import colors from "./colors";
+import HapticTouchable from "./_HapticTouchable";
 
 interface Props {
   visible: boolean;
@@ -211,13 +211,13 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
         >
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Edit Profile</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <HapticTouchable onPress={onClose} style={styles.closeButton}>
               <X size={17} color={colors.gradientStart} strokeWidth={3} />
-            </TouchableOpacity>
+            </HapticTouchable>
           </View>
 
           <View style={styles.avatarSection}>
-            <TouchableOpacity activeOpacity={0.8} onPress={handleAvatarPress}>
+            <HapticTouchable activeOpacity={0.8} onPress={handleAvatarPress}>
               <View style={styles.avatarWrap}>
                 {uploadingAvatar ? (
                   <ActivityIndicator color={colors.accent} />
@@ -233,7 +233,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
                   <Camera size={14} color="#fff" />
                 </View>
               </View>
-            </TouchableOpacity>
+            </HapticTouchable>
             <Text style={styles.changePhotoText}>Tap to change photo</Text>
           </View>
 
@@ -251,7 +251,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
             />
           </View>
 
-          <TouchableOpacity
+          <HapticTouchable
             style={[
               styles.saveButton,
               saving || uploadingAvatar ? styles.saveButtonDisabled : null,
@@ -265,7 +265,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
             ) : (
               <Text style={styles.saveButtonText}>Save Changes</Text>
             )}
-          </TouchableOpacity>
+          </HapticTouchable>
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.navbarBorder,
     zIndex: 10,
     ...Platform.select({
-      android: { elevation: 6 },
+      android: {  },
       ios: {
         shadowColor: "#000",
         shadowOpacity: 0.08,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
   },
-  headerTitle: { fontSize: 16, color: "#4E342E", fontWeight: "700" },
+  headerTitle: { fontSize: 16, color: "#795548", fontFamily: "FunnelSans_700Bold" },
   closeButton: { padding: 6 },
   avatarSection: {
     alignItems: "center",
@@ -336,14 +336,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: colors.accent,
-    fontWeight: "700",
+    fontFamily: "FunnelSans_700Bold",
   },
   inputSection: {
     marginBottom: 32,
   },
   inputLabel: {
-    color: "#4E342E",
-    fontWeight: "700",
+    color: "#795548",
+    fontFamily: "FunnelSans_700Bold",
     marginBottom: 8,
   },
   input: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.coffeeTypeUnselectedBorder,
     color: colors.coffeeTypeUnselectedText,
-    fontWeight: "600",
+    fontFamily: "FunnelSans_600SemiBold",
     fontSize: 16,
   },
   saveButton: {
@@ -371,6 +371,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "FunnelSans_700Bold",
   },
 });

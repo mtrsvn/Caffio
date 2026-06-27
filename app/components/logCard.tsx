@@ -12,9 +12,9 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import HapticTouchable from "./_HapticTouchable";
 import { updateCoffeeLog } from "../../firebaseconfig";
 import colors from "./colors";
 
@@ -74,7 +74,7 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
   }, [entry.favorite]);
 
   const favScale = useRef(new Animated.Value(1)).current;
-  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+  const AnimatedTouchable = Animated.createAnimatedComponent(HapticTouchable);
 
   const onFavPress = async () => {
     Animated.sequence([
@@ -140,7 +140,7 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
 
       {/* Favourite button */}
       <Animated.View style={{ transform: [{ scale: favScale }], marginRight: 14 }}>
-        <TouchableOpacity
+        <HapticTouchable
           onPress={onFavPress}
           activeOpacity={0.8}
           style={[styles.favBtn, isFav && styles.favBtnActive]}
@@ -151,7 +151,7 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
             fill={isFav ? "#fff" : "transparent"}
             strokeWidth={isFav ? 0 : 1.5}
           />
-        </TouchableOpacity>
+        </HapticTouchable>
       </Animated.View>
     </AnimatedTouchable>
   );

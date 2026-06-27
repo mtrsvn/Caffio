@@ -4,12 +4,12 @@ import {
   GestureResponderEvent,
   Platform,
   StyleSheet,
-  TouchableOpacity,
   View,
-  ViewStyle,
-} from "react-native";
+  ViewStyle
+, TouchableOpacity} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "./colors";
+import HapticTouchable from "./_HapticTouchable";
 
 type Props = {
   onPress?: (e?: GestureResponderEvent) => void;
@@ -32,7 +32,7 @@ export default function FAB({
   const defaultBottom = (insets.bottom ?? 12) + 16;
 
   return (
-    <TouchableOpacity
+    <HapticTouchable
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
@@ -55,7 +55,7 @@ export default function FAB({
           <Plus size={26} color="#fff" strokeWidth={2.5} />
         )}
       </View>
-    </TouchableOpacity>
+    </HapticTouchable>
   );
 }
 
@@ -68,12 +68,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     ...Platform.select({
       ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.7,
-        shadowRadius: 12,
+        borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
       },
-      android: { elevation: 10 },
+      android: {  },
     }),
   },
   inner: {
