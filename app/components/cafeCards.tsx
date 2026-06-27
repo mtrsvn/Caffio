@@ -1,4 +1,4 @@
-import { MapPin, Star } from "lucide-react-native";
+import { MapPin, Star, Clock } from "lucide-react-native";
 import React from "react";
 import {
   Platform,
@@ -12,148 +12,184 @@ import colors from "./colors";
 import { SimplePlace } from "../utils/places";
 
 type Props = {
-  place: SimplePlace;
+  place: SimplePlace & { distanceKm?: number };
   onPress?: () => void;
 };
 
-export default function CafeCard({ place, onPress }: Props) {
-  const { name, address, photoUrl, rating, totalRatings, openNow } = place;
-  const displayName = name && name.length > 22 ? name.substring(0, 22) + "..." : name;
-  return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={onPress}
-      style={styles.card}
-      accessibilityRole="button"
-    >
-      {/* Icon or Image */}
-      {photoUrl ? (
-        <Image
-          source={{ uri: photoUrl }}
-          style={styles.imageThumbnail}
-          contentFit="cover"
-        />
-      ) : (
-        <View style={[styles.imageThumbnail, styles.iconWrap]}>
-          <MapPin size={24} color="#FFF" strokeWidth={1.8} />
-        </View>
-      )}
+function formatDistance(km?: number): string | null {
+  if (km === undefined || km === null) return null;
+  if (km < 1) return `${Math.round(km * 1000)}m`;
+  return `${km.toFixed(1)}km`;
+}
 
-      {/* Text Info */}
-      <View style={styles.body}>
-        <View style={styles.headerRow}>
-          <Text style={[styles.title, { flexShrink: 1 }]} numberOfLines={1}>
-            {displayName}
-          </Text>
+export default function CafeCard({ place, onPress }: Props) {
+  const { name, address, photoUrl, rating, openNow } = place;
+  const dist = formatDistance((place as any).distanceKm);
+
+  return (
+    <View style={styles.cardShadow}>
+      <TouchableOpacity
+        activeOpacity={0.92}
+        onPress={onPress}
+        style={styles.card}
+        accessibilityRole="button"
+      >
+        {/* Hero image */}
+        <View style={styles.imageWrap}>
+          {photoUrl ? (
+            <Image
+              source={{ uri: photoUrl }}
+              style={styles.heroImage}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.heroImage, styles.heroPlaceholder]}>
+              <MapPin size={32} color="rgba(255,255,255,0.8)" strokeWidth={1.5} />
+            </View>
+          )}
+
+          {/* Open/Closed badge */}
+          {openNow !== undefined && (
+            <View style={[styles.statusBadge, { backgroundColor: openNow ? "rgba(46,125,50,0.88)" : "rgba(183,28,28,0.88)" }]}>
+              <Clock size={10} color="#FFF" strokeWidth={2.5} />
+              <Text style={styles.statusBadgeText}>{openNow ? "Open" : "Closed"}</Text>
+            </View>
+          )}
+
+          {/* Distance badge */}
+          {dist && (
+            <View style={styles.distanceBadge}>
+              <MapPin size={10} color={colors.gradientStart} strokeWidth={2.5} />
+              <Text style={styles.distanceText}>{dist}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Info row */}
+        <View style={styles.infoRow}>
+          <View style={styles.infoLeft}>
+            <Text style={styles.title} numberOfLines={1}>{name}</Text>
+            {address ? (
+              <Text style={styles.address} numberOfLines={1}>{address}</Text>
+            ) : null}
+          </View>
+
           {rating ? (
             <View style={styles.ratingBadge}>
-              <Star size={10} color="#FFF" fill="#FFF" />
+              <Star size={12} color="#FFF" fill="#FFF" />
               <Text style={styles.ratingText}>{rating}</Text>
             </View>
           ) : null}
         </View>
-
-        {address ? (
-          <Text style={styles.address} numberOfLines={2} ellipsizeMode="tail">
-            {address}
-          </Text>
-        ) : null}
-        
-        <View style={styles.footerRow}>
-          {openNow !== undefined && (
-            <View style={[styles.statusPill, { backgroundColor: openNow ? "#E8F5E9" : "#FFEBEE" }]}>
-              <Text style={[styles.statusText, { color: openNow ? "#2E7D32" : "#C62828" }]}>
-                {openNow ? "Open Now" : "Closed"}
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#FFF",
-    borderRadius: 20,
-    marginBottom: 14,
-    padding: 12,
+  cardShadow: {
+    borderRadius: 18,
+    marginBottom: 12,
+    backgroundColor: "#EDE8E2",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
+        shadowColor: "#C8BEB4",
+        shadowOffset: { width: 6, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
       },
-      android: { elevation: 3 },
+      android: { elevation: 4 },
     }),
   },
-  imageThumbnail: {
-    width: 86,
-    height: 86,
-    borderRadius: 14,
-    backgroundColor: "#E4DED7",
+  card: {
+    borderRadius: 18,
+    overflow: "hidden",
+    backgroundColor: "#EDE8E2",
   },
-  iconWrap: {
+  imageWrap: {
+    position: "relative",
+    width: "100%",
+    height: 160,
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+  },
+  heroPlaceholder: {
     backgroundColor: colors.gradientStart,
     alignItems: "center",
     justifyContent: "center",
   },
-  body: {
-    flex: 1,
-    marginLeft: 14,
-    justifyContent: "center",
-  },
-  headerRow: {
+  statusBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
     flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  statusBadgeText: {
+    color: "#FFF",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  distanceBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(237,232,226,0.92)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  distanceText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.gradientStart,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#EDE8E2",
+  },
+  infoLeft: {
+    flex: 1,
+    marginRight: 10,
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "800",
     color: colors.textPrimary,
     letterSpacing: -0.3,
-    marginRight: 8,
-  },
-  ratingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.star,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
-    marginTop: 1,
-  },
-  ratingText: {
-    fontSize: 11,
-    color: "#FFF",
-    fontWeight: "700",
-    marginLeft: 3,
+    marginBottom: 2,
   },
   address: {
     fontSize: 12,
     color: colors.textMuted,
-    lineHeight: 16,
-    marginBottom: 10,
+    fontWeight: "500",
   },
-  footerRow: {
+  ratingBadge: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "auto",
+    gap: 4,
+    backgroundColor: colors.gradientStart,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
-  statusPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 10,
+  ratingText: {
+    color: "#FFF",
+    fontSize: 12,
     fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
 });
