@@ -586,7 +586,6 @@ export default function EditLogSheet({
           style={[
             styles.sheet,
             {
-              paddingBottom: (insets.bottom ?? 12) + 12,
               transform: [{ translateY: sheetAnim }],
             },
           ]}
@@ -607,7 +606,7 @@ export default function EditLogSheet({
           <View style={styles.sheetDivider} />
 
           <ScrollView
-            contentContainerStyle={styles.sheetBody}
+            contentContainerStyle={[styles.sheetBody, { paddingBottom: (insets.bottom || 12) + 24 }]}
             keyboardShouldPersistTaps="handled"
           >
             {}
@@ -844,12 +843,12 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, zIndex: 5 },
   sheet: {
     backgroundColor: colors.navbarBg,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: "hidden",
-    maxHeight: "78%",
+    maxHeight: "85%",
     paddingTop: 10,
     paddingHorizontal: 16,
     borderTopWidth: 1,
@@ -878,7 +877,7 @@ const styles = StyleSheet.create({
 
   sheetDivider: { height: 1, backgroundColor: colors.navbarBorder },
 
-  sheetBody: { paddingBottom: 24 },
+  sheetBody: {},
 
   sectionTitle: { color: "#4E342E", fontWeight: "700", marginBottom: 8 },
 

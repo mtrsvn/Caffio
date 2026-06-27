@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
 import { SyncLoader } from "../components/SyncLoader";
-import { Search, MapIcon, List, Navigation } from "lucide-react-native";
+import { Search, MapIcon, List, Navigation, Star } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Animated,
@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MapView, { Marker, Callout, PROVIDER_GOOGLE } from "react-native-maps";
+import Slider from "@react-native-community/slider";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
 import colors from "../components/colors";
@@ -31,7 +32,7 @@ const BASE_TABBAR_HEIGHT = 66;
 
 type ViewMode = "list" | "map";
 
-// Custom Slider Component (no external dependency needed)
+// We wrap the native Slider to maintain the same props interface
 function DistanceSlider({
   value,
   min,
@@ -45,122 +46,20 @@ function DistanceSlider({
   onValueChange: (val: number) => void;
   onSlidingComplete: (val: number) => void;
 }) {
-  const trackWidth = useRef(0);
-  const currentValue = useRef(value);
-
-  const THUMB = 22; // thumb diameter
-
-  const steps = [500, 1000, 2000, 3000, 5000, 7000, 10000, 15000];
-
-  const snap = (raw: number) =>
-    steps.reduce((prev, curr) =>
-      Math.abs(curr - raw) < Math.abs(prev - raw) ? curr : prev
-    );
-
-  // x is relative to the TRACK view (no padding to subtract)
-  const xToValue = (x: number) => {
-    const w = trackWidth.current;
-    if (w <= 0) return value;
-    const percent = Math.max(0, Math.min(1, x / w));
-    return snap(min + percent * (max - min));
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        const v = xToValue(evt.nativeEvent.locationX);
-        currentValue.current = v;
-        onValueChange(v);
-      },
-      onPanResponderMove: (evt) => {
-        const v = xToValue(evt.nativeEvent.locationX);
-        if (v !== currentValue.current) {
-          currentValue.current = v;
-          onValueChange(v);
-        }
-      },
-      onPanResponderRelease: () => {
-        onSlidingComplete(currentValue.current);
-      },
-      onPanResponderTerminate: () => {
-        onSlidingComplete(currentValue.current);
-      },
-    })
-  ).current;
-
-  // Keep ref in sync so the PanResponder closures always see latest value
-  currentValue.current = value;
-
-  const fillRatio = (value - min) / (max - min);
-  // Thumb left: centre the thumb on the fill ratio point
-  const thumbLeft = trackWidth.current > 0
-    ? fillRatio * trackWidth.current - THUMB / 2
-    : 0;
-
   return (
-    // Outer view is just for vertical hit-area padding — no horizontal padding
-    <View style={sliderStyles.container}>
-      {/* The TRACK is what we measure; panHandlers go here so locationX = 0 at track start */}
-      <View
-        style={sliderStyles.track}
-        onLayout={(e) => {
-          trackWidth.current = e.nativeEvent.layout.width;
-        }}
-        {...panResponder.panHandlers}
-      >
-        <View style={[sliderStyles.fill, { width: `${fillRatio * 100}%` }]} />
-        {/* Thumb lives inside the track view so left=0 aligns with track start */}
-        <View
-          style={[
-            sliderStyles.thumb,
-            {
-              left: thumbLeft,
-            },
-          ]}
-        />
-      </View>
-    </View>
+    <Slider
+      style={{ width: "100%", height: 40 }}
+      minimumValue={min}
+      maximumValue={max}
+      value={value}
+      minimumTrackTintColor={colors.gradientStart}
+      maximumTrackTintColor="#D9D1CA"
+      thumbTintColor={colors.gradientStart}
+      onValueChange={onValueChange}
+      onSlidingComplete={onSlidingComplete}
+    />
   );
 }
-
-const sliderStyles = StyleSheet.create({
-  container: {
-    // Tall enough for comfortable touch, track centred vertically
-    height: 36,
-    justifyContent: "center",
-  },
-  track: {
-    height: 4,
-    backgroundColor: "#D9D1CA",
-    borderRadius: 2,
-    // overflow visible so thumb (which extends above/below) is not clipped
-    overflow: "visible",
-  },
-  fill: {
-    height: "100%",
-    backgroundColor: colors.gradientStart,
-    borderRadius: 2,
-  },
-  thumb: {
-    position: "absolute",
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.gradientStart,
-    top: -9,           // (22 - 4) / 2 = 9 — centres thumb on the 4px track
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.22,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      },
-      android: { elevation: 4 },
-    }),
-  },
-});
 
 function formatRadius(r: number): string {
   if (r >= 1000) return `${(r / 1000).toFixed(1)} km`;
@@ -203,10 +102,14 @@ export default function CafeScreen() {
   const footerSpacing = tabBarHeight + 16;
 
   const filteredPlaces = useMemo(() => {
-    if (!searchQuery) return places;
-    const q = searchQuery.toLowerCase();
-    return places.filter((p) => p.name.toLowerCase().includes(q));
-  }, [places, searchQuery]);
+    let list = places.filter((p) => p.distanceKm <= radius / 1000);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => a.distanceKm - b.distanceKm);
+    return list;
+  }, [places, searchQuery, radius]);
 
   const load = useCallback(async (r = DEFAULT_RADIUS) => {
     setError(null);
@@ -242,7 +145,7 @@ export default function CafeScreen() {
           (p as any).id ??
           p.id ??
           `geo:${placeLat}:${placeLng}`;
-        const uniqueId = `${String(baseId)}-${idx}`;
+        const uniqueId = String(baseId);
 
         const rating =
           (p as any).rating ??
@@ -267,8 +170,15 @@ export default function CafeScreen() {
         } as PlaceUI;
       });
 
-      mapped.sort((a, b) => a.distanceKm - b.distanceKm);
-      setPlaces(mapped);
+      setPlaces((prev) => {
+        const copy = [...prev];
+        mapped.forEach((newPlace) => {
+          if (!copy.some((existing) => existing.id === newPlace.id)) {
+            copy.push(newPlace);
+          }
+        });
+        return copy;
+      });
     } catch (e: any) {
       const msg = e?.message ?? String(e);
       setError(msg.includes("Geoapify") ? `Server error: ${msg}` : msg);
@@ -402,9 +312,9 @@ export default function CafeScreen() {
           onSlidingComplete={handleRadiusCommit}
         />
         <View style={styles.sliderTickRow}>
-          <Text style={styles.sliderTick}>500m</Text>
-          <Text style={styles.sliderTick}>5 km</Text>
-          <Text style={styles.sliderTick}>15 km</Text>
+          <Text style={[styles.sliderTick, { left: 10 }]}>500m</Text>
+          <Text style={[styles.sliderTick, { left: '50%', transform: [{ translateX: -12 }] }]}>7.5 km</Text>
+          <Text style={[styles.sliderTick, { right: 10 }]}>15 km</Text>
         </View>
       </View>
 
@@ -445,15 +355,18 @@ export default function CafeScreen() {
                   <View style={styles.markerDot}>
                     <View style={styles.markerInner} />
                   </View>
-                  <Callout tooltip={false}>
+                  <Callout tooltip={true}>
                     <View style={styles.calloutContainer}>
                       <Text style={styles.calloutTitle} numberOfLines={1}>
                         {place.name}
                       </Text>
                       {place.rating ? (
-                        <Text style={styles.calloutSub}>
-                          ⭐ {place.rating} · {formatRadius(Math.round(place.distanceKm * 1000))}
-                        </Text>
+                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+                          <Star size={12} color="#F59E0B" fill="#F59E0B" />
+                          <Text style={[styles.calloutSub, { marginLeft: 4, marginTop: 0 }]}>
+                            {place.rating} · {formatRadius(Math.round(place.distanceKm * 1000))}
+                          </Text>
+                        </View>
                       ) : (
                         <Text style={styles.calloutSub}>
                           {formatRadius(Math.round(place.distanceKm * 1000))}
@@ -669,13 +582,14 @@ const styles = StyleSheet.create({
   },
   sliderTickRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
+    position: "relative",
+    height: 16,
     marginTop: 2,
   },
   sliderTick: {
     fontSize: 10,
     color: colors.textMuted,
+    position: "absolute",
   },
   loadingRow: {
     alignItems: "center",
@@ -700,15 +614,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: "#FFF",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      },
-      android: { elevation: 4 },
-    }),
   },
   markerInner: {
     width: 10,
@@ -717,22 +622,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   calloutContainer: {
-    backgroundColor: "#FFF",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    minWidth: 140,
-    maxWidth: 200,
+    backgroundColor: "#EDE8E2",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 160,
+    maxWidth: 220,
+    borderWidth: 1,
+    borderColor: "#D9D1CA",
+    marginBottom: 4,
   },
   calloutTitle: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
     color: colors.textPrimary,
+    marginBottom: 2,
   },
   calloutSub: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.textMuted,
-    marginTop: 2,
+    fontWeight: "600",
   },
   recenterBtn: {
     position: "absolute",

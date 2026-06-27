@@ -24,7 +24,7 @@ const MAX_RADIUS = 50000;
 function cacheKey(lat: number, lng: number, radius: number) {
   const roundedLat = Math.round(lat * 10000) / 10000;
   const roundedLng = Math.round(lng * 10000) / 10000;
-  return `places_geo:${roundedLat}:${roundedLng}:${radius}`;
+  return `places_geo_v3:${roundedLat}:${roundedLng}:${radius}`;
 }
 
 async function getCachedPlaces(key: string): Promise<SimplePlace[] | null> {
@@ -54,6 +54,7 @@ function buildGooglePlacesUrl(lat: number, lng: number, radius: number) {
     location: `${lat},${lng}`,
     radius: String(radius),
     type: "cafe",
+    keyword: "coffee|cafe|espresso|roastery|kapihan|brew",
     key: GOOGLE_PLACES_API_KEY || "",
   });
   return `${GOOGLE_PLACES_API}?${params.toString()}`;

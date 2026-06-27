@@ -129,12 +129,19 @@ export default function CafeDetailsSheet({
           style={[
             styles.sheet,
             {
-              paddingBottom: (insets.bottom ?? 12) + 12,
               transform: [{ translateY: sheetAnim }],
             },
           ]}
         >
-          <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerTitle}>Cafe Details</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
+              <X size={20} color="#4E342E" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.sheetDivider} />
+
+          <ScrollView contentContainerStyle={[styles.sheetBody, { paddingBottom: (insets.bottom || 12) + 24 }]} showsVerticalScrollIndicator={false}>
             {selectedCafe.photoUrl ? (
               <Image
                 source={{ uri: selectedCafe.photoUrl }}
@@ -146,14 +153,6 @@ export default function CafeDetailsSheet({
                 <MapPin size={48} color="#FFF" />
               </View>
             )}
-
-            <TouchableOpacity 
-              style={styles.modalCloseButton}
-              onPress={onClose}
-              activeOpacity={0.8}
-            >
-              <X size={20} color="#FFF" strokeWidth={2.5} />
-            </TouchableOpacity>
 
             <View style={styles.modalBodyContent}>
               <View style={styles.modalHeaderRowContent}>
@@ -291,12 +290,16 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, zIndex: 5 },
   sheet: {
     backgroundColor: colors.navbarBg,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     overflow: "hidden",
-    maxHeight: "92%",
+    maxHeight: "85%",
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.navbarBorder,
     zIndex: 10,
     ...Platform.select({
       android: { elevation: 6 },
@@ -308,29 +311,28 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  sheetBody: { paddingBottom: 24 },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  headerTitle: { fontSize: 16, color: "#4E342E", fontWeight: "700" },
+  closeButton: { padding: 6 },
+  sheetDivider: { height: 1, backgroundColor: colors.navbarBorder, marginBottom: 12 },
+
+  sheetBody: {},
 
   modalHeroImage: {
     width: "100%",
-    height: 280,
+    height: 220,
     backgroundColor: "#E4DED7",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  modalCloseButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 20,
+    borderRadius: 12,
+    marginBottom: 16,
   },
   modalBodyContent: {
-    padding: 24,
+    paddingHorizontal: 8,
     backgroundColor: colors.navbarBg,
   },
   modalHeaderRowContent: {

@@ -18,10 +18,10 @@ type Props = {
 
 export default function CafeCard({ place, onPress }: Props) {
   const { name, address, photoUrl, rating, totalRatings, openNow } = place;
-  const displayName = name && name.length > 20 ? name.substring(0, 20) + "..." : name;
+  const displayName = name && name.length > 22 ? name.substring(0, 22) + "..." : name;
   return (
     <TouchableOpacity
-      activeOpacity={0.92}
+      activeOpacity={0.9}
       onPress={onPress}
       style={styles.card}
       accessibilityRole="button"
@@ -34,38 +34,40 @@ export default function CafeCard({ place, onPress }: Props) {
           contentFit="cover"
         />
       ) : (
-        <View style={[styles.iconWrap, { backgroundColor: colors.gradientStart }]}>
-          <MapPin size={20} color="#FFF" strokeWidth={1.8} />
+        <View style={[styles.imageThumbnail, styles.iconWrap]}>
+          <MapPin size={24} color="#FFF" strokeWidth={1.8} />
         </View>
       )}
 
-      {/* Text */}
+      {/* Text Info */}
       <View style={styles.body}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <View style={styles.headerRow}>
           <Text style={[styles.title, { flexShrink: 1 }]} numberOfLines={1}>
             {displayName}
           </Text>
           {rating ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Star size={12} color={colors.star} fill={colors.star} />
-              <Text style={{ fontSize: 12, color: colors.star, fontWeight: "600", marginLeft: 4 }}>
-                {rating}
-              </Text>
+            <View style={styles.ratingBadge}>
+              <Star size={10} color="#FFF" fill="#FFF" />
+              <Text style={styles.ratingText}>{rating}</Text>
             </View>
           ) : null}
         </View>
 
         {address ? (
-          <Text style={styles.address} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={styles.address} numberOfLines={2} ellipsizeMode="tail">
             {address}
           </Text>
         ) : null}
         
-        {openNow !== undefined && (
-          <Text style={[styles.statusText, { color: openNow ? "#388E3C" : "#D32F2F" }]}>
-            {openNow ? "Open Now" : "Closed"}
-          </Text>
-        )}
+        <View style={styles.footerRow}>
+          {openNow !== undefined && (
+            <View style={[styles.statusPill, { backgroundColor: openNow ? "#E8F5E9" : "#FFEBEE" }]}>
+              <Text style={[styles.statusText, { color: openNow ? "#2E7D32" : "#C62828" }]}>
+                {openNow ? "Open Now" : "Closed"}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -74,66 +76,84 @@ export default function CafeCard({ place, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EDE8E2",
-    borderRadius: 18,
-    marginBottom: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    backgroundColor: "#FFF",
+    borderRadius: 20,
+    marginBottom: 14,
+    padding: 12,
     ...Platform.select({
       ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
       },
-      android: { elevation: 4 },
-    }),
-  },
-  iconWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#E4DED7",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-    flexShrink: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-      },
-      android: { elevation: 2 },
+      android: { elevation: 3 },
     }),
   },
   imageThumbnail: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 14,
+    width: 86,
+    height: 86,
+    borderRadius: 14,
     backgroundColor: "#E4DED7",
+  },
+  iconWrap: {
+    backgroundColor: colors.gradientStart,
+    alignItems: "center",
+    justifyContent: "center",
   },
   body: {
     flex: 1,
+    marginLeft: 14,
+    justifyContent: "center",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 4,
   },
   title: {
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "800",
     color: colors.textPrimary,
-    marginBottom: 3,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
+    marginRight: 8,
+  },
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.star,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginTop: 1,
+  },
+  ratingText: {
+    fontSize: 11,
+    color: "#FFF",
+    fontWeight: "700",
+    marginLeft: 3,
   },
   address: {
     fontSize: 12,
     color: colors.textMuted,
-    marginTop: 2,
+    lineHeight: 16,
+    marginBottom: 10,
+  },
+  footerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "auto",
+  },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 4,
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });
