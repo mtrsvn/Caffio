@@ -432,7 +432,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={false}
               onRefresh={handleRefresh}
               tintColor="transparent"
               colors={["transparent"]}

@@ -201,7 +201,7 @@ const HomeScreen: React.FC = () => {
         <ScrollView
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={false}
               onRefresh={() => fetchLogs(true)}
               tintColor="transparent"
               colors={["transparent"]}

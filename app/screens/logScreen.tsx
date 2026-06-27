@@ -95,7 +95,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
           )}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={false}
               onRefresh={() => fetchLogs(true)}
               tintColor="transparent"
               colors={["transparent"]}

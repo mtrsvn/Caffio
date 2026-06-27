@@ -66,6 +66,41 @@ function formatRadius(r: number): string {
   return `${r} m`;
 }
 
+const MemoizedMarker = React.memo(({ place, onSelect }: { place: PlaceUI; onSelect: (place: PlaceUI) => void }) => {
+  return (
+    <Marker
+      coordinate={{ latitude: place.lat, longitude: place.lng }}
+      tracksViewChanges={false}
+      onPress={() => onSelect(place)}
+    >
+      <View style={styles.markerDot}>
+        <View style={styles.markerInner} />
+      </View>
+      <Callout tooltip={true}>
+        <View style={styles.calloutContainer}>
+          <Text style={styles.calloutTitle} numberOfLines={1}>
+            {place.name}
+          </Text>
+          {place.rating ? (
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+              <Star size={12} color="#F59E0B" fill="#F59E0B" />
+              <Text style={[styles.calloutSub, { marginLeft: 4, marginTop: 0 }]}>
+                {place.rating} · {formatRadius(Math.round(place.distanceKm * 1000))}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.calloutSub}>
+              {formatRadius(Math.round(place.distanceKm * 1000))}
+            </Text>
+          )}
+        </View>
+      </Callout>
+    </Marker>
+  );
+}, (prevProps, nextProps) => {
+  return prevProps.place.id === nextProps.place.id && prevProps.place.distanceKm === nextProps.place.distanceKm;
+});
+
 export default function CafeScreen() {
   const insets = useSafeAreaInsets();
   const [places, setPlaces] = useState<PlaceUI[]>([]);
@@ -82,6 +117,11 @@ export default function CafeScreen() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const mapRef = useRef<MapView>(null);
+
+  const handleSelectCafe = useCallback((place: PlaceUI) => {
+    setSelectedCafe(place);
+    setSheetVisible(true);
+  }, []);
 
   useEffect(() => {
     if (selectedCafe) {
@@ -343,38 +383,11 @@ export default function CafeScreen() {
               showsMyLocationButton={false}
             >
               {filteredPlaces.map((place) => (
-                <Marker
+                <MemoizedMarker
                   key={place.id}
-                  coordinate={{ latitude: place.lat, longitude: place.lng }}
-                  pinColor={colors.gradientStart}
-                  onPress={() => {
-                    setSelectedCafe(place);
-                    setSheetVisible(true);
-                  }}
-                >
-                  <View style={styles.markerDot}>
-                    <View style={styles.markerInner} />
-                  </View>
-                  <Callout tooltip={true}>
-                    <View style={styles.calloutContainer}>
-                      <Text style={styles.calloutTitle} numberOfLines={1}>
-                        {place.name}
-                      </Text>
-                      {place.rating ? (
-                        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
-                          <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                          <Text style={[styles.calloutSub, { marginLeft: 4, marginTop: 0 }]}>
-                            {place.rating} · {formatRadius(Math.round(place.distanceKm * 1000))}
-                          </Text>
-                        </View>
-                      ) : (
-                        <Text style={styles.calloutSub}>
-                          {formatRadius(Math.round(place.distanceKm * 1000))}
-                        </Text>
-                      )}
-                    </View>
-                  </Callout>
-                </Marker>
+                  place={place}
+                  onSelect={handleSelectCafe}
+                />
               ))}
             </MapView>
           ) : (
@@ -426,7 +439,7 @@ export default function CafeScreen() {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={false}
               onRefresh={handleRefresh}
               tintColor="transparent"
               colors={["transparent"]}

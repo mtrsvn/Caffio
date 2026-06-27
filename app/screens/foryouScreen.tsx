@@ -114,7 +114,7 @@ const ForyouScreen: React.FC = () => {
           ]}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={false}
               onRefresh={onRefresh}
               tintColor="transparent"
               colors={["transparent"]}
