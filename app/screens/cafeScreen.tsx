@@ -1,6 +1,5 @@
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
-import { SyncLoader } from "../components/SyncLoader";
 import { Search, MapIcon, List, Navigation, Star } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -15,6 +14,7 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MapView, { Marker, Callout, PROVIDER_GOOGLE } from "react-native-maps";
@@ -379,7 +379,7 @@ export default function CafeScreen() {
       {/* Loading indicator */}
       {loading && !refreshing && (
         <View style={styles.loadingRow}>
-          <SyncLoader color={colors.gradientStart} size={8} speedMultiplier={0.8} />
+          <ActivityIndicator size="small" color={colors.gradientStart} />
         </View>
       )}
 
@@ -446,23 +446,14 @@ export default function CafeScreen() {
               }}
             />
           )}
-          ListHeaderComponent={
-            refreshing ? (
-              <View style={{ alignItems: "center", paddingVertical: 20 }}>
-                <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
-              </View>
-            ) : null
-          }
           ListEmptyComponent={renderEmpty}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="transparent"
-              colors={["transparent"]}
-              progressBackgroundColor="transparent"
-              progressViewOffset={-1000}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
             />
           }
           contentContainerStyle={{

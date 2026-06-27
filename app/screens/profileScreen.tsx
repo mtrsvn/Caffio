@@ -55,7 +55,6 @@ import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import { LogEntry } from "../components/logCard";
 import EditProfileSheet from "../components/editProfileSheet";
-import { SyncLoader } from "../components/SyncLoader";
 
 
 
@@ -432,20 +431,13 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="transparent"
-              colors={["transparent"]}
-              progressBackgroundColor="transparent"
-              progressViewOffset={-1000}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
             />
           }
         >
-          {refreshing && (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
-            </View>
-          )}
           <ProfileHeader tasteProfile={tasteProfile} onEditProfilePress={() => setEditProfileVisible(true)} />
 
           <View style={styles.statsGrid}>

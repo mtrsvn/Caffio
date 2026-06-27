@@ -6,9 +6,9 @@ import {
     StyleSheet,
     Text,
     View,
+    ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SyncLoader } from "../components/SyncLoader";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
@@ -95,20 +95,11 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
           )}
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={refreshing}
               onRefresh={() => fetchLogs(true)}
-              tintColor="transparent"
-              colors={["transparent"]}
-              progressBackgroundColor="transparent"
-              progressViewOffset={-1000}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
             />
-          }
-          ListHeaderComponent={
-            refreshing ? (
-              <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
-              </View>
-            ) : null
           }
           ListEmptyComponent={() => {
             if (firstRun) {
@@ -168,16 +159,16 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   title: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
-    color: colors.accentLight,
+    color: colors.textMuted,
   },
   content: {
     flex: 1,

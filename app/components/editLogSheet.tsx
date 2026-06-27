@@ -96,7 +96,22 @@ export default function EditLogSheet({
     setCustomTypeText("");
   }, [entry]);
 
-  const handlePickPhoto = async () => {
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission to access camera is required!");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const uploadPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Permission to access media library is required!");
@@ -110,6 +125,28 @@ export default function EditLogSheet({
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setPhotoUri(result.assets[0].uri);
     }
+  };
+
+  const handlePickPhoto = async () => {
+    Alert.alert(
+      "Add Photo",
+      "Would you like to take a new photo or upload one from your library?",
+      [
+        {
+          text: "Take Photo",
+          onPress: takePhoto,
+        },
+        {
+          text: "Upload Photo",
+          onPress: uploadPhoto,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const sheetAnim = useRef(new Animated.Value(0)).current; 

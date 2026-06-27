@@ -7,6 +7,7 @@ import {
     StyleSheet,
     Text,
     View,
+    ActivityIndicator,
 } from "react-native";
 import {
     SafeAreaView,
@@ -18,7 +19,6 @@ import colors from "../components/colors";
 import EditLogSheet from "../components/editLogSheet";
 import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
-import { SyncLoader } from "../components/SyncLoader";
 import PersonalityCard, { Personality } from "../components/PersonalityCard";
 import { GEMINI_BACKEND_URL } from "../config";
 import personalitiesData from "../data/personalities.json";
@@ -201,12 +201,10 @@ const HomeScreen: React.FC = () => {
         <ScrollView
           refreshControl={
             <RefreshControl
-              refreshing={false}
+              refreshing={refreshing}
               onRefresh={() => fetchLogs(true)}
-              tintColor="transparent"
-              colors={["transparent"]}
-              progressBackgroundColor="transparent"
-              progressViewOffset={-1000}
+              tintColor={colors.gradientStart}
+              colors={[colors.gradientStart]}
             />
           }
           contentContainerStyle={{
@@ -218,11 +216,6 @@ const HomeScreen: React.FC = () => {
               12,
           }}
         >
-          {refreshing && (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <SyncLoader color={colors.gradientStart} size={10} speedMultiplier={0.8} />
-            </View>
-          )}
           {user ? (
             <PersonalityCard personality={personality} />
           ) : (
@@ -356,22 +349,22 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
   foryouTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 10,
   },
   foryouSubtitle: {
     fontSize: 12,
-    color: colors.accentLight,
+    color: colors.textMuted,
     marginBottom: 10,
   },
   logsTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 6,
@@ -382,16 +375,16 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   title: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
-    color: colors.accentLight,
+    color: colors.textMuted,
   },
   emptyCard: {
     alignItems: "center",
@@ -446,8 +439,8 @@ const styles = StyleSheet.create({
   },
   personalityHeader: {
     fontSize: 11,
-    fontWeight: "600",
-    color: colors.textMuted,
+    fontWeight: "700",
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 12,

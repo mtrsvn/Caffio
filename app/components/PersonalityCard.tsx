@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 11,
-    fontWeight: "600",
-    color: colors.textMuted,
+    fontWeight: "700",
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 14,
