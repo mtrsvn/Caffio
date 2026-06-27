@@ -22,6 +22,7 @@ import Slider from "@react-native-community/slider";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
 import colors from "../components/colors";
+import HapticTouchable from "../components/_HapticTouchable";
 import { fetchNearbyCafes, SimplePlace, fetchPlaceDetails, PlaceDetails } from "../utils/places";
 import { PlaceUI } from "../components/cafeDetailsSheet";
 
@@ -112,6 +113,17 @@ export default function CafeScreen() {
   const [selectedCafeDetails, setSelectedCafeDetails] = useState<PlaceDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: viewMode === "list" ? 0 : 40,
+      useNativeDriver: true,
+      bounciness: 12,
+      speed: 12,
+    }).start();
+  }, [viewMode, slideAnim]);
+
   const [radius, setRadius] = useState(DEFAULT_RADIUS);
   const [sliderRadius, setSliderRadius] = useState(DEFAULT_RADIUS);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -305,11 +317,20 @@ export default function CafeScreen() {
 
         {/* Map / List Toggle */}
         <View style={styles.toggleRow}>
-          <TouchableOpacity
+          <Animated.View
             style={[
               styles.toggleBtn,
-              viewMode === "list" && styles.toggleBtnActive,
+              styles.toggleBtnActive,
+              {
+                position: "absolute",
+                left: 4,
+                top: 4,
+                transform: [{ translateX: slideAnim }],
+              },
             ]}
+          />
+          <HapticTouchable
+            style={styles.toggleBtn}
             onPress={() => setViewMode("list")}
             activeOpacity={0.8}
           >
@@ -320,12 +341,9 @@ export default function CafeScreen() {
               }
               strokeWidth={2}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.toggleBtn,
-              viewMode === "map" && styles.toggleBtnActive,
-            ]}
+          </HapticTouchable>
+          <HapticTouchable
+            style={styles.toggleBtn}
             onPress={() => setViewMode("map")}
             activeOpacity={0.8}
           >
@@ -334,7 +352,7 @@ export default function CafeScreen() {
               color={viewMode === "map" ? "#FFF" : colors.gradientStart}
               strokeWidth={2}
             />
-          </TouchableOpacity>
+          </HapticTouchable>
         </View>
       </View>
 
@@ -398,13 +416,13 @@ export default function CafeScreen() {
 
           {/* Re-center button */}
           {userLocation && (
-            <TouchableOpacity
+            <HapticTouchable
               style={styles.recenterBtn}
               onPress={centerOnUser}
               activeOpacity={0.85}
             >
               <Navigation size={18} color={colors.gradientStart} strokeWidth={2} />
-            </TouchableOpacity>
+            </HapticTouchable>
           )}
 
           {/* Cafe count badge */}

@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import * as Haptics from "expo-haptics";
-import { Animated, Platform, Pressable, StyleSheet, Text } from "react-native";
+import { Animated, Platform, Pressable, StyleSheet, Text, View, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AddLogSheet from "./addLogSheet";
@@ -33,23 +33,22 @@ const LABEL_MAP: Record<string, string> = {
   Profile: "Profile",
 };
 
-function TabBarButton({ children, onPress, accessibilityState }: any) {
-  const selected = !!accessibilityState?.selected;
+const { width: screenWidth } = Dimensions.get("window");
+const tabWidth = screenWidth / 5;
 
-  const focusAnim = useRef(new Animated.Value(selected ? 1.03 : 1)).current;
-
+function CustomTabBarButton({ focused, onPress, onLongPress, label, routeName }: any) {
+  const focusAnim = useRef(new Animated.Value(focused ? 1.03 : 1)).current;
   const pressAnim = useRef(new Animated.Value(1)).current;
-
   const pressTranslate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.spring(focusAnim, {
-      toValue: selected ? 1.03 : 1,
+      toValue: focused ? 1.03 : 1,
       useNativeDriver: true,
       speed: 12,
       bounciness: 6,
     }).start();
-  }, [selected, focusAnim]);
+  }, [focused, focusAnim]);
 
   const handlePressIn = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -86,14 +85,34 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
 
   const combinedScale = Animated.multiply(focusAnim, pressAnim);
 
+  let iconName: "home" | "book" | "star" | "map-pin" | "user";
+  switch (routeName) {
+    case "Home":
+      iconName = "home";
+      break;
+    case "Log":
+      iconName = "book";
+      break;
+    case "ForYou":
+      iconName = "star";
+      break;
+    case "Cafes":
+      iconName = "map-pin";
+      break;
+    case "Profile":
+      iconName = "user";
+      break;
+    default:
+      iconName = "home";
+  }
+
   return (
     <Pressable
-      accessibilityState={accessibilityState}
       onPress={onPress}
+      onLongPress={onLongPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      android_ripple={{ color: "rgba(0,0,0,0.06)", radius: 28 }}
-      style={({ pressed }) => ({ opacity: pressed ? 0.98 : 1 })}
+      style={styles.tabButton}
     >
       <Animated.View
         style={{
@@ -104,11 +123,103 @@ function TabBarButton({ children, onPress, accessibilityState }: any) {
           paddingVertical: 2,
         }}
       >
-        {children}
+        <IconComponent name={iconName} focused={focused} />
+        <Text
+          style={{
+            color: colors.iconInactive,
+            fontSize: 12,
+            marginTop: 2,
+            fontWeight: focused ? "600" : "400",
+            textAlign: "center",
+          }}
+        >
+          {label}
+        </Text>
       </Animated.View>
     </Pressable>
   );
 }
+
+function CustomTabBar({ state, descriptors, navigation, insets }: any) {
+  const slideAnim = useRef(new Animated.Value(state.index * tabWidth)).current;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: state.index * tabWidth,
+      useNativeDriver: true,
+      bounciness: 12,
+      speed: 12,
+    }).start();
+  }, [state.index, slideAnim]);
+
+  const baseBarHeight = 66;
+  const tabBarHeight =
+    baseBarHeight +
+    (insets.bottom ? insets.bottom : Platform.OS === "ios" ? 20 : 8);
+
+  return (
+    <View
+      style={[
+        styles.tabBarContainer,
+        {
+          height: tabBarHeight,
+          paddingBottom: insets.bottom
+            ? insets.bottom * 0.6
+            : Platform.OS === "ios"
+              ? 12
+              : 8,
+        },
+      ]}
+    >
+      <Animated.View
+        style={[
+          styles.slidingPill,
+          {
+            transform: [{ translateX: slideAnim }],
+          },
+        ]}
+      />
+
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
+        const label = LABEL_MAP[route.name] ?? route.name;
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({
+            type: "tabLongPress",
+            target: route.key,
+          });
+        };
+
+        return (
+          <CustomTabBarButton
+            key={route.key}
+            focused={isFocused}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            label={label}
+            routeName={route.name}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+// TabBarButton removed since we use custom TabBar
 
 interface TabNavigatorProps {
   onFabPress: () => void;
@@ -129,77 +240,13 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
     <>
       <Tab.Navigator
         detachInactiveScreens={false}
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={({ route }) => ({
           sceneStyle: { backgroundColor: "#EDE8E2" },
           headerShown: false,
           tabBarShowLabel: true,
           animation: "shift",
           lazy: false,
-
-          tabBarButton: (props) => <TabBarButton {...props} />,
-          tabBarIcon: ({ focused }) => {
-            let iconName: "home" | "book" | "star" | "map-pin" | "user";
-            switch (route.name) {
-              case "Home":
-                iconName = "home";
-                break;
-              case "Log":
-                iconName = "book";
-                break;
-              case "ForYou":
-                iconName = "star";
-                break;
-              case "Cafes":
-                iconName = "map-pin";
-                break;
-              case "Profile":
-                iconName = "user";
-                break;
-              default:
-                iconName = "home";
-            }
-            return <IconComponent name={iconName} focused={focused} />;
-          },
-          tabBarLabel: ({ focused }) => (
-            <Text
-              style={{
-                color: colors.iconInactive,
-                fontSize: 12,
-                marginTop: 12,
-                fontWeight: focused ? "600" : "400",
-                textAlign: "center",
-              }}
-            >
-              {LABEL_MAP[route.name]}
-            </Text>
-          ),
-          tabBarStyle: {
-            backgroundColor: colors.navbarBg,
-            borderTopWidth: 1,
-            borderTopColor: colors.navbarBorder,
-            height: tabBarHeight,
-            paddingTop: 14,
-            paddingBottom: insets.bottom
-              ? insets.bottom * 0.6
-              : Platform.OS === "ios"
-                ? 12
-                : 8,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            position: "absolute",
-            
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.04,
-            shadowRadius: 4,
-          },
-          tabBarItemStyle: {
-            alignItems: "center",
-            justifyContent: "center",
-            paddingBottom: 4,
-            paddingTop: 0,
-          },
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
@@ -272,4 +319,45 @@ export default function Navigation() {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  tabBarContainer: {
+    flexDirection: "row",
+    backgroundColor: colors.navbarBg,
+    borderTopWidth: 1,
+    borderTopColor: colors.navbarBorder,
+    paddingTop: 8,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    position: "absolute",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+  },
+  slidingPill: {
+    position: "absolute",
+    left: (tabWidth - 48) / 2,
+    top: 8 + (48 - 38) / 2,
+    width: 48,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: colors.accent,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.accent,
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 4,
+    paddingTop: 0,
+  },
+});
