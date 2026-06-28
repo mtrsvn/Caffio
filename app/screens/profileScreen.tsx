@@ -50,9 +50,10 @@ import {
     SafeAreaView,
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { getCoffeeLogs, logout, uploadUserAvatar, removeUserAvatar } from "../../firebaseconfig";
+import { removeUserAvatar, uploadUserAvatar, getCoffeeLogs, logout } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
-import colors from "../components/colors";
+import { ThemeColors, getNeu } from "../components/colors";
+import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import { LogEntry } from "../components/logCard";
 import EditProfileSheet from "../components/editProfileSheet";
 
@@ -67,6 +68,8 @@ interface Props {
 const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], onEditProfilePress: () => void }> = ({ tasteProfile, onEditProfilePress }) => {
   const navigation = useNavigation<any>();
   const { user, refreshUser } = useContext(AuthContext);
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const [createPressed, setCreatePressed] = useState(false);
   const [loginPressed, setLoginPressed] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -175,11 +178,11 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
         </TouchableOpacity>
 
         <View style={[styles.headerText, { flex: 1 }]}>
-          <Text style={[styles.headerName, { color: colors.pillUnselectedBg }]} numberOfLines={1}>
+          <Text style={[styles.headerName, { color: "rgba(255,255,255,0.95)" }]} numberOfLines={1}>
             {displayName}
           </Text>
           <Text
-            style={[styles.headerSubtitle, { color: colors.pillUnselectedBg }]}
+            style={[styles.headerSubtitle, { color: "rgba(255,255,255,0.8)" }]}
           >
             {subtitle}
           </Text>
@@ -231,7 +234,7 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
 
           <View style={styles.headerCenter}>
             <Text
-              style={[styles.headerBody, { color: colors.pillUnselectedBg }]}
+              style={[styles.headerBody, { color: "rgba(255,255,255,0.8)" }]}
             >
               Track your coffee journey and unlock achievements
             </Text>
@@ -239,7 +242,7 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
             <Text
               style={[
                 styles.headerActionText,
-                { color: colors.pillUnselectedBg, textAlign: "center" },
+                { color: "rgba(255,255,255,0.9)", textAlign: "center" },
               ]}
             >
               <Text
@@ -250,8 +253,8 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
                 style={{
                   fontWeight: "700",
                   color: createPressed
-                    ? colors.gradientEnd
-                    : colors.pillUnselectedBg,
+                    ? "rgba(255,255,255,0.6)"
+                    : "rgba(255,255,255,0.9)",
                 }}
               >
                 Create an Account
@@ -265,8 +268,8 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
                 style={{
                   fontWeight: "700",
                   color: loginPressed
-                    ? colors.gradientEnd
-                    : colors.pillUnselectedBg,
+                    ? "rgba(255,255,255,0.6)"
+                    : "rgba(255,255,255,0.9)",
                 }}
               >
                 Login
@@ -286,6 +289,7 @@ type StatCardProps = {
 };
 
 const StatCard: React.FC<StatCardProps> = ({ Icon, label, value = 0 }) => {
+  const styles = useThemeStyles(getStyles);
   return (
     <View style={styles.statCard}>
       <View style={styles.statIconWrap}>
@@ -310,6 +314,7 @@ const PrefCard: React.FC<PrefCardProps> = ({
   value = "None yet",
   Icon,
 }) => {
+  const styles = useThemeStyles(getStyles);
   return (
     <TouchableOpacity activeOpacity={0.92} style={styles.prefWrapper}>
       <View style={styles.prefCardInner}>
@@ -328,6 +333,8 @@ const PrefCard: React.FC<PrefCardProps> = ({
 };
 
 const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
   const tabBarHeight =
     BASE_TABBAR_HEIGHT +
@@ -657,9 +664,11 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
-  safe: { flex: 1 },
+const getStyles = (colors: ThemeColors, isDark?: boolean) => {
+  const neu = getNeu(colors, isDark || false);
+  return StyleSheet.create({
+    screenContainer: { flex: 1, backgroundColor: colors.bg },
+    safe: { flex: 1 },
   container: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -667,26 +676,18 @@ const styles = StyleSheet.create({
 
   // ── Profile header card ──────────────────────────────────────────
   headerCard: {
+    ...neu.raised,
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
     backgroundColor: colors.accent,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.6,
-        shadowRadius: 12,
-      },
-      android: { elevation: 6 },
-    }),
   },
   headerTop: { flexDirection: "row", alignItems: "center" },
   avatarWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -731,16 +732,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#EDE8E2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
+    ...neu.raised,
   },
   statIconWrap: {
     width: 34,
@@ -770,17 +762,7 @@ const styles = StyleSheet.create({
   },
   prefCardInner: {
     borderRadius: 18,
-    backgroundColor: "#EDE8E2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-      default: {},
-    }),
+    ...neu.raised,
   },
   prefBody: {
     paddingHorizontal: 16,
@@ -797,9 +779,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 16,
     backgroundColor: colors.accent,
-    flexShrink: 0,
+    marginLeft: 16,
   },
 
   sectionTitle: {
@@ -812,24 +793,17 @@ const styles = StyleSheet.create({
 
   // ── Logout ───────────────────────────────────────────────────────
   logoutButton: {
+    ...neu.raised,
     marginTop: 8,
     borderRadius: 18,
     height: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 14,
     paddingHorizontal: 14,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     marginBottom: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
   },
   logoutButtonText: {
     color: colors.textSecondary,
@@ -846,7 +820,8 @@ const styles = StyleSheet.create({
 
   // ── Achievements ─────────────────────────────────────────────────
   achievementsCard: {
-    backgroundColor: "#EDE8E2",
+    ...neu.raised,
+    backgroundColor: colors.surface,
     borderRadius: 18,
     padding: 12,
     flexDirection: "row",
@@ -855,15 +830,6 @@ const styles = StyleSheet.create({
     rowGap: 8,
     columnGap: "2.3%",
     marginBottom: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
   },
   badge: {
     flexDirection: "row",
@@ -876,7 +842,7 @@ const styles = StyleSheet.create({
     width: "31.8%",
   },
   badgeDim: {
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
   },
   badgeIcon: {
     width: 20,
@@ -888,7 +854,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeIconDim: {
-    backgroundColor: "#D8D0C8",
+    backgroundColor: colors.coffeeTypeUnselectedBorder,
   },
   badgeLabel: {
     fontSize: 10,
@@ -968,19 +934,10 @@ const styles = StyleSheet.create({
 
   // ── Account Info ──────────────────────────────────────────────────
   accountCard: {
-    backgroundColor: "#EDE8E2",
+    ...neu.raised,
+    backgroundColor: colors.surface,
     borderRadius: 18,
     marginBottom: 4,
-    overflow: "hidden",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
   },
   accountRow: {
     flexDirection: "row",
@@ -1013,7 +970,7 @@ const styles = StyleSheet.create({
   },
   accountDivider: {
     height: 1,
-    backgroundColor: "#DDD6CE",
+    backgroundColor: colors.surfacePressed,
     marginHorizontal: 16,
   },
 
@@ -1043,16 +1000,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 12,
     maxHeight: "75%",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
+        shadowColor: colors.shadowDark,
         shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.12,
+        shadowOpacity: isDark ? 0.8 : 0.12,
         shadowRadius: 16,
       },
       android: { elevation: 24 },
@@ -1062,7 +1019,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#C8BEB4",
+    backgroundColor: colors.coffeeTypeUnselectedBorder,
     alignSelf: "center",
     marginBottom: 14,
   },
@@ -1088,28 +1045,20 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     alignItems: "center",
     justifyContent: "center",
   },
   achRow: {
+    ...neu.raised,
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginBottom: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.6,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
   },
   achRowDim: {
     opacity: 0.55,
@@ -1124,7 +1073,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   achRowIconDim: {
-    backgroundColor: "#C8BEB4",
+    backgroundColor: colors.coffeeTypeUnselectedBorder,
   },
   achRowLabel: {
     fontSize: 14,
@@ -1148,5 +1097,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
 });
+};
 
 export default ProfileScreen;

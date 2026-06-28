@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AuthProvider from "./components/AuthProvider";
 import Navigation from "./components/navigation";
+import { ThemeProvider, useTheme } from "./components/ThemeContext";
 
 import {
   FunnelSans_400Regular,
@@ -13,8 +14,11 @@ import {
 } from "@expo-google-fonts/funnel-sans";
 
 function AppInner() {
+  const { isDark, colors } = useTheme();
+
   return (
-    <View style={styles.gradient}>
+    <View style={[styles.gradient, { backgroundColor: colors.bg }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <Navigation />
     </View>
   );
@@ -49,18 +53,18 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <AuthProvider>
-        <AppInner />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppInner />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
-    backgroundColor: "#EDE8E2",
   },
 });

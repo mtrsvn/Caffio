@@ -15,7 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AddLogSheet from "./addLogSheet";
 import { AuthContext } from "./AuthProvider";
-import colors from "./colors";
+import { ThemeColors } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 import FAB from "./fab";
 import IconComponent from "./iconComponent";
 
@@ -51,6 +52,8 @@ function CustomTabBarButton({
   label,
   routeName,
 }: any) {
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const focusAnim = useRef(new Animated.Value(focused ? 1.03 : 1)).current;
   const pressAnim = useRef(new Animated.Value(1)).current;
   const pressTranslate = useRef(new Animated.Value(0)).current;
@@ -155,6 +158,8 @@ function CustomTabBarButton({
 }
 
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const slideAnim = useRef(new Animated.Value(state.index * tabWidth)).current;
 
   useEffect(() => {
@@ -163,6 +168,7 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
       useNativeDriver: true,
       friction: 9,
       tension: 65,
+      overshootClamping: true,
     }).start();
   }, [state.index, slideAnim]);
 
@@ -243,6 +249,8 @@ interface TabNavigatorProps {
 function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
   const { user } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
+  const styles = useThemeStyles(getStyles);
+  const { colors } = useTheme();
   const baseBarHeight = 66;
   const tabBarHeight =
     baseBarHeight +
@@ -254,9 +262,9 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
     <>
       <Tab.Navigator
         detachInactiveScreens={false}
-        tabBar={(props) => <CustomTabBar {...props} />}
+        tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
+        sceneContainerStyle={{ backgroundColor: colors.bg }}
         screenOptions={({ route }) => ({
-          sceneStyle: { backgroundColor: "#EDE8E2" },
           headerShown: false,
           tabBarShowLabel: true,
           animation: "shift",
@@ -289,6 +297,7 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
 
 export default function Navigation() {
   const { user } = useContext(AuthContext);
+  const { colors } = useTheme();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [refreshLogsFlag, setRefreshLogsFlag] = useState(0);
 
@@ -308,6 +317,7 @@ export default function Navigation() {
           headerShown: false,
           animation: "slide_from_right",
           animationTypeForReplace: "push",
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
         <Stack.Screen name="Main">
@@ -333,7 +343,7 @@ export default function Navigation() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
   tabBarContainer: {
     flexDirection: "row",
     backgroundColor: colors.navbarBg,
@@ -359,8 +369,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     ...Platform.select({
       ios: {
-        shadowColor: colors.accent,
-        shadowOpacity: 0.35,
+        shadowColor: isDark ? "#000" : colors.accent,
+        shadowOpacity: isDark ? 0.8 : 0.35,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 3 },
       },

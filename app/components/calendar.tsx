@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Modal, Platform } from 'react-native';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react-native';
 import HapticTouchable from './_HapticTouchable';
-import colors, { neu } from './colors';
+import { ThemeColors, getNeu } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 
 interface Props {
   onSelectDate: (date: Date) => void;
@@ -17,6 +18,9 @@ const MONTHS = [
 ];
 
 export default function CustomCalendar({ onSelectDate, selectedDate, loggedDates }: Props) {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
+
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = selectedDate ? new Date(selectedDate) : new Date();
     d.setDate(1);
@@ -204,9 +208,11 @@ export default function CustomCalendar({ onSelectDate, selectedDate, loggedDates
 
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark?: boolean) => {
+  const neu = getNeu(colors, isDark || false);
+  return StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -226,17 +232,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#EDE8E2',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#C8BEB4',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-      },
-      android: { elevation: 3 },
-      default: {},
-    }),
+    backgroundColor: colors.surface,
+    ...neu.raised,
   },
   headerTitle: {
     fontSize: 16,
@@ -249,17 +246,8 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EDE8E2',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#C8BEB4',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-      },
-      android: { elevation: 3 },
-      default: {},
-    }),
+    backgroundColor: colors.surface,
+    ...neu.raised,
   },
   dowRow: {
     flexDirection: 'row',
@@ -288,29 +276,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
-    backgroundColor: '#EDE8E2',
+    backgroundColor: colors.surface,
   },
   dayUnselected: {
-    ...Platform.select({
-      ios: {
-        shadowColor: '#C8BEB4',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.35,
-        shadowRadius: 4,
-      },
-      android: { elevation: 2 },
-      default: {},
-    }),
+    ...neu.raised,
   },
   dayToday: {
     borderWidth: 1.5,
     borderColor: colors.accentLight,
-    backgroundColor: '#F8F5F1',
+    backgroundColor: colors.bg,
   },
   dayWithLog: {
-    backgroundColor: '#CBBBAF',
+    backgroundColor: colors.surfacePressed,
     borderWidth: 1,
-    borderColor: '#BCAAA4',
+    borderColor: colors.coffeeTypeUnselectedBorder,
   },
   daySelected: {
     backgroundColor: colors.accent,
@@ -357,14 +336,14 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   pickerContainer: {
     width: '100%',
-    backgroundColor: '#EDE8E2',
+    backgroundColor: colors.surface,
     borderRadius: 24,
     padding: 24,
     ...neu.raised,
@@ -398,21 +377,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     borderRadius: 12,
-    backgroundColor: '#EDE8E2',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#C8BEB4',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-      },
-      android: { elevation: 3 },
-      default: {},
-    }),
+    backgroundColor: colors.surface,
+    ...neu.raised,
   },
   monthBtnSelected: {
     ...neu.pressed,
-    backgroundColor: '#E4DED7',
+    backgroundColor: colors.surfacePressed,
   },
   monthText: {
     fontSize: 14,
@@ -436,3 +406,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   }
 });
+};

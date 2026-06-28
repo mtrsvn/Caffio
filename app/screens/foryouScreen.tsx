@@ -11,7 +11,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
-import colors from "../components/colors";
+import { ThemeColors, getNeu } from "../components/colors";
+import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import { GEMINI_BACKEND_URL } from "../config";
 import { Coffee } from "lucide-react-native";
@@ -19,6 +20,8 @@ import { Coffee } from "lucide-react-native";
 const BASE_TABBAR_HEIGHT = 66;
 
 const ForyouScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
   const { user } = React.useContext(AuthContext);
 
@@ -140,67 +143,60 @@ const ForyouScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    backgroundColor: "transparent",
-  },
-  title: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-  content: {
-    flex: 1,
-  },
-  listContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  emptyCard: {
-    alignItems: "center",
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-    marginTop: 4,
-    marginBottom: 8,
-    borderRadius: 20,
-    backgroundColor: "#EDE8E2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-        shadowOffset: { width: 6, height: 6 },
-      },
-      android: { elevation: 4 },
-      default: {},
-    }),
-  },
-  emptyIcon: {
-    marginBottom: 10,
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    textAlign: "center",
-    lineHeight: 18,
-  },
-});
+const getStyles = (colors: ThemeColors, isDark?: boolean) => {
+  const neu = getNeu(colors, isDark || false);
+  return StyleSheet.create({
+    screenContainer: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+      backgroundColor: "transparent",
+    },
+    title: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.coffeeTypeUnselectedText,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    content: {
+      flex: 1,
+    },
+    listContainer: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    emptyCard: {
+      alignItems: "center",
+      paddingVertical: 28,
+      paddingHorizontal: 20,
+      marginTop: 4,
+      marginBottom: 8,
+      borderRadius: 20,
+      ...neu.raised,
+    },
+    emptyIcon: {
+      marginBottom: 10,
+    },
+    emptyTitle: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 4,
+      textAlign: "center",
+    },
+    emptySubtitle: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: "center",
+      lineHeight: 18,
+    },
+  });
+};
 
 export default ForyouScreen;

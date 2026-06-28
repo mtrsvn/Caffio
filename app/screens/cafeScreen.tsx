@@ -21,7 +21,9 @@ import { MapView, Marker, Callout, PROVIDER_GOOGLE } from "../../components/MapC
 import Slider from "@react-native-community/slider";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
-import colors from "../components/colors";
+import { AuthContext } from "../components/AuthProvider";
+import { ThemeColors, getNeu } from "../components/colors";
+import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import HapticTouchable from "../components/_HapticTouchable";
 import { fetchNearbyCafes, SimplePlace, fetchPlaceDetails, PlaceDetails } from "../utils/places";
 import { PlaceUI } from "../components/cafeDetailsSheet";
@@ -47,6 +49,7 @@ function DistanceSlider({
   onValueChange: (val: number) => void;
   onSlidingComplete: (val: number) => void;
 }) {
+  const { colors } = useTheme();
   return (
     <Slider
       style={{ width: "100%", height: 40 }}
@@ -54,7 +57,7 @@ function DistanceSlider({
       maximumValue={max}
       value={value}
       minimumTrackTintColor={colors.gradientStart}
-      maximumTrackTintColor="#D9D1CA"
+      maximumTrackTintColor={colors.coffeeTypeUnselectedBorder}
       thumbTintColor={colors.gradientStart}
       onValueChange={onValueChange}
       onSlidingComplete={onSlidingComplete}
@@ -68,6 +71,8 @@ function formatRadius(r: number): string {
 }
 
 const MemoizedMarker = React.memo(({ place, onSelect }: { place: PlaceUI; onSelect: (place: PlaceUI) => void }) => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   return (
     <Marker
       coordinate={{ latitude: place.lat, longitude: place.lng }}
@@ -102,8 +107,11 @@ const MemoizedMarker = React.memo(({ place, onSelect }: { place: PlaceUI; onSele
   return prevProps.place.id === nextProps.place.id && prevProps.place.distanceKm === nextProps.place.distanceKm;
 });
 
-export default function CafeScreen() {
+const CafeScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
+  const { user } = React.useContext(AuthContext);
   const [places, setPlaces] = useState<PlaceUI[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -303,7 +311,7 @@ export default function CafeScreen() {
       {/* Search + View Toggle row */}
       <View style={styles.controlsRow}>
         <View style={styles.searchInner}>
-          <Search size={16} color={colors.gradientEnd} />
+          <Search size={16} color={colors.gradientStart} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search cafes..."
@@ -311,7 +319,7 @@ export default function CafeScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             clearButtonMode="while-editing"
-            selectionColor={colors.gradientEnd}
+            selectionColor={colors.gradientStart}
           />
         </View>
 
@@ -476,10 +484,12 @@ export default function CafeScreen() {
       />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
+const getStyles = (colors: ThemeColors, isDark?: boolean) => {
+  const neu = getNeu(colors, isDark || false);
+  return StyleSheet.create({
+  screenContainer: { flex: 1, backgroundColor: colors.bg },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 10,
@@ -498,7 +508,6 @@ const styles = StyleSheet.create({
     color: colors.accentLight,
   },
 
-  // Controls row
   controlsRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -510,22 +519,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 44,
     borderWidth: 1,
-    borderColor: "rgba(109,76,65,0.15)",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOpacity: 0.4,
-        shadowRadius: 6,
-        shadowOffset: { width: 3, height: 3 },
-      },
-      android: { elevation: 2 },
-      default: {},
-    }),
+    borderColor: colors.coffeeTypeUnselectedBorder,
+    ...neu.pressed,
   },
   searchInput: {
     flex: 1,
@@ -535,19 +535,11 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     flexDirection: "row",
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 4,
     gap: 4,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
+    ...neu.raised,
   },
   toggleBtn: {
     width: 36,
@@ -560,8 +552,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gradientStart,
     ...Platform.select({
       ios: {
-        shadowColor: colors.gradientStart,
-        shadowOpacity: 0.35,
+        shadowColor: isDark ? "#000" : colors.gradientStart,
+        shadowOpacity: isDark ? 0.8 : 0.35,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 3 },
       },
@@ -569,24 +561,15 @@ const styles = StyleSheet.create({
     }),
   },
 
-  // Slider
   sliderSection: {
     paddingHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     marginHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 6,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
+    ...neu.raised,
   },
   sliderLabelRow: {
     flexDirection: "row",
@@ -620,7 +603,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 
-  // Map
   mapContainer: {
     flex: 1,
     marginHorizontal: 0,
@@ -646,14 +628,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   calloutContainer: {
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     minWidth: 160,
     maxWidth: 220,
     borderWidth: 1,
-    borderColor: "#D9D1CA",
+    borderColor: colors.coffeeTypeUnselectedBorder,
     marginBottom: 4,
   },
   calloutTitle: {
@@ -674,36 +656,20 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.18,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-      },
-      android: { elevation: 6 },
-    }),
+    ...neu.raised,
   },
   countBadge: {
     position: "absolute",
     top: 12,
     left: 12,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.12,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
-      },
-      android: { elevation: 4 },
-    }),
+    ...neu.raised,
   },
   countText: {
     fontSize: 12,
@@ -711,8 +677,10 @@ const styles = StyleSheet.create({
     color: colors.gradientStart,
   },
 
-  // Common
   centerContent: { flex: 1, alignItems: "center", justifyContent: "center" },
   emptyText: { color: colors.textMuted },
   errorText: { color: "#b71c1c" },
 });
+};
+
+export default CafeScreen;

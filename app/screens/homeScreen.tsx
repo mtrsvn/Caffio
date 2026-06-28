@@ -15,7 +15,8 @@ import {
 } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
-import colors from "../components/colors";
+import { ThemeColors, getNeu } from "../components/colors";
+import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import EditLogSheet from "../components/editLogSheet";
 import ForYouCard, { PalateRecommendation } from "../components/forYouCard";
 import LogCard, { LogEntry } from "../components/logCard";
@@ -105,6 +106,8 @@ function matchPersonality(
 }
 
 const HomeScreen: React.FC = () => {
+  const styles = useThemeStyles(getStyles);
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const { user } = useContext(AuthContext);
@@ -346,170 +349,143 @@ const HomeScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
-  foryouTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  foryouSubtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginBottom: 10,
-  },
-  logsTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 6,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    backgroundColor: "transparent",
-  },
-  title: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-  emptyCard: {
-    alignItems: "center",
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-    marginTop: 4,
-    marginBottom: 8,
-    borderRadius: 20,
-    backgroundColor: "#EDE8E2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-        shadowOffset: { width: 6, height: 6 },
-      },
-      android: { elevation: 4 },
-      default: {},
-    }),
-  },
-  emptyIcon: {
-    marginBottom: 10,
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  personalityEmptyCard: {
-    margin: 16,
-    borderRadius: 20,
-    backgroundColor: "#EDE8E2",
-    padding: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-        shadowOffset: { width: 6, height: 6 },
-      },
-      android: { elevation: 4 },
-      default: {},
-    }),
-  },
-  personalityHeader: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  personalityBody: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  personalityIconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 4, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 8,
-      },
-      android: { elevation: 3 },
-    }),
-  },
-  personalityInfo: {
-    flex: 1,
-    alignItems: "flex-start",
-  },
-  statsContainer: {
-    flexDirection: "row",
-    backgroundColor: "#EDE8E2",
-    borderRadius: 20,
-    paddingVertical: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-        shadowOffset: { width: 6, height: 6 },
-      },
-      android: { elevation: 4 },
-      default: {},
-    }),
-  },
-  statBox: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: "#D6CFC8",
-    marginVertical: 4,
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  statLabel: {
-    fontSize: 10,
-    color: colors.textMuted,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-});
+const getStyles = (colors: ThemeColors, isDark: boolean) => {
+  const neu = getNeu(colors, isDark);
+  return StyleSheet.create({
+    screenContainer: { flex: 1, backgroundColor: colors.bg },
+    foryouTitle: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.coffeeTypeUnselectedText,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      marginBottom: 10,
+    },
+    foryouSubtitle: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 10,
+    },
+    logsTitle: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.coffeeTypeUnselectedText,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      marginBottom: 6,
+    },
+    header: {
+      paddingHorizontal: 16,
+      paddingBottom: 10,
+      backgroundColor: "transparent",
+    },
+    title: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.coffeeTypeUnselectedText,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    emptyCard: {
+      alignItems: "center",
+      paddingVertical: 28,
+      paddingHorizontal: 20,
+      marginTop: 4,
+      marginBottom: 8,
+      borderRadius: 20,
+      ...neu.raised,
+    },
+    emptyIcon: {
+      marginBottom: 10,
+    },
+    emptyTitle: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 4,
+      textAlign: "center",
+    },
+    emptySubtitle: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: "center",
+      lineHeight: 18,
+    },
+    personalityEmptyCard: {
+      margin: 16,
+      borderRadius: 20,
+      padding: 20,
+      ...neu.raised,
+    },
+    personalityHeader: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.coffeeTypeUnselectedText,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      marginBottom: 12,
+    },
+    personalityBody: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    personalityIconCircle: {
+      width: 68,
+      height: 68,
+      borderRadius: 34,
+      backgroundColor: colors.accent,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowDark,
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: isDark ? 0.8 : 0.5,
+          shadowRadius: 8,
+        },
+        android: { elevation: 3 },
+      }),
+    },
+    personalityInfo: {
+      flex: 1,
+      alignItems: "flex-start",
+    },
+    statsContainer: {
+      flexDirection: "row",
+      borderRadius: 20,
+      paddingVertical: 16,
+      ...neu.raised,
+    },
+    statBox: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statDivider: {
+      width: 1,
+      backgroundColor: isDark ? colors.shadowDark : "#D6CFC8",
+      marginVertical: 4,
+    },
+    statValue: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 4,
+      textAlign: "center",
+    },
+    statLabel: {
+      fontSize: 10,
+      color: colors.textMuted,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+  });
+};
 
 export default HomeScreen;

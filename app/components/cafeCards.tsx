@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native";
 import { Image } from "expo-image";
-import colors from "./colors";
+import { ThemeColors, getNeu } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 import { SimplePlace } from "../utils/places";
 
 type Props = {
@@ -22,7 +23,9 @@ function formatDistance(km?: number): string | null {
   return `${km.toFixed(1)}km`;
 }
 
-export default function CafeCard({ place, onPress }: Props) {
+const CafeCard: React.FC<Props> = ({ place, onPress }) => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const { name, address, photoUrl, rating, openNow } = place;
   const dist = formatDistance((place as any).distanceKm);
 
@@ -34,7 +37,6 @@ export default function CafeCard({ place, onPress }: Props) {
         style={styles.card}
         accessibilityRole="button"
       >
-        {/* Hero image */}
         <View style={styles.imageWrap}>
           {photoUrl ? (
             <Image
@@ -48,7 +50,6 @@ export default function CafeCard({ place, onPress }: Props) {
             </View>
           )}
 
-          {/* Open/Closed badge */}
           {openNow !== undefined && (
             <View style={[styles.statusBadge, { backgroundColor: openNow ? "rgba(46,125,50,0.88)" : "rgba(183,28,28,0.88)" }]}>
               <Clock size={10} color="#FFF" strokeWidth={2.5} />
@@ -56,16 +57,14 @@ export default function CafeCard({ place, onPress }: Props) {
             </View>
           )}
 
-          {/* Distance badge */}
           {dist && (
-            <View style={styles.distanceBadge}>
-              <MapPin size={10} color={colors.gradientStart} strokeWidth={2.5} />
+            <View style={[styles.distanceBadge, { backgroundColor: isDark ? "rgba(30,26,24,0.92)" : "rgba(237,232,226,0.92)" }]}>
+              <MapPin size={10} color={colors.accent} strokeWidth={2.5} />
               <Text style={styles.distanceText}>{dist}</Text>
             </View>
           )}
         </View>
 
-        {/* Info row */}
         <View style={styles.infoRow}>
           <View style={styles.infoLeft}>
             <Text style={styles.title} numberOfLines={1}>{name}</Text>
@@ -84,112 +83,108 @@ export default function CafeCard({ place, onPress }: Props) {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  cardShadow: {
-    borderRadius: 18,
-    marginBottom: 12,
-    backgroundColor: "#EDE8E2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
-  },
-  card: {
-    borderRadius: 18,
-    overflow: "hidden",
-    backgroundColor: "#EDE8E2",
-  },
-  imageWrap: {
-    position: "relative",
-    width: "100%",
-    height: 160,
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
-  heroPlaceholder: {
-    backgroundColor: colors.gradientStart,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusBadge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  statusBadgeText: {
-    color: "#FFF",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-  distanceBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "rgba(237,232,226,0.92)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  distanceText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.gradientStart,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: "#EDE8E2",
-  },
-  infoLeft: {
-    flex: 1,
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: colors.textPrimary,
-    letterSpacing: -0.3,
-    marginBottom: 2,
-  },
-  address: {
-    fontSize: 12,
-    color: colors.textMuted,
-    fontWeight: "500",
-  },
-  ratingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: colors.gradientStart,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 14,
-  },
-  ratingText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-});
+const getStyles = (colors: ThemeColors, isDark: boolean) => {
+  const neu = getNeu(colors, isDark);
+  return StyleSheet.create({
+    cardShadow: {
+      borderRadius: 18,
+      marginBottom: 12,
+      backgroundColor: colors.surface,
+      ...neu.raised,
+    },
+    card: {
+      borderRadius: 18,
+      overflow: "hidden",
+      backgroundColor: colors.surface,
+    },
+    imageWrap: {
+      position: "relative",
+      width: "100%",
+      height: 160,
+    },
+    heroImage: {
+      width: "100%",
+      height: "100%",
+    },
+    heroPlaceholder: {
+      backgroundColor: colors.accent,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statusBadge: {
+      position: "absolute",
+      top: 10,
+      left: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 20,
+    },
+    statusBadgeText: {
+      color: "#FFF",
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    },
+    distanceBadge: {
+      position: "absolute",
+      top: 10,
+      right: 10,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 20,
+    },
+    distanceText: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: colors.accent,
+    },
+    infoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: colors.surface,
+    },
+    infoLeft: {
+      flex: 1,
+      marginRight: 10,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: "800",
+      color: colors.textPrimary,
+      letterSpacing: -0.3,
+      marginBottom: 2,
+    },
+    address: {
+      fontSize: 12,
+      color: colors.textMuted,
+      fontWeight: "500",
+    },
+    ratingBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      backgroundColor: colors.accent,
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      borderRadius: 14,
+    },
+    ratingText: {
+      color: "#FFF",
+      fontSize: 12,
+      fontWeight: "700",
+    },
+  });
+};
+
+export default React.memo(CafeCard);

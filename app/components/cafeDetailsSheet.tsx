@@ -16,7 +16,8 @@ import {
   View
 , TouchableOpacity} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import colors from "./colors";
+import { ThemeColors } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 import { PlaceDetails, SimplePlace } from "../utils/places";
 import HapticTouchable from "./_HapticTouchable";
 
@@ -47,6 +48,8 @@ export default function CafeDetailsSheet({
   detailsLoading,
   onExited,
 }: Props) {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(false);
 
@@ -285,7 +288,7 @@ export default function CafeDetailsSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
   container: { flex: 1, justifyContent: "flex-end" },
   backdrop: { ...StyleSheet.absoluteFillObject, zIndex: 5 },
   sheet: {
@@ -304,8 +307,8 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: { elevation: 6 },
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
+        shadowColor: isDark ? "#000" : colors.shadowDark,
+        shadowOpacity: isDark ? 0.8 : 0.08,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: -2 },
       },
@@ -384,7 +387,7 @@ const styles = StyleSheet.create({
   modalStatPill: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     borderRadius: 16,
   },
   modalStatText: {
@@ -401,7 +404,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontStyle: "italic",
     marginBottom: 16,
-    backgroundColor: "#F0EBE5",
+    backgroundColor: colors.coffeeTypeUnselectedBg,
     padding: 12,
     borderRadius: 12,
   },
@@ -414,7 +417,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

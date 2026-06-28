@@ -23,7 +23,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { addCoffeeLog } from "../../firebaseconfig";
 import { generateAndSaveRecommendations } from "../utils/aiRecommendations";
-import colors from "./colors";
+import { ThemeColors } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 
 type Props = {
   visible: boolean;
@@ -59,7 +60,14 @@ const COFFEE_TYPES = [
 import TASTE_PROFILE from "../data/tastes.json";
 import HapticTouchable from "./_HapticTouchable";
 
-export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
+export default function AddLogSheet({
+  visible,
+  onClose,
+  onSaved,
+  uid,
+}: Props) {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
 
@@ -1013,7 +1021,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
   container: { flex: 1, justifyContent: "flex-end" },
   backdrop: { ...StyleSheet.absoluteFillObject, zIndex: 5 },
   sheet: {
@@ -1031,8 +1039,8 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: { elevation: 6 },
       ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
+        shadowColor: isDark ? "#000" : colors.shadowDark,
+        shadowOpacity: isDark ? 0.8 : 0.08,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: -2 },
       },
@@ -1047,14 +1055,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  headerTitle: { fontSize: 16, color: "#795548", fontWeight: "700" },
+  headerTitle: { fontSize: 16, color: colors.textSecondary, fontWeight: "700" },
   closeButton: { padding: 6 },
 
   sheetDivider: { height: 1, backgroundColor: colors.navbarBorder },
 
   sheetBody: { paddingHorizontal: 16 },
 
-  sectionTitle: { color: "#795548", fontWeight: "700", marginBottom: 8 },
+  sectionTitle: { color: colors.textSecondary, fontWeight: "700", marginBottom: 8 },
 
   pillRow: { flexDirection: "row", flexWrap: "wrap" },
 
@@ -1077,7 +1085,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 5,
   },
-  pillUnselectedText: { color: "#795548", fontWeight: "600" },
+  pillUnselectedText: { color: colors.textSecondary, fontWeight: "600" },
 
   
   pillUnselectedCoffee: {
@@ -1114,20 +1122,20 @@ const styles = StyleSheet.create({
   },
 
   
-  fieldLabel: { color: "#795548", fontWeight: "700", marginBottom: 8 },
+  fieldLabel: { color: colors.textSecondary, fontWeight: "700", marginBottom: 8 },
   fullInput: {
     width: "100%",
     paddingHorizontal: 13,
     paddingVertical: Platform.OS === "ios" ? 13 : 9,
     borderRadius: 14,
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     borderWidth: 1,
-    borderColor: "rgba(109,76,65,0.15)",
+    borderColor: colors.coffeeTypeUnselectedBorder,
     color: colors.coffeeTypeUnselectedText,
     fontWeight: "600",
     ...Platform.select({
       ios: {
-        shadowColor: "#C8BEB4",
+        shadowColor: colors.shadowDark,
         shadowOpacity: 0.4,
         shadowRadius: 6,
         shadowOffset: { width: 3, height: 3 },
@@ -1144,7 +1152,7 @@ const styles = StyleSheet.create({
   },
 
   helperText: {
-    color: "#A1887F",
+    color: colors.textMuted,
     fontSize: 13,
     marginTop: 10,
     textAlign: "center",

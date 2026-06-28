@@ -11,12 +11,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCoffeeLogs } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
-import colors from "../components/colors";
+import { ThemeColors } from "../components/colors";
+import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import EditLogSheet from "../components/editLogSheet";
 import LogCard, { LogEntry } from "../components/logCard";
 import CustomCalendar from "../components/calendar";
-
-
 
 const BASE_TABBAR_HEIGHT = 66;
 
@@ -25,6 +24,8 @@ interface Props {
 }
 
 const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
   const tabBarHeight =
@@ -203,8 +204,8 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  screenContainer: { flex: 1, backgroundColor: "#EDE8E2" },
+const getStyles = (colors: ThemeColors) => StyleSheet.create({
+  screenContainer: { flex: 1, backgroundColor: colors.bg },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 10,
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.coffeeTypeUnselectedText,
+    color: colors.textMuted,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 4,
@@ -230,11 +231,12 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     alignItems: "center",
-    paddingVertical: 28,
+    paddingVertical: 40,
     paddingHorizontal: 20,
-    marginTop: 12,
+    marginHorizontal: 16,
+    marginTop: 20,
     borderRadius: 20,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     ...Platform.select({
       ios: {
         shadowColor: "#C8BEB4",
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     textAlign: "center",
-    lineHeight: 18,
+    marginBottom: 4,
   },
 });
 

@@ -19,7 +19,8 @@ import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { removeUserAvatar, uploadUserAvatar, updateUserProfile } from "../../firebaseconfig";
 import { AuthContext } from "./AuthProvider";
-import colors from "./colors";
+import { ThemeColors } from "./colors";
+import { useThemeStyles, useTheme, ThemeMode } from "./ThemeContext";
 import HapticTouchable from "./_HapticTouchable";
 
 interface Props {
@@ -31,6 +32,8 @@ interface Props {
 export default function EditProfileSheet({ visible, onClose, onExited }: Props) {
   const insets = useSafeAreaInsets();
   const { user, refreshUser } = useContext(AuthContext);
+  const { mode, setMode, colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
 
   const [username, setUsername] = useState(user?.username || "");
   const [saving, setSaving] = useState(false);
@@ -280,6 +283,24 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
             />
           </View>
 
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Appearance</Text>
+            <View style={styles.themeToggleRow}>
+              {(["system", "light", "dark"] as ThemeMode[]).map((t) => (
+                <TouchableOpacity
+                  key={t}
+                  activeOpacity={0.8}
+                  onPress={() => setMode(t)}
+                  style={[styles.themeOption, mode === t && styles.themeOptionActive]}
+                >
+                  <Text style={[styles.themeOptionText, mode === t && styles.themeOptionTextActive]}>
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           <HapticTouchable
             style={[
               styles.saveButton,
@@ -301,7 +322,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   keyboardAvoid: {
     flex: 1,
     justifyContent: "flex-end",
@@ -321,7 +342,7 @@ const styles = StyleSheet.create({
       android: {  },
       ios: {
         shadowColor: "#000",
-        shadowOpacity: 0.08,
+        shadowOpacity: isDark ? 0.3 : 0.08,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: -2 },
       },
@@ -333,7 +354,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
   },
-  headerTitle: { fontSize: 16, color: "#795548", fontFamily: "FunnelSans_700Bold" },
+  headerTitle: { fontSize: 16, color: colors.textSecondary, fontFamily: "FunnelSans_700Bold" },
   closeButton: { padding: 6 },
   avatarSection: {
     alignItems: "center",
@@ -343,12 +364,12 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "rgba(0,0,0,0.04)",
+    backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
     borderWidth: 2,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
   },
   cameraIcon: {
     position: "absolute",
@@ -371,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   inputLabel: {
-    color: "#795548",
+    color: colors.textSecondary,
     fontFamily: "FunnelSans_700Bold",
     marginBottom: 8,
   },
@@ -386,6 +407,32 @@ const styles = StyleSheet.create({
     color: colors.coffeeTypeUnselectedText,
     fontFamily: "FunnelSans_600SemiBold",
     fontSize: 16,
+  },
+  themeToggleRow: {
+    flexDirection: "row",
+    backgroundColor: colors.coffeeTypeUnselectedBg,
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: colors.coffeeTypeUnselectedBorder,
+  },
+  themeOption: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  themeOptionActive: {
+    backgroundColor: colors.accent,
+  },
+  themeOptionText: {
+    fontSize: 14,
+    color: colors.textMuted,
+    fontFamily: "FunnelSans_600SemiBold",
+  },
+  themeOptionTextActive: {
+    color: "#fff",
+    fontFamily: "FunnelSans_700Bold",
   },
   saveButton: {
     backgroundColor: colors.accent,

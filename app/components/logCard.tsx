@@ -16,7 +16,8 @@ import {
 import { Image } from "expo-image";
 import HapticTouchable from "./_HapticTouchable";
 import { updateCoffeeLog } from "../../firebaseconfig";
-import colors from "./colors";
+import { ThemeColors, getNeu } from "./colors";
+import { useThemeStyles, useTheme } from "./ThemeContext";
 
 export type LogEntry = {
   id: string;
@@ -48,7 +49,9 @@ function daysAgo(date: Date): string {
 
 const IMAGE_SIZE = 72;
 
-function LogCard({ entry, onPress, onToggleFavorite }: Props) {
+const LogCard: React.FC<Props> = ({ entry, onPress, onToggleFavorite }) => {
+  const { colors, isDark } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const stars = [1, 2, 3, 4, 5];
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -157,104 +160,89 @@ function LogCard({ entry, onPress, onToggleFavorite }: Props) {
       </Animated.View>
     </AnimatedTouchable>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EDE8E2",
-    borderRadius: 18,
-    marginBottom: 12,
-    paddingRight: 4,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 6, height: 6 },
-        shadowOpacity: 0.55,
-        shadowRadius: 10,
-      },
-      android: { elevation: 4 },
-    }),
-  },
-  imageWrap: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
-    margin: 12,
-    borderRadius: 14,
-    overflow: "hidden",
-    flexShrink: 0,
-    backgroundColor: "#E4DED7",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 6,
-      },
-      android: { elevation: 2 },
-    }),
-  },
-  image: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
-  },
-  imagePlaceholder: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E4DED7",
-  },
-  body: {
-    flex: 1,
-    paddingVertical: 14,
-    paddingRight: 8,
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    marginBottom: 2,
-    letterSpacing: -0.2,
-  },
-  cafe: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginBottom: 6,
-  },
-  starsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  daysAgo: {
-    fontSize: 11,
-    color: colors.accentLight,
-    letterSpacing: 0.2,
-  },
-  favBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E4DED7",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#C8BEB4",
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-      },
-      android: { elevation: 2 },
-    }),
-  },
-  favBtnActive: {
-    backgroundColor: colors.accent,
-  },
-});
+const getStyles = (colors: ThemeColors, isDark: boolean) => {
+  const neu = getNeu(colors, isDark);
+  return StyleSheet.create({
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: 18,
+      marginBottom: 12,
+      paddingRight: 4,
+      ...neu.raised,
+    },
+    imageWrap: {
+      width: IMAGE_SIZE,
+      height: IMAGE_SIZE,
+      margin: 12,
+      borderRadius: 14,
+      overflow: "hidden",
+      flexShrink: 0,
+      backgroundColor: colors.surfacePressed,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowDark,
+          shadowOffset: { width: 3, height: 3 },
+          shadowOpacity: isDark ? 0.6 : 0.4,
+          shadowRadius: 6,
+        },
+        android: { elevation: 2 },
+      }),
+    },
+    image: {
+      width: IMAGE_SIZE,
+      height: IMAGE_SIZE,
+    },
+    imagePlaceholder: {
+      width: IMAGE_SIZE,
+      height: IMAGE_SIZE,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surfacePressed,
+    },
+    body: {
+      flex: 1,
+      paddingVertical: 14,
+      paddingRight: 8,
+      justifyContent: "center",
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 2,
+      letterSpacing: -0.2,
+    },
+    cafe: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 6,
+    },
+    starsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 4,
+    },
+    daysAgo: {
+      fontSize: 11,
+      color: colors.accentLight,
+      letterSpacing: 0.2,
+    },
+    favBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: "center",
+      justifyContent: "center",
+      ...neu.pressed,
+    },
+    favBtnActive: {
+      backgroundColor: colors.accent,
+    },
+  });
+};
 
 export default React.memo(LogCard, (prevProps, nextProps) => {
   return (

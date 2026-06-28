@@ -1,5 +1,36 @@
 // Caffio — Neumorphism Design System
-const colors = {
+
+export type ThemeColors = {
+  bg: string;
+  shadowLight: string;
+  shadowDark: string;
+  gradientStart: string;
+  gradientEnd: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  surface: string;
+  surfacePressed: string;
+  accent: string;
+  accentLight: string;
+  star: string;
+  navbarBg: string;
+  navbarBorder: string;
+  iconInactive: string;
+  iconActive: string;
+  pageGradientTopLeft: string;
+  pageGradientMid: string;
+  pageGradientBottomRight: string;
+  pillUnselectedBg: string;
+  coffeeTypeUnselectedBg: string;
+  coffeeTypeUnselectedText: string;
+  coffeeTypeUnselectedBorder: string;
+  tasteSelectedGradientStart: string;
+  tasteSelectedGradientEnd: string;
+  actionText: string;
+};
+
+export const lightColors: ThemeColors = {
   // ── Background ──────────────────────────────────────────────────
   bg: "#EDE8E2",               // warm soft beige — the one true background
 
@@ -46,9 +77,43 @@ const colors = {
   actionText: "#5D4037",
 };
 
+export const darkColors: ThemeColors = {
+  bg: "#1E1A18",               
+  shadowLight: "#2A2522",      
+  shadowDark: "#0F0D0C",       
+  gradientStart: "#6D4C41",    
+  gradientEnd: "#3E2723",      
+  textPrimary: "#EAE3DB",
+  textSecondary: "#BCAAA4",
+  textMuted: "#8D6E63",
+  surface: "#1E1A18",          
+  surfacePressed: "#241F1D",   
+  accent: "#6D4C41",
+  accentLight: "#5D4037",
+  star: "#8D6E63",
+  navbarBg: "#1E1A18",
+  navbarBorder: "transparent",
+  iconInactive: "#8D6E63",
+  iconActive: "#FFFFFF",
+  pageGradientTopLeft: "#1E1A18",
+  pageGradientMid: "#1E1A18",
+  pageGradientBottomRight: "#1E1A18",
+  pillUnselectedBg: "#1E1A18",
+  coffeeTypeUnselectedBg: "#2A2522",
+  coffeeTypeUnselectedText: "#EAE3DB",
+  coffeeTypeUnselectedBorder: "rgba(234,227,219,0.1)",
+  tasteSelectedGradientStart: "#8D6E63",
+  tasteSelectedGradientEnd: "#6D4C41",
+  actionText: "#EAE3DB",
+};
+
+// ── Legacy default export for un-refactored files ──────────────────
+export default lightColors;
+
 // ── Neumorphic shadow helpers ────────────────────────────────────────
+
+// Legacy hardcoded neumorphism
 export const neu = {
-  /** Raised element — casts shadows outward */
   raised: {
     shadowColor: "#C8BEB4",
     shadowOffset: { width: 6, height: 6 },
@@ -57,7 +122,6 @@ export const neu = {
     elevation: 6,
     backgroundColor: "#EDE8E2",
   },
-  /** Pressed / inset element */
   pressed: {
     shadowColor: "#C8BEB4",
     shadowOffset: { width: 2, height: 2 },
@@ -66,10 +130,29 @@ export const neu = {
     elevation: 1,
     backgroundColor: "#E4DED7",
   },
-  /** Flat — no shadow, matches bg */
   flat: {
     backgroundColor: "#EDE8E2",
   },
 };
 
-export default colors;
+export const getNeu = (colors: ThemeColors, isDark: boolean) => ({
+  raised: {
+    shadowColor: colors.shadowDark,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: isDark ? 0.8 : 0.55,
+    shadowRadius: 10,
+    elevation: 6,
+    backgroundColor: colors.bg,
+  },
+  pressed: {
+    shadowColor: colors.shadowDark,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: isDark ? 0.8 : 0.3,
+    shadowRadius: 4,
+    elevation: 1,
+    backgroundColor: colors.surfacePressed,
+  },
+  flat: {
+    backgroundColor: colors.bg,
+  },
+});
