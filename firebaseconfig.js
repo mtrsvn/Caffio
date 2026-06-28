@@ -29,6 +29,7 @@ import {
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -115,7 +116,20 @@ export async function addUserDoc(uid, data) {
 
 export async function uploadCoffeePhoto(uid, localUri) {
   console.log("[firebaseconfig] uploadCoffeePhoto called with", localUri);
-  const blob = await localUriToBlob(localUri);
+  
+  let finalUri = localUri;
+  try {
+    const manipResult = await ImageManipulator.manipulateAsync(
+      localUri,
+      [{ resize: { width: 1080 } }],
+      { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+    );
+    finalUri = manipResult.uri;
+  } catch (e) {
+    console.warn("[firebaseconfig] Image compression failed, using original", e);
+  }
+
+  const blob = await localUriToBlob(finalUri);
   const filename = `${Date.now()}.jpg`;
   const photoRef = storageRef(storage, `coffeePhotos/${uid}/${filename}`);
 
@@ -199,6 +213,7 @@ export async function addCoffeeLog(uid, data) {
     cafe: data.cafe,
     rating: data.rating,
     tasteProfile: data.tasteProfile ?? [],
+    price: data.price !== undefined ? Number(data.price) : 0,
     photoUrl: photoUrl ?? null,
     favorite: data.favorite ?? false,
     createdAt: serverTimestamp(),
@@ -216,6 +231,9 @@ export async function updateCoffeeLog(uid, logId, data) {
     ...data,
     updatedAt: serverTimestamp(),
   };
+  if (payload.price !== undefined) {
+    payload.price = Number(payload.price);
+  }
   await setDoc(docRef, payload, { merge: true });
 }
 
@@ -236,6 +254,7 @@ export async function getCoffeeLogs(uid) {
 
       photoUri: data.photoUrl ?? null,
       favorite: data.favorite ?? false,
+      price: data.price ? Number(data.price) : 0,
 
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
     };
@@ -244,7 +263,20 @@ export async function getCoffeeLogs(uid) {
 
 export async function uploadUserAvatar(uid, localUri) {
   console.log("[firebaseconfig] uploadUserAvatar called with", localUri);
-  const blob = await localUriToBlob(localUri);
+  
+  let finalUri = localUri;
+  try {
+    const manipResult = await ImageManipulator.manipulateAsync(
+      localUri,
+      [{ resize: { width: 512 } }],
+      { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+    );
+    finalUri = manipResult.uri;
+  } catch (e) {
+    console.warn("[firebaseconfig] Image compression failed, using original", e);
+  }
+
+  const blob = await localUriToBlob(finalUri);
   const photoRef = storageRef(storage, `userAvatars/${uid}/avatar.jpg`);
 
   try {

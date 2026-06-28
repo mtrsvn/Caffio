@@ -97,12 +97,14 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
 
   const handleAvatarPress = () => {
     if (!user) return;
+    const hasPhoto = !!user.photoUrl;
     const options: any = [
+      { text: "Take a Photo", onPress: handleTakePhoto },
+      { text: hasPhoto ? "Change Photo" : "Upload Photo", onPress: handleUploadPhoto },
       { text: "Cancel", style: "cancel" },
-      { text: "Upload/Change Photo", onPress: handleUploadPhoto },
     ];
-    if (user.photoUrl) {
-      options.splice(1, 0, {
+    if (hasPhoto) {
+      options.splice(2, 0, {
         text: "Remove Photo",
         style: "destructive",
         onPress: handleRemovePhoto,
@@ -111,6 +113,33 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
     Alert.alert("Profile Photo", "Choose an action", options, {
       cancelable: true,
     });
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Camera access is needed to take a photo.");
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploadingAvatar(true);
+        const localUri = result.assets[0].uri;
+        await uploadUserAvatar(user!.uid, localUri);
+        await refreshUser();
+      }
+    } catch (e) {
+      console.error("Failed to take photo", e);
+      Alert.alert("Error", "Something went wrong taking your photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleUploadPhoto = async () => {

@@ -122,6 +122,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
 
   
   const [cafeText, setCafeText] = useState("");
+  const [priceText, setPriceText] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedTaste, setSelectedTaste] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(0);
@@ -183,6 +184,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
     if (visible) {
       setPhotoUri(null);
       setCafeText("");
+      setPriceText("");
       setSelectedType(null);
       setSelectedTaste([]);
       setRating(0);
@@ -653,9 +655,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
   const finalTypeValue =
     selectedType ??
     (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
-  const canSubmit = Boolean(
-    finalCafeValue && finalTypeValue && rating > 0 && uid,
-  );
+  const canSubmit = Boolean(finalCafeValue && finalTypeValue && rating > 0 && priceText.trim() && uid);
 
   
   const handleSave = async () => {
@@ -688,6 +688,7 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
         coffeeType: finalType,
         cafe: finalCafeValue,
         rating,
+        price: priceText ? Number(priceText) : 0,
         tasteProfile: selectedTaste,
         photoLocalUri: photoUri ?? undefined,
       });
@@ -809,7 +810,21 @@ export default function AddLogSheet({ visible, onClose, uid, onSaved }: Props) {
               />
             </View>
 
-            {}
+            {/* Price */}
+            <View style={{ marginBottom: 6, marginTop: 12 }}>
+              <Text style={styles.sectionTitle}>Price</Text>
+              <TextInput
+                value={priceText}
+                onChangeText={setPriceText}
+                placeholder="0.00"
+                keyboardType="decimal-pad"
+                placeholderTextColor="rgba(78,52,46,0.45)"
+                style={styles.fullInput}
+                returnKeyType="done"
+              />
+            </View>
+
+            {/* Coffee Type */}
             {!customTypeMode && (
               <Text style={[styles.sectionTitle, { marginTop: 12 }]}>
                 Coffee Type

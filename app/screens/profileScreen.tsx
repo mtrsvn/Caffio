@@ -73,14 +73,43 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
 
   const handleAvatarPress = () => {
     if (!user) return;
+    const hasPhoto = !!user.photoUrl;
     const options: any = [
+      { text: "Take a Photo", onPress: handleTakePhoto },
+      { text: hasPhoto ? "Change Photo" : "Upload Photo", onPress: handleUploadPhoto },
       { text: "Cancel", style: "cancel" },
-      { text: "Upload/Change Photo", onPress: handleUploadPhoto },
     ];
-    if (user.photoUrl) {
-      options.splice(1, 0, { text: "Remove Photo", style: "destructive", onPress: handleRemovePhoto });
+    if (hasPhoto) {
+      options.splice(2, 0, { text: "Remove Photo", style: "destructive", onPress: handleRemovePhoto });
     }
     Alert.alert("Profile Photo", "Choose an action", options, { cancelable: true });
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Camera access is needed to take a photo.");
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploadingAvatar(true);
+        const localUri = result.assets[0].uri;
+        await uploadUserAvatar(user!.uid, localUri);
+        await refreshUser();
+      }
+    } catch (e) {
+      console.error("Failed to take photo", e);
+      Alert.alert("Error", "Something went wrong taking your photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleUploadPhoto = async () => {
@@ -309,6 +338,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
     cafes: 0,
     favorites: 0,
     thisMonth: 0,
+    thisMonthSpend: 0,
   });
   const [prefs, setPrefs] = useState({
     favoriteCafe: "None yet",
@@ -329,7 +359,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
   // stats loader, defined before any hook uses it
   const loadStats = React.useCallback(async () => {
     if (!user) {
-      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0, thisMonthSpend: 0 });
       setPrefs({ favoriteCafe: "None yet", favoriteType: "None yet", topTaste: "None yet" });
       setTasteProfile([]);
       setTasteCounts({});
@@ -342,14 +372,15 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
       const coffees = logs.length;
       const cafes = new Set(logs.map((l) => l.cafe)).size;
       const favorites = logs.filter((l) => l.favorite).length;
-      const thisMonth = logs.filter((l) => {
+      const thisMonthLogs = logs.filter((l) => {
         const d = l.createdAt;
         return (
           d.getMonth() === now.getMonth() &&
           d.getFullYear() === now.getFullYear()
         );
-      }).length;
-      setStats({ coffees, cafes, favorites, thisMonth });
+      });
+      const thisMonthSpend = thisMonthLogs.reduce((acc, l) => acc + (l.price || 0), 0);
+      setStats({ coffees, cafes, favorites, thisMonth: thisMonthLogs.length, thisMonthSpend });
 
       // compute preferences
       const topBy = <T extends string>(vals: T[]): string => {
@@ -408,7 +439,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
     if (user) {
       loadStats();
     } else {
-      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0 });
+      setStats({ coffees: 0, cafes: 0, favorites: 0, thisMonth: 0, thisMonthSpend: 0 });
       setPrefs({ favoriteCafe: "None yet", favoriteType: "None yet", topTaste: "None yet" });
       setTasteProfile([]);
       setAvgRating(0);
@@ -450,8 +481,8 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
             <StatCard Icon={Heart} label="Favorites" value={stats.favorites} />
             <StatCard
               Icon={TrendingUp}
-              label="This Month"
-              value={stats.thisMonth}
+              label="Spend This Month"
+              value={`${stats.thisMonthSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             />
           </View>
 

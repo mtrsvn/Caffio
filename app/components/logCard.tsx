@@ -23,6 +23,7 @@ export type LogEntry = {
   coffeeType: string;
   cafe: string;
   rating: number;
+  price?: number;
   tasteProfile: string[];
   photoUri?: string | null;
   favorite?: boolean;

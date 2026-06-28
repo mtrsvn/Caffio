@@ -74,6 +74,7 @@ export default function EditLogSheet({
   );
   
   const [cafeText, setCafeText] = useState(entry.cafe || "");
+  const [priceText, setPriceText] = useState(entry.price?.toString() || "");
   const [selectedType, setSelectedType] = useState<string | null>(
     entry.coffeeType,
   );
@@ -89,6 +90,7 @@ export default function EditLogSheet({
   useEffect(() => {
     setPhotoUri(entry.photoUri || null);
     setCafeText(entry.cafe || "");
+    setPriceText(entry.price?.toString() || "");
     setSelectedType(entry.coffeeType);
     setSelectedTaste(entry.tasteProfile);
     setRating(entry.rating);
@@ -320,7 +322,7 @@ export default function EditLogSheet({
   const finalTypeValue =
     selectedType ??
     (customTypeMode && customTypeText.trim() ? customTypeText.trim() : null);
-  const canSubmit = Boolean(finalCafeValue && finalTypeValue && rating > 0);
+  const canSubmit = Boolean(finalCafeValue && finalTypeValue && rating > 0 && priceText.trim());
 
   const handleSave = async () => {
     if (!canSubmit) return;
@@ -349,6 +351,7 @@ export default function EditLogSheet({
         cafe: finalCafeValue,
         coffeeType,
         rating,
+        price: priceText ? Number(priceText) : 0,
         tasteProfile: selectedTaste,
         photoUrl,
       });
@@ -358,6 +361,7 @@ export default function EditLogSheet({
         cafe: finalCafeValue,
         coffeeType,
         rating,
+        price: priceText ? Number(priceText) : 0,
         tasteProfile: selectedTaste,
         photoUri: photoUrl,
       };
@@ -654,6 +658,20 @@ export default function EditLogSheet({
                 value={cafeText}
                 onChangeText={setCafeText}
                 placeholder="Enter cafe name"
+                placeholderTextColor="rgba(78,52,46,0.45)"
+                style={styles.fullInput}
+                returnKeyType="done"
+              />
+            </View>
+
+            {/* Price */}
+            <View style={{ marginBottom: 6, marginTop: 12 }}>
+              <Text style={styles.sectionTitle}>Price</Text>
+              <TextInput
+                value={priceText}
+                onChangeText={setPriceText}
+                placeholder="0.00"
+                keyboardType="decimal-pad"
                 placeholderTextColor="rgba(78,52,46,0.45)"
                 style={styles.fullInput}
                 returnKeyType="done"
