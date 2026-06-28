@@ -143,11 +143,11 @@ export default function CustomCalendar({ onSelectDate, selectedDate, loggedDates
                 <Text style={[
                   styles.dayText, 
                   isSelected && styles.textSelected,
-                  isToday && !isSelected && styles.textToday
+                  isToday && !isSelected && styles.textToday,
+                  hasLog && !isSelected && styles.textWithLog
                 ]}>
                   {day.getDate()}
                 </Text>
-                {isToday && <View style={[styles.dot, isSelected && styles.dotSelected]} />}
               </HapticTouchable>
             </View>
           );
@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
       },
       android: { elevation: 3 },
+      default: {},
     }),
   },
   headerTitle: {
@@ -257,6 +258,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
       },
       android: { elevation: 3 },
+      default: {},
     }),
   },
   dowRow: {
@@ -297,14 +299,18 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: { elevation: 2 },
+      default: {},
     }),
   },
   dayToday: {
-    borderWidth: 1,
-    borderColor: 'rgba(109,76,65,0.1)',
+    borderWidth: 1.5,
+    borderColor: colors.accentLight,
+    backgroundColor: '#F8F5F1',
   },
   dayWithLog: {
-    backgroundColor: 'rgba(109,76,65,0.15)',
+    backgroundColor: '#CBBBAF',
+    borderWidth: 1,
+    borderColor: '#BCAAA4',
   },
   daySelected: {
     backgroundColor: colors.accent,
@@ -316,6 +322,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: { elevation: 3 },
+      default: {},
     }),
   },
   dayText: {
@@ -329,6 +336,11 @@ const styles = StyleSheet.create({
   },
   textToday: {
     color: colors.accent,
+    fontWeight: '700',
+  },
+  textWithLog: {
+    color: colors.accent,
+    fontWeight: '700',
   },
   dot: {
     width: 4,
@@ -395,6 +407,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
       },
       android: { elevation: 3 },
+      default: {},
     }),
   },
   monthBtnSelected: {

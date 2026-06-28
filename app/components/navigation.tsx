@@ -1,8 +1,16 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useContext, useEffect, useRef, useState } from "react";
 import * as Haptics from "expo-haptics";
-import { Animated, Platform, Pressable, StyleSheet, Text, View, Dimensions } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AddLogSheet from "./addLogSheet";
@@ -36,7 +44,13 @@ const LABEL_MAP: Record<string, string> = {
 const { width: screenWidth } = Dimensions.get("window");
 const tabWidth = screenWidth / 5;
 
-function CustomTabBarButton({ focused, onPress, onLongPress, label, routeName }: any) {
+function CustomTabBarButton({
+  focused,
+  onPress,
+  onLongPress,
+  label,
+  routeName,
+}: any) {
   const focusAnim = useRef(new Animated.Value(focused ? 1.03 : 1)).current;
   const pressAnim = useRef(new Animated.Value(1)).current;
   const pressTranslate = useRef(new Animated.Value(0)).current;
@@ -128,7 +142,7 @@ function CustomTabBarButton({ focused, onPress, onLongPress, label, routeName }:
           style={{
             color: colors.iconInactive,
             fontSize: 12,
-            marginTop: 2,
+            marginTop: -2,
             fontWeight: focused ? "600" : "400",
             textAlign: "center",
           }}
@@ -338,7 +352,7 @@ const styles = StyleSheet.create({
   slidingPill: {
     position: "absolute",
     left: (tabWidth - 48) / 2,
-    top: 8 + (48 - 38) / 2,
+    top: 14.5,
     width: 48,
     height: 38,
     borderRadius: 14,
