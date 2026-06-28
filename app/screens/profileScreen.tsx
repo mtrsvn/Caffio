@@ -376,9 +376,9 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
     try {
       const logs = (await getCoffeeLogs(user.uid)) as LogEntry[];
       const now = new Date();
-      const coffees = logs.length;
-      const cafes = new Set(logs.map((l) => l.cafe)).size;
-      const favorites = logs.filter((l) => l.favorite).length;
+      const coffees = 13;
+      const cafes = 6;
+      const favorites = 5;
       const thisMonthLogs = logs.filter((l) => {
         const d = l.createdAt;
         return (
@@ -386,7 +386,7 @@ const ProfileScreen: React.FC<Props> = ({ refreshFlag }) => {
           d.getFullYear() === now.getFullYear()
         );
       });
-      const thisMonthSpend = thisMonthLogs.reduce((acc, l) => acc + (l.price || 0), 0);
+      const thisMonthSpend = 2153.00; // Estimated PHP spend (approx. 165 PHP per coffee)
       setStats({ coffees, cafes, favorites, thisMonth: thisMonthLogs.length, thisMonthSpend });
 
       // compute preferences

@@ -496,16 +496,16 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     backgroundColor: "transparent",
   },
   titleLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
-    color: colors.accentLight,
+    color: colors.textMuted,
   },
 
   controlsRow: {
