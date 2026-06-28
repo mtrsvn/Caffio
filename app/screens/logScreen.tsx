@@ -14,6 +14,7 @@ import { AuthContext } from "../components/AuthProvider";
 import colors from "../components/colors";
 import EditLogSheet from "../components/editLogSheet";
 import LogCard, { LogEntry } from "../components/logCard";
+import CustomCalendar from "../components/calendar";
 
 
 
@@ -32,6 +33,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [firstRun, setFirstRun] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [editVisible, setEditVisible] = useState(false);
@@ -64,6 +66,37 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
     fetchLogs(false);
   }, [fetchLogs, refreshFlag]);
 
+  const filteredLogs = React.useMemo(() => {
+    if (!selectedDate) return logs;
+    return logs.filter((log) => {
+      const logDate = new Date(log.createdAt);
+      return (
+        logDate.getFullYear() === selectedDate.getFullYear() &&
+        logDate.getMonth() === selectedDate.getMonth() &&
+        logDate.getDate() === selectedDate.getDate()
+      );
+    });
+  }, [logs, selectedDate]);
+
+  const loggedDates = React.useMemo(() => {
+    const dates = new Set<string>();
+    logs.forEach(log => {
+      const d = new Date(log.createdAt);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      dates.add(key);
+    });
+    return dates;
+  }, [logs]);
+
+  const handleDateSelect = (date: Date) => {
+    if (selectedDate && selectedDate.getTime() === date.getTime()) {
+      setSelectedDate(null);
+    } else {
+      setSelectedDate(date);
+    }
+  };
+
+
   return (
     <View style={styles.screenContainer}>
       <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
@@ -75,7 +108,16 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
 
       <View style={[styles.content, { paddingBottom: insets.bottom ?? 0 }]}>
         <FlatList
-          data={logs}
+          ListHeaderComponent={
+            <View style={styles.calendarContainer}>
+              <CustomCalendar
+                selectedDate={selectedDate}
+                onSelectDate={handleDateSelect}
+                loggedDates={loggedDates}
+              />
+            </View>
+          }
+          data={filteredLogs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <LogCard
@@ -169,6 +211,9 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     color: colors.textMuted,
+  },
+  calendarContainer: {
+    marginBottom: 8,
   },
   content: {
     flex: 1,

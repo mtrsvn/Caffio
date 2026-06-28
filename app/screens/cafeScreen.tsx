@@ -17,7 +17,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from "react-native-maps";
+import { MapView, Marker, Callout, PROVIDER_GOOGLE } from "../../components/MapComponents";
 import Slider from "@react-native-community/slider";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
