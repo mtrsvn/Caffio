@@ -85,6 +85,10 @@ const getStyles = (colors: ThemeColors, isDark: boolean) => {
     card: {
       flexDirection: "row",
       alignItems: "flex-start",
+      borderRadius: 18,
+      marginBottom: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 14,
       ...neu.raised,
       backgroundColor: colors.surface,
     },
