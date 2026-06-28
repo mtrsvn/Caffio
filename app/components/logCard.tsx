@@ -48,7 +48,7 @@ function daysAgo(date: Date): string {
 
 const IMAGE_SIZE = 72;
 
-export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
+function LogCard({ entry, onPress, onToggleFavorite }: Props) {
   const stars = [1, 2, 3, 4, 5];
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -105,9 +105,10 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
       <View style={styles.imageWrap}>
         {entry.photoUri ? (
           <Image
-            source={{ uri: entry.photoUri }}
+            source={entry.photoUri}
             style={styles.image}
             contentFit="cover"
+            cachePolicy="memory-disk"
           />
         ) : (
           <View style={styles.imagePlaceholder}>
@@ -253,4 +254,16 @@ const styles = StyleSheet.create({
   favBtnActive: {
     backgroundColor: colors.accent,
   },
+});
+
+export default React.memo(LogCard, (prevProps, nextProps) => {
+  return (
+    prevProps.entry.id === nextProps.entry.id &&
+    prevProps.entry.favorite === nextProps.entry.favorite &&
+    prevProps.entry.rating === nextProps.entry.rating &&
+    prevProps.entry.cafe === nextProps.entry.cafe &&
+    prevProps.entry.coffeeType === nextProps.entry.coffeeType &&
+    prevProps.entry.photoUri === nextProps.entry.photoUri &&
+    prevProps.entry.price === nextProps.entry.price
+  );
 });
