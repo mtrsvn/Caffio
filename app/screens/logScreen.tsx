@@ -96,6 +96,23 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
     }
   };
 
+  const renderLogItem = useCallback(({ item }: { item: LogEntry }) => (
+    <LogCard
+      entry={item}
+      onPress={() => {
+        setEditingEntry(item);
+        setEditVisible(true);
+      }}
+      onToggleFavorite={(newVal) => {
+        setLogs((prev) =>
+          prev.map((l) =>
+            l.id === item.id ? { ...l, favorite: newVal } : l,
+          ),
+        );
+      }}
+    />
+  ), []);
+
 
   return (
     <View style={styles.screenContainer}>
@@ -119,22 +136,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
           }
           data={filteredLogs}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <LogCard
-              entry={item}
-              onPress={() => {
-                setEditingEntry(item);
-                setEditVisible(true);
-              }}
-              onToggleFavorite={(newVal) => {
-                setLogs((prev) =>
-                  prev.map((l) =>
-                    l.id === item.id ? { ...l, favorite: newVal } : l,
-                  ),
-                );
-              }}
-            />
-          )}
+          renderItem={renderLogItem}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

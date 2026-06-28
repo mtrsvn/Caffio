@@ -8,12 +8,12 @@ import React, { useRef, useState } from "react";
 import {
   Animated,
   Easing,
-  Image,
   Platform,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import HapticTouchable from "./_HapticTouchable";
 import { updateCoffeeLog } from "../../firebaseconfig";
 import colors from "./colors";
@@ -107,7 +107,7 @@ export default function LogCard({ entry, onPress, onToggleFavorite }: Props) {
           <Image
             source={{ uri: entry.photoUri }}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <View style={styles.imagePlaceholder}>

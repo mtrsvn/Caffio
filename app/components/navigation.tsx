@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   slidingPill: {
     position: "absolute",
     left: (tabWidth - 48) / 2,
-    top: 14.5,
+    top: 16,
     width: 48,
     height: 38,
     borderRadius: 14,
