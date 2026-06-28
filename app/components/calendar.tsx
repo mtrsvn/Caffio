@@ -295,10 +295,10 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     backgroundColor: colors.accent,
     ...Platform.select({
       ios: {
-        shadowColor: colors.accent,
-        shadowOffset: { width: 2, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
+        shadowColor: isDark ? "#000" : colors.accent,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: isDark ? 0.8 : 0.35,
+        shadowRadius: 6,
       },
       android: { elevation: 3 },
       default: {},

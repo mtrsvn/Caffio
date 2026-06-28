@@ -9,7 +9,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getCoffeeLogs } from "../../firebaseconfig";
+import { getCoffeeLogs, deleteCoffeeLog } from "../../firebaseconfig";
 import { AuthContext } from "../components/AuthProvider";
 import { ThemeColors } from "../components/colors";
 import { useThemeStyles, useTheme } from "../components/ThemeContext";
@@ -50,7 +50,18 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
     try {
       console.log("[LogScreen] fetching logs for uid", user.uid);
       const fetched = (await getCoffeeLogs(user.uid)) as LogEntry[];
-      setLogs(fetched);
+      
+      const dummyLogs = fetched.filter(log => log.id.startsWith("dummy-"));
+      if (dummyLogs.length > 0) {
+        console.log("[LogScreen] Cleaning up dummy logs...", dummyLogs.length);
+        for (const dl of dummyLogs) {
+          await deleteCoffeeLog(user.uid, dl.id);
+        }
+        const cleaned = (await getCoffeeLogs(user.uid)) as LogEntry[];
+        setLogs(cleaned);
+      } else {
+        setLogs(fetched);
+      }
     } catch (err: any) {
       console.error("[LogScreen] failed to load logs", err);
       alert(
@@ -68,15 +79,8 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
   }, [fetchLogs, refreshFlag]);
 
   const filteredLogs = React.useMemo(() => {
-    if (!selectedDate) return logs;
-    return logs.filter((log) => {
-      const logDate = new Date(log.createdAt);
-      return (
-        logDate.getFullYear() === selectedDate.getFullYear() &&
-        logDate.getMonth() === selectedDate.getMonth() &&
-        logDate.getDate() === selectedDate.getDate()
-      );
-    });
+    // "logs not toggled date" -> don't filter logs based on selected date
+    return logs;
   }, [logs, selectedDate]);
 
   const loggedDates = React.useMemo(() => {
