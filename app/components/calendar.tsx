@@ -232,8 +232,8 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: colors.surface,
     ...neu.raised,
+    backgroundColor: colors.surface,
   },
   headerTitle: {
     fontSize: 16,
@@ -246,8 +246,8 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
     ...neu.raised,
+    backgroundColor: colors.surface,
   },
   dowRow: {
     flexDirection: 'row',
@@ -346,7 +346,6 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     backgroundColor: colors.surface,
     borderRadius: 24,
     padding: 24,
-    ...neu.raised,
   },
   pickerTitle: {
     fontSize: 16,
@@ -377,8 +376,8 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     alignItems: 'center',
     marginBottom: 12,
     borderRadius: 12,
-    backgroundColor: colors.surface,
     ...neu.raised,
+    backgroundColor: colors.surface,
   },
   monthBtnSelected: {
     ...neu.pressed,

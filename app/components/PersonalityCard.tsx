@@ -53,9 +53,9 @@ const getStyles = (colors: ThemeColors, isDark: boolean) => {
     card: {
       margin: 16,
       borderRadius: 20,
-      backgroundColor: colors.surface,
       padding: 20,
       ...neu.raised,
+      backgroundColor: colors.surface,
     },
     headerLabel: {
       fontSize: 11,

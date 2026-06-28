@@ -263,12 +263,12 @@ function TabNavigator({ onFabPress, refreshFlag }: TabNavigatorProps) {
       <Tab.Navigator
         detachInactiveScreens={false}
         tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
-        sceneContainerStyle={{ backgroundColor: colors.bg }}
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarShowLabel: true,
           animation: "shift",
           lazy: false,
+          sceneStyle: { backgroundColor: colors.bg },
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />

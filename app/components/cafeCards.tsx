@@ -91,8 +91,8 @@ const getStyles = (colors: ThemeColors, isDark: boolean) => {
     cardShadow: {
       borderRadius: 18,
       marginBottom: 12,
-      backgroundColor: colors.surface,
       ...neu.raised,
+      backgroundColor: colors.surface,
     },
     card: {
       borderRadius: 18,
