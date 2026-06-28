@@ -1,4 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { Camera, X, User } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -6,15 +7,15 @@ import {
   Alert,
   Animated,
   Easing,
-  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   View,
-  Modal
-, TouchableOpacity} from "react-native";
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { removeUserAvatar, uploadUserAvatar, updateUserProfile } from "../../firebaseconfig";
@@ -257,6 +258,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
                   <Image
                     source={{ uri: user.photoUrl }}
                     style={{ width: 80, height: 80, borderRadius: 40 }}
+                    cachePolicy="memory-disk"
                   />
                 ) : (
                   <User size={36} color={colors.accent} />

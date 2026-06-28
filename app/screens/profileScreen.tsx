@@ -42,10 +42,10 @@ import {
     Text,
     TouchableOpacity,
     View,
-    Image,
     Alert,
     ActivityIndicator
 } from "react-native";
+import { Image } from "expo-image";
 import {
     SafeAreaView,
     useSafeAreaInsets,
@@ -170,7 +170,7 @@ const ProfileHeader: React.FC<{ tasteProfile: { tag: string; count: number }[], 
             {uploadingAvatar ? (
               <ActivityIndicator color={colors.accent} />
             ) : user?.photoUrl ? (
-              <Image source={{ uri: user.photoUrl }} style={{ width: 48, height: 48, borderRadius: 24 }} />
+              <Image source={{ uri: user.photoUrl }} style={{ width: 48, height: 48, borderRadius: 24 }} cachePolicy="memory-disk" />
             ) : (
               <User size={24} color={colors.accent} />
             )}

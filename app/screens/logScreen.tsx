@@ -204,7 +204,7 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
   );
 };
 
-const getStyles = (colors: ThemeColors) => StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
   screenContainer: { flex: 1, backgroundColor: colors.bg },
   header: {
     paddingHorizontal: 16,
@@ -214,7 +214,7 @@ const getStyles = (colors: ThemeColors) => StyleSheet.create({
   title: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.textMuted,
+    color: colors.coffeeTypeUnselectedText,
     letterSpacing: 1.2,
     textTransform: "uppercase",
     marginBottom: 4,
@@ -239,7 +239,7 @@ const getStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.surface,
     ...Platform.select({
       ios: {
-        shadowColor: "#C8BEB4",
+        shadowColor: isDark ? "#000" : colors.shadowDark,
         shadowOpacity: 0.55,
         shadowRadius: 10,
         shadowOffset: { width: 6, height: 6 },
