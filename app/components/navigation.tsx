@@ -161,8 +161,8 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
     Animated.spring(slideAnim, {
       toValue: state.index * tabWidth,
       useNativeDriver: true,
-      bounciness: 12,
-      speed: 12,
+      friction: 9,
+      tension: 65,
     }).start();
   }, [state.index, slideAnim]);
 

@@ -153,10 +153,18 @@ const LogScreen: React.FC<Props> = ({ refreshFlag }) => {
             return (
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyTitle}>
-                  {user ? "No logs yet" : "Log in to view your entries"}
+                  {!user 
+                    ? "Log in to view your entries" 
+                    : selectedDate 
+                      ? "No logs for this day" 
+                      : "No logs yet"}
                 </Text>
                 <Text style={styles.emptySubtitle}>
-                  {user ? "Tap the + button to log your first coffee!" : "Sign in to track your coffee journey"}
+                  {!user 
+                    ? "Sign in to track your coffee journey" 
+                    : selectedDate 
+                      ? "Try selecting another date or add a new entry!" 
+                      : "Tap the + button to log your first coffee!"}
                 </Text>
               </View>
             );
