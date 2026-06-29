@@ -367,4 +367,52 @@ export async function getUserPersonality(uid) {
   }
 }
 
+export async function saveCafe(uid, placeData) {
+  try {
+    const key = `@saved_cafes_${uid}`;
+    const existingStr = await AsyncStorage.getItem(key);
+    let existing = existingStr ? JSON.parse(existingStr) : [];
+    
+    // Remove if already exists to update it
+    existing = existing.filter(c => c.id !== placeData.id);
+    
+    // Add to beginning
+    existing.unshift({ ...placeData, savedAt: Date.now() });
+    
+    await AsyncStorage.setItem(key, JSON.stringify(existing));
+    return true;
+  } catch (err) {
+    console.error("[AsyncStorage] saveCafe error", err);
+    throw err;
+  }
+}
+
+export async function removeSavedCafe(uid, placeId) {
+  try {
+    const key = `@saved_cafes_${uid}`;
+    const existingStr = await AsyncStorage.getItem(key);
+    if (!existingStr) return true;
+    
+    let existing = JSON.parse(existingStr);
+    existing = existing.filter(c => c.id !== placeId);
+    
+    await AsyncStorage.setItem(key, JSON.stringify(existing));
+    return true;
+  } catch (err) {
+    console.error("[AsyncStorage] removeSavedCafe error", err);
+    throw err;
+  }
+}
+
+export async function getSavedCafes(uid) {
+  try {
+    const key = `@saved_cafes_${uid}`;
+    const existingStr = await AsyncStorage.getItem(key);
+    return existingStr ? JSON.parse(existingStr) : [];
+  } catch (err) {
+    console.error("[AsyncStorage] getSavedCafes error", err);
+    return [];
+  }
+}
+
 export default app;

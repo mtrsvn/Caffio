@@ -50,12 +50,7 @@ const CafeCard: React.FC<Props> = ({ place, onPress }) => {
             </View>
           )}
 
-          {openNow !== undefined && (
-            <View style={[styles.statusBadge, { backgroundColor: openNow ? "rgba(46,125,50,0.88)" : "rgba(183,28,28,0.88)" }]}>
-              <Clock size={10} color="#FFF" strokeWidth={2.5} />
-              <Text style={styles.statusBadgeText}>{openNow ? "Open" : "Closed"}</Text>
-            </View>
-          )}
+
 
           {dist && (
             <View style={[styles.distanceBadge, { backgroundColor: isDark ? "rgba(30,26,24,0.92)" : "rgba(237,232,226,0.92)" }]}>
@@ -132,7 +127,7 @@ const getStyles = (colors: ThemeColors, isDark: boolean) => {
     },
     distanceBadge: {
       position: "absolute",
-      top: 10,
+      bottom: 10,
       right: 10,
       flexDirection: "row",
       alignItems: "center",

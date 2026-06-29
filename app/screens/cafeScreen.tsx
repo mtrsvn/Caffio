@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
-import { Search, MapIcon, List, Navigation, Star } from "lucide-react-native";
+import { Search, MapIcon, List, Navigation, Star, Bookmark } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Animated,
@@ -15,14 +15,17 @@ import {
     TouchableOpacity,
     View,
     ActivityIndicator,
+    ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapView, Marker, Callout, PROVIDER_GOOGLE } from "../../components/MapComponents";
 import Slider from "@react-native-community/slider";
 import CafeCard from "../components/cafeCards";
 import CafeDetailsSheet from "../components/cafeDetailsSheet";
+
 import { AuthContext } from "../components/AuthProvider";
 import { ThemeColors, getNeu } from "../components/colors";
+import { getSavedCafes, saveCafe, removeSavedCafe } from "../../firebaseconfig";
 import { useThemeStyles, useTheme } from "../components/ThemeContext";
 import HapticTouchable from "../components/_HapticTouchable";
 import { fetchNearbyCafes, SimplePlace, fetchPlaceDetails, PlaceDetails } from "../utils/places";
@@ -113,11 +116,16 @@ const CafeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { user } = React.useContext(AuthContext);
   const [places, setPlaces] = useState<PlaceUI[]>([]);
+  const [recommendedPlaces, setRecommendedPlaces] = useState<PlaceUI[]>([]);
+  const [savedCafes, setSavedCafes] = useState<PlaceUI[]>([]);
+  const [savedCafeIds, setSavedCafeIds] = useState<Set<string>>(new Set());
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCafe, setSelectedCafe] = useState<PlaceUI | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+
   const [selectedCafeDetails, setSelectedCafeDetails] = useState<PlaceDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -162,14 +170,56 @@ const CafeScreen: React.FC = () => {
   const footerSpacing = tabBarHeight + 16;
 
   const filteredPlaces = useMemo(() => {
-    let list = places.filter((p) => p.distanceKm <= radius / 1000);
+    let list = places;
+    
+    if (showSavedOnly) {
+      list = savedCafes;
+    } else {
+      list = list.filter((p) => p.distanceKm <= radius / 1000);
+    }
+
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       list = list.filter((p) => p.name.toLowerCase().includes(q));
     }
-    list.sort((a, b) => a.distanceKm - b.distanceKm);
+    
+    if (!showSavedOnly) {
+      list.sort((a, b) => a.distanceKm - b.distanceKm);
+    }
     return list;
-  }, [places, searchQuery, radius]);
+  }, [places, searchQuery, radius, showSavedOnly, savedCafes]);
+
+  // recommendedPlaces now fetched separately
+
+  const loadSavedCafes = useCallback(async () => {
+    if (!user) return;
+    try {
+      const saved = await getSavedCafes(user.uid);
+      setSavedCafes(saved);
+      setSavedCafeIds(new Set(saved.map((s: any) => s.id)));
+    } catch (err) {
+      console.error("Failed to load saved cafes", err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadSavedCafes();
+  }, [loadSavedCafes]);
+
+  const toggleSaveCafe = useCallback(async (place: PlaceUI) => {
+    if (!user) return;
+    const isSaved = savedCafeIds.has(place.id);
+    try {
+      if (isSaved) {
+        await removeSavedCafe(user.uid, place.id);
+      } else {
+        await saveCafe(user.uid, place);
+      }
+      await loadSavedCafes();
+    } catch (err) {
+      console.error("Failed to toggle save", err);
+    }
+  }, [user, savedCafeIds, loadSavedCafes]);
 
   const load = useCallback(async (r = DEFAULT_RADIUS) => {
     setError(null);
@@ -190,6 +240,26 @@ const CafeScreen: React.FC = () => {
       setUserLocation({ lat, lng });
 
       const results: SimplePlace[] = await fetchNearbyCafes(lat, lng, r);
+
+      // Fetch 20km recommendations in background and pick 10 random cafes
+      fetchNearbyCafes(lat, lng, 20000).then((recResults) => {
+        const recMapped: PlaceUI[] = recResults.map((p) => {
+          const distMeters = getDistance(
+            { latitude: lat, longitude: lng },
+            { latitude: p.lat, longitude: p.lng },
+          );
+          const baseId = (p as any).place_id ?? p.id ?? `geo:${p.lat}:${p.lng}`;
+          return {
+            ...p,
+            id: String(baseId),
+            name: p.name ?? "Unknown",
+            distanceKm: distMeters / 1000,
+            rating: p.rating,
+          } as PlaceUI;
+        });
+        const shuffled = [...recMapped].sort(() => 0.5 - Math.random());
+        setRecommendedPlaces((prev) => prev.length === 0 ? shuffled.slice(0, 10) : prev);
+      }).catch(() => {});
 
       const mapped: PlaceUI[] = results.map((p: SimplePlace, idx: number) => {
         const placeLat = p.lat;
@@ -256,10 +326,11 @@ const CafeScreen: React.FC = () => {
     setRefreshing(true);
     try {
       await load(radius);
+      await loadSavedCafes();
     } finally {
       setRefreshing(false);
     }
-  }, [load, radius]);
+  }, [load, radius, loadSavedCafes]);
 
   const handleRadiusChange = useCallback((val: number) => {
     setSliderRadius(val);
@@ -302,28 +373,38 @@ const CafeScreen: React.FC = () => {
 
   return (
     <View style={styles.screenContainer}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: (insets.top ?? 0) + 8 }]}>
         <Text style={styles.titleLabel}>DISCOVER</Text>
         <Text style={styles.subtitle}>Coffee shops around you</Text>
       </View>
 
-      {/* Search + View Toggle row */}
       <View style={styles.controlsRow}>
         <View style={styles.searchInner}>
           <Search size={16} color={colors.gradientStart} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search cafes..."
-            placeholderTextColor="rgba(78,52,46,0.5)"
+            placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            clearButtonMode="while-editing"
-            selectionColor={colors.gradientStart}
           />
         </View>
 
-        {/* Map / List Toggle */}
+        {user && (
+          <HapticTouchable
+            style={[styles.savedFilterBtn, showSavedOnly && styles.savedFilterBtnActive]}
+            onPress={() => setShowSavedOnly(!showSavedOnly)}
+            activeOpacity={1}
+          >
+            <Bookmark 
+              size={20} 
+              color={showSavedOnly ? "#FFF" : colors.gradientStart} 
+              fill={showSavedOnly ? "#FFF" : "transparent"} 
+              strokeWidth={2} 
+            />
+          </HapticTouchable>
+        )}
+
         <View style={styles.toggleRow}>
           <Animated.View
             style={[
@@ -364,25 +445,29 @@ const CafeScreen: React.FC = () => {
         </View>
       </View>
 
+
+
       {/* Distance Slider */}
-      <View style={styles.sliderSection}>
-        <View style={styles.sliderLabelRow}>
-          <Text style={styles.sliderLabel}>Distance</Text>
-          <Text style={styles.sliderValue}>{formatRadius(sliderRadius)}</Text>
+      {!showSavedOnly && (
+        <View style={styles.sliderSection}>
+          <View style={styles.sliderLabelRow}>
+            <Text style={styles.sliderLabel}>Distance</Text>
+            <Text style={styles.sliderValue}>{formatRadius(radius)}</Text>
+          </View>
+          <DistanceSlider
+            value={radius}
+            min={MIN_RADIUS}
+            max={MAX_RADIUS}
+            onValueChange={setRadius}
+            onSlidingComplete={load}
+          />
+          <View style={styles.sliderTickRow}>
+            <Text style={[styles.sliderTick, { left: 10 }]}>500m</Text>
+            <Text style={[styles.sliderTick, { left: '50%', transform: [{ translateX: -12 }] }]}>7.5 km</Text>
+            <Text style={[styles.sliderTick, { right: 10 }]}>15 km</Text>
+          </View>
         </View>
-        <DistanceSlider
-          value={sliderRadius}
-          min={MIN_RADIUS}
-          max={MAX_RADIUS}
-          onValueChange={handleRadiusChange}
-          onSlidingComplete={handleRadiusCommit}
-        />
-        <View style={styles.sliderTickRow}>
-          <Text style={[styles.sliderTick, { left: 10 }]}>500m</Text>
-          <Text style={[styles.sliderTick, { left: '50%', transform: [{ translateX: -12 }] }]}>7.5 km</Text>
-          <Text style={[styles.sliderTick, { right: 10 }]}>15 km</Text>
-        </View>
-      </View>
+      )}
 
       {/* Loading indicator */}
       {loading && !refreshing && (
@@ -445,6 +530,34 @@ const CafeScreen: React.FC = () => {
         <FlatList
           data={filteredPlaces}
           keyExtractor={(item) => String(item.id)}
+          ListHeaderComponent={
+            (!showSavedOnly && recommendedPlaces.length > 0) ? (
+              <View style={styles.recommendationSection}>
+                <Text style={styles.recommendationTitle}>You Might Like</Text>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  style={{ marginHorizontal: -8 }}
+                  contentContainerStyle={styles.recommendationScroll}
+                >
+                  {recommendedPlaces.map((place) => (
+                    <View key={place.id} style={styles.recCardWrapper}>
+                      <CafeCard
+                        place={place}
+                        onPress={() => {
+                          setSelectedCafe(place);
+                          setSheetVisible(true);
+                        }}
+                      />
+                    </View>
+                  ))}
+                </ScrollView>
+                <Text style={[styles.recommendationTitle, { marginTop: -4, marginBottom: 0 }]}>
+                  Nearby Cafes
+                </Text>
+              </View>
+            ) : null
+          }
           renderItem={({ item }: ListRenderItemInfo<PlaceUI>) => (
             <CafeCard
               place={item}
@@ -481,6 +594,8 @@ const CafeScreen: React.FC = () => {
         selectedCafe={selectedCafe}
         selectedCafeDetails={selectedCafeDetails}
         detailsLoading={detailsLoading}
+        isSaved={selectedCafe ? savedCafeIds.has(selectedCafe.id) : false}
+        onToggleSave={user && selectedCafe ? () => toggleSaveCafe(selectedCafe) : undefined}
       />
     </View>
   );
@@ -549,6 +664,27 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
     justifyContent: "center",
   },
   toggleBtnActive: {
+    backgroundColor: colors.gradientStart,
+    ...Platform.select({
+      ios: {
+        shadowColor: isDark ? "#000" : colors.gradientStart,
+        shadowOpacity: isDark ? 0.8 : 0.35,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  savedFilterBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    ...neu.raised,
+    backgroundColor: colors.surface,
+  },
+  savedFilterBtnActive: {
     backgroundColor: colors.gradientStart,
     ...Platform.select({
       ios: {
@@ -680,6 +816,26 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => {
   centerContent: { flex: 1, alignItems: "center", justifyContent: "center" },
   emptyText: { color: colors.textMuted },
   errorText: { color: "#b71c1c" },
+  
+  recommendationSection: {
+    marginBottom: 8,
+  },
+  recommendationTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.coffeeTypeUnselectedText,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  recommendationScroll: {
+    paddingBottom: 16,
+    paddingHorizontal: 8,
+  },
+  recCardWrapper: {
+    width: 280,
+    marginRight: 12,
+  },
 });
 };
 

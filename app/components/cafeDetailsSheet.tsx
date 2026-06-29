@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
-import { Clock, Globe, MapPin, Navigation, Phone, Star, X } from "lucide-react-native";
+import { Clock, Globe, MapPin, Navigation, Phone, Star, X, Bookmark } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,8 +13,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
-, TouchableOpacity} from "react-native";
+  View,
+  TouchableOpacity,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemeColors } from "./colors";
 import { useThemeStyles, useTheme } from "./ThemeContext";
@@ -38,6 +39,8 @@ type Props = {
   selectedCafeDetails: PlaceDetails | null;
   detailsLoading: boolean;
   onExited?: () => void;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
 };
 
 export default function CafeDetailsSheet({
@@ -47,6 +50,8 @@ export default function CafeDetailsSheet({
   selectedCafeDetails,
   detailsLoading,
   onExited,
+  isSaved,
+  onToggleSave,
 }: Props) {
   const { colors, isDark } = useTheme();
   const styles = useThemeStyles(getStyles);
@@ -176,13 +181,7 @@ export default function CafeDetailsSheet({
               ) : null}
 
               <View style={styles.modalStatsRow}>
-                {selectedCafe.openNow !== undefined && (
-                  <View style={[styles.modalStatPill, { backgroundColor: selectedCafe.openNow ? "#E8F5E9" : "#FFEBEE" }]}>
-                    <Text style={[styles.modalStatText, { color: selectedCafe.openNow ? "#2E7D32" : "#C62828" }]}>
-                      {selectedCafe.openNow ? "Open Now" : "Closed"}
-                    </Text>
-                  </View>
-                )}
+
                 {selectedCafe.totalRatings ? (
                   <View style={styles.modalStatPill}>
                     <Text style={styles.modalStatText}>
@@ -264,22 +263,42 @@ export default function CafeDetailsSheet({
                 </View>
               )}
 
-              <HapticTouchable
-                style={styles.modalDirectionsBtn}
-                activeOpacity={0.8}
-                onPress={() => {
-                  if (selectedCafe) {
-                    const url = Platform.select({
-                      ios: `maps:0,0?q=${selectedCafe.name}@${selectedCafe.lat},${selectedCafe.lng}`,
-                      android: `geo:0,0?q=${selectedCafe.lat},${selectedCafe.lng}(${selectedCafe.name})`,
-                    });
-                    if (url) Linking.openURL(url);
-                  }
-                }}
-              >
-                <Navigation size={18} color="#FFF" />
-                <Text style={styles.modalDirectionsText}>Get Directions</Text>
-              </HapticTouchable>
+              <View style={styles.actionRow}>
+                {onToggleSave && (
+                  <HapticTouchable
+                    style={[styles.modalActionBtn, styles.modalSaveBtn, isSaved && styles.modalSaveBtnActive]}
+                    activeOpacity={0.8}
+                    onPress={onToggleSave}
+                  >
+                    <Bookmark 
+                      size={18} 
+                      color={isSaved ? "#FFF" : colors.textPrimary} 
+                      fill={isSaved ? "#FFF" : "transparent"} 
+                      strokeWidth={2.5}
+                    />
+                    <Text style={[styles.modalActionText, { color: isSaved ? "#FFF" : colors.textPrimary }]}>
+                      {isSaved ? "Saved" : "Save"}
+                    </Text>
+                  </HapticTouchable>
+                )}
+
+                <HapticTouchable
+                  style={[styles.modalActionBtn, styles.modalDirectionsBtn]}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (selectedCafe) {
+                      const url = Platform.select({
+                        ios: `maps:0,0?q=${selectedCafe.name}@${selectedCafe.lat},${selectedCafe.lng}`,
+                        android: `geo:0,0?q=${selectedCafe.lat},${selectedCafe.lng}(${selectedCafe.name})`,
+                      });
+                      if (url) Linking.openURL(url);
+                    }
+                  }}
+                >
+                  <Navigation size={18} color="#FFF" />
+                  <Text style={[styles.modalActionText, { color: "#FFF" }]}>Directions</Text>
+                </HapticTouchable>
+              </View>
             </View>
           </ScrollView>
         </Animated.View>
@@ -433,13 +452,30 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 20,
   },
-  modalDirectionsBtn: {
-    backgroundColor: colors.gradientStart,
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  modalActionBtn: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 16,
+  },
+  modalSaveBtn: {
+    backgroundColor: colors.surfacePressed,
+    borderWidth: 1,
+    borderColor: colors.coffeeTypeUnselectedBorder,
+  },
+  modalSaveBtnActive: {
+    backgroundColor: colors.gradientStart,
+    borderWidth: 0,
+  },
+  modalDirectionsBtn: {
+    backgroundColor: colors.gradientStart,
     ...Platform.select({
       ios: {
         shadowColor: colors.gradientStart,
@@ -450,8 +486,7 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
       android: { elevation: 4 },
     }),
   },
-  modalDirectionsText: {
-    color: "#FFF",
+  modalActionText: {
     fontSize: 16,
     fontWeight: "700",
     marginLeft: 8,

@@ -36,7 +36,7 @@ export default function FAB({
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      activeOpacity={0.85}
+      activeOpacity={1}
       onPress={onPress}
       style={[
         styles.wrapper,
