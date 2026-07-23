@@ -144,7 +144,7 @@ export default function CafeDetailsSheet({
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Cafe Details</Text>
             <HapticTouchable style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
-              <X size={20} color="#795548" strokeWidth={2.5} />
+              <X size={20} color={colors.textSecondary} strokeWidth={2.5} />
             </HapticTouchable>
           </View>
           <View style={styles.sheetDivider} />
@@ -340,7 +340,7 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
   },
-  headerTitle: { fontSize: 16, color: "#795548", fontWeight: "700" },
+  headerTitle: { fontSize: 16, color: colors.textSecondary, fontWeight: "700" },
   closeButton: { padding: 6 },
   sheetDivider: { height: 1, backgroundColor: colors.navbarBorder, marginBottom: 12 },
 
@@ -349,7 +349,7 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
   modalHeroImage: {
     width: "100%",
     height: 220,
-    backgroundColor: "#E4DED7",
+    backgroundColor: colors.surfacePressed,
     borderRadius: 12,
     marginBottom: 16,
   },

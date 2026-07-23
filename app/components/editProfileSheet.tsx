@@ -278,7 +278,7 @@ export default function EditProfileSheet({ visible, onClose, onExited }: Props) 
               value={username}
               onChangeText={setUsername}
               placeholder="Enter your username"
-              placeholderTextColor="rgba(78,52,46,0.45)"
+              placeholderTextColor={colors.placeholder}
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="done"

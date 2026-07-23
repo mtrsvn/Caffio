@@ -496,7 +496,7 @@ export default function EditLogSheet({
             value={customTypeText}
             onChangeText={setCustomTypeText}
             placeholder="Enter coffee type"
-            placeholderTextColor="rgba(78,52,46,0.45)"
+            placeholderTextColor={colors.placeholder}
             style={styles.fullInput}
             returnKeyType="done"
             onSubmitEditing={() => {
@@ -661,7 +661,7 @@ export default function EditLogSheet({
                 value={cafeText}
                 onChangeText={setCafeText}
                 placeholder="Enter cafe name"
-                placeholderTextColor="rgba(78,52,46,0.45)"
+                placeholderTextColor={colors.placeholder}
                 style={styles.fullInput}
                 returnKeyType="done"
               />
@@ -675,7 +675,7 @@ export default function EditLogSheet({
                 onChangeText={setPriceText}
                 placeholder="0.00"
                 keyboardType="decimal-pad"
-                placeholderTextColor="rgba(78,52,46,0.45)"
+                placeholderTextColor={colors.placeholder}
                 style={styles.fullInput}
                 returnKeyType="done"
               />
@@ -732,7 +732,7 @@ export default function EditLogSheet({
                         strokeWidth={0}
                       />
                     ) : (
-                      <Star size={25} color={"#DDD"} strokeWidth={1.6} />
+                      <Star size={25} color={colors.textMuted} strokeWidth={1.6} />
                     )}
                   </AnimatedTouchable>
                 );
@@ -1006,7 +1006,7 @@ const getStyles = (colors: ThemeColors, isDark?: boolean) => StyleSheet.create({
     borderRadius: 14,
     backgroundColor: colors.surfacePressed,
     borderWidth: 1,
-    borderColor: "rgba(109,76,65,0.15)",
+    borderColor: colors.border,
     color: colors.coffeeTypeUnselectedText,
     fontWeight: "600",
     ...Platform.select({

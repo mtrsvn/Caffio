@@ -11,10 +11,13 @@ import {
   View,
 } from "react-native";
 import { sendResetLink } from "../../firebaseconfig";
-import colors from "../components/colors";
+import { ThemeColors } from "../components/colors";
+import { useTheme, useThemeStyles } from "../components/ThemeContext";
 
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +69,7 @@ const ForgotPasswordScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="your@email.com"
-                placeholderTextColor="rgba(78,52,46,0.5)"
+                placeholderTextColor={colors.placeholder}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -116,7 +119,7 @@ const ForgotPasswordScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   gradient: { flex: 1 },
   safe: { flex: 1 },
   content: {
@@ -149,18 +152,18 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 52,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.inputBg,
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.gradientEnd,
     borderWidth: 1,
-    borderColor: "rgba(78,52,46,0.12)",
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0.35 : 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -177,13 +180,13 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   errorText: {
-    color: "#b00020",
+    color: colors.danger,
     fontSize: 15,
     lineHeight: 20,
     textAlign: "center",
   },
   successText: {
-    color: "#006600",
+    color: colors.success,
     fontSize: 15, 
     lineHeight: 20,
     textAlign: "center",

@@ -16,10 +16,13 @@ import {
 import * as Google from "expo-auth-session/providers/google";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { addUserDoc, auth, loginWithEmail } from "../../firebaseconfig";
-import colors from "../components/colors";
+import { ThemeColors } from "../components/colors";
+import { useTheme, useThemeStyles } from "../components/ThemeContext";
 
 const LoginScreen = () => {
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -96,7 +99,7 @@ const LoginScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="your@email.com"
-              placeholderTextColor="rgba(78,52,46,0.5)"
+              placeholderTextColor={colors.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -112,7 +115,7 @@ const LoginScreen = () => {
               <TextInput
                 style={[styles.input, styles.inputWithIcon]}
                 placeholder="••••••••"
-                placeholderTextColor="rgba(78,52,46,0.5)"
+                placeholderTextColor={colors.placeholder}
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
@@ -185,7 +188,7 @@ const LoginScreen = () => {
           </View>
 
           <View style={styles.signupRow}>
-            <Text style={styles.helperText}>Don't have an account? </Text>
+            <Text style={styles.helperText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
               <Text style={[styles.linkText, styles.underline]}>Sign up</Text>
             </TouchableOpacity>
@@ -196,8 +199,8 @@ const LoginScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  gradient: { flex: 1, backgroundColor: "#EDE8E2" },
+const getStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
+  gradient: { flex: 1, backgroundColor: colors.bg },
   content: {
     flex: 1,
     paddingHorizontal: 28,
@@ -235,18 +238,18 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 52,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.inputBg,
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.textPrimary,
     borderWidth: 1,
-    borderColor: "rgba(78,52,46,0.12)",
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0.35 : 0.1,
         shadowRadius: 8,
       },
       android: { elevation: 3 },
@@ -267,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   errorText: {
-    color: "#b00020",
+    color: colors.danger,
     fontSize: 13,
     textAlign: "center",
   },
@@ -300,12 +303,12 @@ const styles = StyleSheet.create({
   googleButton: {
     height: 54,
     borderRadius: 16,
-    backgroundColor: "#EDE8E2",
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
     ...Platform.select({
       ios: {
-        shadowColor: "#C8BEB4",
+        shadowColor: colors.shadowDark,
         shadowOffset: { width: 6, height: 6 },
         shadowOpacity: 0.55,
         shadowRadius: 10,

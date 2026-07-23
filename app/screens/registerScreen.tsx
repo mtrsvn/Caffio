@@ -17,10 +17,13 @@ import {
   View,
 } from "react-native";
 import { addUserDoc, auth, registerWithEmail } from "../../firebaseconfig";
-import colors from "../components/colors";
+import { ThemeColors } from "../components/colors";
+import { useTheme, useThemeStyles } from "../components/ThemeContext";
 
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+  const styles = useThemeStyles(getStyles);
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -137,7 +140,7 @@ const RegisterScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="johndoe@email.com"
-                placeholderTextColor="rgba(78,52,46,0.5)"
+                placeholderTextColor={colors.placeholder}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -151,7 +154,7 @@ const RegisterScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="johndoe"
-                placeholderTextColor="rgba(78,52,46,0.5)"
+                placeholderTextColor={colors.placeholder}
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={username}
@@ -165,7 +168,7 @@ const RegisterScreen: React.FC = () => {
                 <TextInput
                   style={[styles.input, styles.inputWithIcon]}
                   placeholder="••••••••"
-                  placeholderTextColor="rgba(78,52,46,0.5)"
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
@@ -189,7 +192,7 @@ const RegisterScreen: React.FC = () => {
                 <TextInput
                   style={[styles.input, styles.inputWithIcon]}
                   placeholder="••••••••"
-                  placeholderTextColor="rgba(78,52,46,0.5)"
+                  placeholderTextColor={colors.placeholder}
                   secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -278,7 +281,7 @@ const RegisterScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   gradient: {
     flex: 1,
   },
@@ -319,18 +322,18 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 52,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.inputBg,
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.gradientEnd,
     borderWidth: 1,
-    borderColor: "rgba(78,52,46,0.12)",
+    borderColor: colors.border,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDark ? 0.35 : 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   errorText: {
-    color: "#b00020",
+    color: colors.danger,
     fontSize: 15,
     lineHeight: 20,
     textAlign: "center",
@@ -369,10 +372,10 @@ const styles = StyleSheet.create({
   },
 
   googleButton: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#DADCE0",
+    borderColor: colors.border,
   },
   googleContent: {
     flexDirection: "row",
@@ -385,7 +388,7 @@ const styles = StyleSheet.create({
     height: 24,
   },
   googleButtonText: {
-    color: "#1F1F1F",
+    color: colors.textPrimary,
     fontSize: 16,
     fontWeight: "500",
     letterSpacing: 0.1,

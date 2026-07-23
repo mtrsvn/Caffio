@@ -386,7 +386,7 @@ export default function AddLogSheet({
               value={customTypeText}
               onChangeText={setCustomTypeText}
               placeholder="Enter cafe name"
-              placeholderTextColor="rgba(78,52,46,0.45)"
+              placeholderTextColor={colors.placeholder}
               style={styles.fullInput}
               returnKeyType="done"
               onSubmitEditing={() => {
@@ -566,7 +566,7 @@ export default function AddLogSheet({
             value={customTypeText}
             onChangeText={setCustomTypeText}
             placeholder="Enter coffee type"
-            placeholderTextColor="rgba(78,52,46,0.45)"
+            placeholderTextColor={colors.placeholder}
             style={styles.fullInput}
             returnKeyType="done"
             onSubmitEditing={() => {
@@ -812,7 +812,7 @@ export default function AddLogSheet({
                 value={cafeText}
                 onChangeText={setCafeText}
                 placeholder="Enter cafe name"
-                placeholderTextColor="rgba(78,52,46,0.45)"
+                placeholderTextColor={colors.placeholder}
                 style={styles.fullInput}
                 returnKeyType="done"
               />
@@ -826,7 +826,7 @@ export default function AddLogSheet({
                 onChangeText={setPriceText}
                 placeholder="0.00"
                 keyboardType="decimal-pad"
-                placeholderTextColor="rgba(78,52,46,0.45)"
+                placeholderTextColor={colors.placeholder}
                 style={styles.fullInput}
                 returnKeyType="done"
               />
@@ -883,7 +883,7 @@ export default function AddLogSheet({
                         strokeWidth={0}
                       />
                     ) : (
-                      <Star size={25} color={"#DDD"} strokeWidth={1.6} />
+                      <Star size={25} color={colors.textMuted} strokeWidth={1.6} />
                     )}
                   </AnimatedTouchable>
                 );
