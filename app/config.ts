@@ -1,4 +1,5 @@
-export const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
+export const GOOGLE_PLACES_API_KEY =
+  process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
@@ -13,7 +14,7 @@ function resolveGeminiBackendUrl() {
   }
   const configuredPort = process.env.EXPO_PUBLIC_GEMINI_BACKEND_PORT || "4000";
 
-  // Prefer the host Expo provides (works for LAN/tunnel), fallback to emulator/localhost.
+  // Prefer the host Expo provides (works for LAN/tunnel), fallback to emulator/localhost. for this
   const constants = Constants as any;
   const hostUri: string | undefined =
     constants?.expoConfig?.hostUri ||
